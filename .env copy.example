@@ -1,0 +1,10 @@
+# Resend API key — get one at https://resend.com/api-keys
+# Keep this SECRET. It is only ever read server-side in the route handlers.
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Verified sender address (must be on a domain you've verified in Resend).
+# Falls back to Resend's onboarding sender for quick local testing.
+DEARLY_FROM_EMAIL="Dearly <noreply@yourdomain.com>"
+
+# Where waitlist signups get emailed to (your inbox).
+WAITLIST_NOTIFY_EMAIL=you@yourdomain.com

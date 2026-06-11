@@ -1,0 +1,85 @@
+# Dearly
+
+> Voice logs for the ones you love.
+
+Record a short voice note in the browser and send it, with love, to a dear one over email. Built from the [Claude Design](https://claude.ai/design) handoff, recreated pixel-for-pixel in **Next.js** (App Router + TypeScript).
+
+## How it works
+
+- **Client side**: the entire UI — the form, the live-waveform voice recorder, the waitlist modal, and the success screen — runs in the browser as a React client component.
+- **Server side (tiny)**: two Next.js Route Handlers hold the secret Resend API key and do the actual sending:
+  - `POST /api/send` — emails the voice note to the recipient, **BCCs the sender**, and attaches the recorded audio.
+  - `POST /api/waitlist` — emails you when someone joins the waitlist (from either the success-screen card or the roadmap modal).
+
+### Email behaviour
+
+- Sent **to** the recipient's email.
+- The sender is added as **BCC** on every recipient email (as requested), so they always get a copy.
+- `Reply-To` is set to the sender, so replies go to the right place.
+- The browser audio `Blob` is transcoded to **MP3 in the browser** (via `@breezystack/lamejs`) and attached to the recipient email. MP3 is used so that major mail clients render an **inline play button** on the attachment — **Gmail** (web/mobile) and **Apple Mail** let the recipient listen without downloading the file. If transcoding fails, it falls back to attaching the original WebM/Ogg recording.
+- Note: email clients strip `<audio>` tags from the message body for security, so a player can't be embedded in the body itself — the inline play button comes from the MP3 *attachment*. Outlook desktop doesn't preview audio attachments; for guaranteed in-browser playback everywhere you'd need to host the file and link to it.
+- If the visitor's mic is unavailable, the recorder falls back to a demo waveform and the email is sent without an attachment.
+
+## A note on hosting (please read)
+
+You asked for this to be "everything client side" and hosted on **GitHub Actions**. Two things to flag:
+
+1. **Resend needs a secret API key.** That key can never live in client-side code — anyone could read it from the browser and abuse your account. So the Resend calls live in server-side Route Handlers (`/api/send`, `/api/waitlist`). The UI is still 100% client-rendered; only the email send touches a server.
+2. **GitHub Actions is CI, not hosting.** Actions runs build/test jobs; it can't host a live server for the `/api/*` routes. This repo includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that lints and builds on every push, but to actually serve the app you need a Node host.
+
+**Recommended deploy:** [Vercel](https://vercel.com) (zero-config for Next.js). Any Node host works too (Render, Fly.io, a container, etc.). Set the environment variables below in the host's dashboard.
+
+> If you truly need a static-only GitHub Pages site, the alternative is to move the two route handlers into a separate serverless function (e.g. a Cloudflare Worker) and point the client `fetch` calls at it. The UI code wouldn't change.
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and fill in:
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `RESEND_API_KEY` | yes | Your Resend API key ([create one](https://resend.com/api-keys)). |
+| `DEARLY_FROM_EMAIL` | recommended | Verified sender, e.g. `Dearly <noreply@yourdomain.com>`. Defaults to Resend's `onboarding@resend.dev` for quick tests. |
+| `WAITLIST_NOTIFY_EMAIL` | for waitlist | Inbox that receives waitlist signups. If unset, signups still succeed in the UI but are only logged server-side. |
+
+## Local development
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in your Resend key
+npm run dev                  # http://localhost:3000
+```
+
+Other scripts:
+
+```bash
+npm run build   # production build
+npm run start   # run the production build
+npm run lint    # eslint
+```
+
+## Project structure
+
+```
+src/
+  app/
+    layout.tsx              # fonts + root html
+    globals.css             # full design system ported from the handoff
+    page.tsx                # main Dearly app (form, success, waitlist wiring)
+    api/
+      send/route.ts         # Resend: voice note → recipient (BCC sender)
+      waitlist/route.ts     # Resend: waitlist signup → your inbox
+  components/
+    VoiceRecorder.tsx       # MediaRecorder + Web Audio waveform (+ demo fallback)
+    Waitlist.tsx            # roadmap modal
+    icons.tsx               # shared inline SVG icons + feature list
+  lib/
+    email.ts                # Resend client + branded email templates
+    api.ts                  # client fetch helpers
+    audio.ts                # client-side WebM/Ogg → MP3 transcoding
+    validation.ts           # shared email validation
+  types.ts
+```
+
+## Design fidelity
+
+The visual layer is a faithful recreation of the handoff prototype (`Dearly.html`, `app.jsx`, `recorder.jsx`): same fonts (Cormorant Garamond / Playfair / Dancing Script / Mulish), same palette, radii, shadows, animations, and component structure. The original prototype simulated the send with a `setTimeout`; here that's replaced with a real Resend call while keeping the identical sending → success transition. (The prototype also shipped a live "Tweaks" theming panel — that was a prototyping-only tool and has been removed.)
