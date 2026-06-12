@@ -22,14 +22,25 @@ Record a short voice note in the browser and send it, with love, to a dear one o
 
 ## A note on hosting (please read)
 
-You asked for this to be "everything client side" and hosted on **GitHub Actions**. Two things to flag:
+**Resend needs a secret API key.** That key can never live in client-side code — anyone could read it from the browser and abuse your account. So the Resend calls live in server-side Route Handlers (`/api/send`, `/api/waitlist`), which run on the **Node.js runtime**. The UI is still 100% client-rendered; only the email send touches a server. This is why the app needs a Node host, not a static-only host like GitHub Pages.
 
-1. **Resend needs a secret API key.** That key can never live in client-side code — anyone could read it from the browser and abuse your account. So the Resend calls live in server-side Route Handlers (`/api/send`, `/api/waitlist`). The UI is still 100% client-rendered; only the email send touches a server.
-2. **GitHub Actions is CI, not hosting.** Actions runs build/test jobs; it can't host a live server for the `/api/*` routes. This repo includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that lints and builds on every push, but to actually serve the app you need a Node host.
+**Recommended deploy:** [Vercel](https://vercel.com) — zero-config for Next.js. Any Node host works too (Render, Fly.io, a container, etc.). See the steps below.
 
-**Recommended deploy:** [Vercel](https://vercel.com) (zero-config for Next.js). Any Node host works too (Render, Fly.io, a container, etc.). Set the environment variables below in the host's dashboard.
+## Deploying to Vercel
 
-> If you truly need a static-only GitHub Pages site, the alternative is to move the two route handlers into a separate serverless function (e.g. a Cloudflare Worker) and point the client `fetch` calls at it. The UI code wouldn't change.
+1. **Push** this repo to GitHub/GitLab/Bitbucket.
+2. In Vercel, **New Project → Import** the repo. Vercel auto-detects Next.js — no build settings to change.
+3. **Add environment variables** (Project → Settings → Environment Variables) for Production (and Preview), matching [`.env.example`](.env.example):
+   - `RESEND_API_KEY`
+   - `DEARLY_FROM_EMAIL` (must be a domain/address verified in Resend)
+   - `WAITLIST_NOTIFY_EMAIL`
+4. **Deploy.** Vercel builds and gives you a `*.vercel.app` URL.
+5. **Add your domain:** Project → Settings → Domains → add `dearlyvoice.com` (and/or `www`), then point the DNS records Vercel shows at your registrar.
+
+Notes:
+- Node version is pinned via `.nvmrc` / `engines` (Node 20).
+- Secrets are never committed — `.env*` is gitignored; only `.env.example` (placeholders) is tracked.
+- Migrating to Amazon SES later? See [`docs/aws-ses-setup.md`](docs/aws-ses-setup.md).
 
 ## Environment variables
 

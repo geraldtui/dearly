@@ -31,5 +31,3 @@ next-env.d.ts
 # handoff bundle (source of truth, not part of the app)
 /_handoff
 /Dearly-handoff.zip
-
-.env
