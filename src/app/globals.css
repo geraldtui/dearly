@@ -1005,3 +1005,219 @@ canvas.wave {
   line-height: 1.55;
   margin: 0 0 22px;
 }
+
+/* Temporary notepad — floating, overlays without reflowing the card */
+.notepad-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #fffaf7, var(--card));
+  color: var(--accent-deep);
+  box-shadow: 0 12px 26px -12px rgba(163, 106, 94, 0.6);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.notepad-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -12px rgba(163, 106, 94, 0.7);
+}
+.notepad-fab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(212, 163, 150, 0.35);
+}
+.notepad-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 86px;
+  z-index: 40;
+  width: min(320px, calc(100vw - 44px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 44px -18px rgba(61, 52, 49, 0.5);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: notepadIn 0.18s ease;
+}
+@keyframes notepadIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.notepad-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notepad-title {
+  font-family: var(--brand-font);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.notepad-close {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.notepad-close:hover {
+  background: rgba(163, 106, 94, 0.1);
+  color: var(--ink);
+}
+.notepad-area {
+  width: 100%;
+  min-height: 140px;
+  max-height: 50vh;
+  resize: vertical;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fffaf7;
+  color: var(--ink);
+  padding: 10px 12px;
+  font-family: var(--body-font);
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+}
+.notepad-area:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(212, 163, 150, 0.18);
+}
+.notepad-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notepad-hint {
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+.notepad-clear {
+  background: none;
+  border: none;
+  color: var(--accent-deep);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.notepad-clear:disabled {
+  color: var(--ink-soft);
+  opacity: 0.5;
+  cursor: default;
+}
+.notepad-clear:not(:disabled):hover {
+  background: rgba(163, 106, 94, 0.1);
+}
+.notepad-dot {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-deep);
+  box-shadow: 0 0 0 3px var(--card);
+  animation: notepadPulse 1.8s ease-in-out infinite;
+}
+@keyframes notepadPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.65;
+  }
+}
+.notepad-callout {
+  position: fixed;
+  right: 22px;
+  bottom: 86px;
+  z-index: 40;
+  max-width: min(264px, calc(100vw - 44px));
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  background: #fffaf7;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 16px 34px -16px rgba(61, 52, 49, 0.45);
+  padding: 10px 8px 10px 12px;
+  animation: notepadIn 0.2s ease;
+}
+.notepad-callout::after {
+  content: "";
+  position: absolute;
+  right: 27px;
+  bottom: -7px;
+  width: 13px;
+  height: 13px;
+  background: #fffaf7;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.notepad-callout-body {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-family: var(--body-font);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.notepad-callout-body .spark {
+  margin-top: 4px;
+  flex: none;
+}
+.notepad-callout-body b {
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+.notepad-callout-x {
+  background: none;
+  border: none;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.notepad-callout-x:hover {
+  background: rgba(163, 106, 94, 0.1);
+  color: var(--ink);
+}

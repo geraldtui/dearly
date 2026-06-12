@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import Waitlist from "@/components/Waitlist";
 import Logo from "@/components/Logo";
+import Notepad from "@/components/Notepad";
 import { FEAT_ICON } from "@/components/icons";
 import { emailOk } from "@/lib/validation";
 import { sendNote, joinWaitlist } from "@/lib/api";
@@ -270,6 +271,8 @@ export default function App() {
           </>
         )}
       </main>
+
+      {status !== "sent" && <Notepad />}
 
       {waitlist && <Waitlist defaultEmail={form.sEmail} onClose={() => setWaitlist(false)} />}
     </div>
