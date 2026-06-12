@@ -20,13 +20,17 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
 ## Technical Specification
 
 **Components/Modules**:
-- `src/app/(app)/inbox/page.tsx` (NEW) — server component listing received notes (with a sent tab/filter); shows sender/recipient, subject, date, listened state.
+- `src/components/AppSidebar.tsx` (NEW) — client sidebar for the authenticated area: brand, nav items **Inbox** (`/inbox`), **Sent** (`/sent`), **Send a note** (`/compose`), and Log out; active item highlighted via `usePathname`. On small screens it collapses to a horizontal bar.
+- `src/app/(app)/layout.tsx` (MODIFIED) — left-sidebar shell: renders `AppSidebar` beside the page content (replaces the old fixed top nav).
+- `src/app/(app)/inbox/page.tsx` (NEW) — server component listing **received** notes ("Inbox"); shows sender, subject, date, listened state. The former in-page Received/Sent tabs are gone — views are sidebar items.
+- `src/app/(app)/sent/page.tsx` (NEW) — server component listing **sent** notes ("Sent"), including email-fallback copies (`recipient_id = null`, shown with a "via email" hint).
+- `src/components/NotesList.tsx` (NEW) — shared server-rendered list (cards or empty state) used by both pages.
 - `src/components/NotePlayer.tsx` (NEW) — client audio player that fetches a signed URL on play.
 - `src/app/api/notes/[id]/url/route.ts` (NEW) — auth: mint a short-lived signed URL for a note the user may access; mark `listened_at` on first play.
 - `src/app/api/notes/[id]/route.ts` (NEW) — auth DELETE: remove the row and its Storage object.
 
 **API/Backend**:
-- `GET /inbox` (server-rendered, session-scoped).
+- `GET /inbox`, `GET /sent` (server-rendered, session-scoped; both behind auth middleware).
 - `POST /api/notes/[id]/url` — returns a signed URL (and sets `listened_at`).
 - `DELETE /api/notes/[id]` — deletes row + object.
 
@@ -47,10 +51,15 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
   - When the user plays it the first time
   - Then `listened_at` is set and the UI reflects the listened state
 
-- [ ] **AC4**: Sent view
+- [x] **AC4**: Sent view via the sidebar
   - Given a user who has sent notes
-  - When they switch to the "Sent" view
-  - Then they see notes where they are the sender
+  - When they open "Sent" from the left sidebar (`/sent`)
+  - Then they see notes where they are the sender — including stored email-fallback copies — and the sidebar marks "Sent" active
+
+- [x] **AC7**: Left-sidebar navigation (Added 2026-06-11)
+  - Given any authenticated page
+  - When it renders
+  - Then a left sidebar shows "Inbox", "Sent", "Send a note" and "Log out", highlights the current section, and there are no in-page Received/Sent tabs
 
 - [ ] **AC5**: Delete a note
   - Given a note the user participates in
@@ -69,6 +78,17 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
 - Deleting a note already opened in another tab → graceful "not found" handling.
 
 ## Changelog
+
+### [2026-06-11] - Verified (sidebar + Sent)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: `AppSidebar` (Inbox/Sent/Send a note + Log out, active state via `usePathname`, collapses to a top bar under 840px) replaces the old top nav; `/sent` added (middleware-protected) and the in-page tabs removed; both pages share `NotesList`. Sent view includes email-fallback copies with a "via email" badge; playback works for sender-only rows (RLS sender select; no `listened_at` write since the recipient check never matches null). All 7 ACs satisfied; lint, tsc and production build pass.
+
+### [2026-06-11] - Requirement Change
+- **Changed**: The authenticated area now uses a left-sidebar layout; "Received"/"Sent" tabs became sidebar nav items "Inbox" (`/inbox`) and "Sent" (new `/sent` route). Added AC7; AC4 rewritten. Sent view also shows stored email-fallback copies (see spec 08).
+- **Reason**: User wants clearer naming and a sidebar layout for the signed-in experience.
+- **Author**: Claude AI
 
 ### [2026-06-11] - Approved
 - **Author**: Claude AI

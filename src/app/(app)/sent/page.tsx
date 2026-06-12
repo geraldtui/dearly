@@ -4,35 +4,35 @@ import { authGuardDisabled } from "@/lib/dev-auth";
 import NotesList from "@/components/NotesList";
 import type { VoiceNote } from "@/lib/db/types";
 
-export const metadata = { title: "Inbox — Dearly" };
+export const metadata = { title: "Sent — Dearly" };
 
-export default async function InboxPage() {
+export default async function SentPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user && !authGuardDisabled()) redirect("/login");
 
-  // RLS already restricts rows to the user's notes; this filter picks the view.
+  // Includes email-fallback copies (recipient_id null), which RLS scopes to the sender.
   // Without a user (dev auth bypass) the page renders its empty state.
   const { data } = user
     ? await supabase
         .from("voice_notes")
         .select("*")
-        .eq("recipient_id", user.id)
+        .eq("sender_id", user.id)
         .order("created_at", { ascending: false })
     : { data: [] };
 
   return (
     <main className="card inbox-card">
       <div className="brand-row">
-        <h1 className="brand compose-brand">Inbox</h1>
+        <h1 className="brand compose-brand">Sent</h1>
         <div className="divider" />
       </div>
       <NotesList
         notes={(data ?? []) as VoiceNote[]}
-        view="received"
-        emptyMessage="No voice notes yet. When someone sends you one, it'll be waiting here."
+        view="sent"
+        emptyMessage="You haven't sent any notes from your account yet."
       />
     </main>
   );

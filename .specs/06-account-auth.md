@@ -71,6 +71,11 @@ As a person, I want to create and log into a Dearly account with my email and pa
 
 ## Changelog
 
+### [2026-06-11] - Updated (dev auth bypass)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Notes**: Added a development-only escape hatch (`src/lib/dev-auth.ts`): when `DEARLY_SKIP_AUTH=true` AND `NODE_ENV` is development, the login redirects in `src/middleware.ts` and the `(app)` pages are skipped so all pages can be tested without a session (pages render empty states/fallbacks when no user). No effect in production builds.
+
 ### [2026-06-11] - Approved
 - **Author**: Claude AI
 - **Status**: Approved (planning — not yet implemented)

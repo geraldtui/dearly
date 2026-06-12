@@ -131,12 +131,18 @@ export interface VoiceNoteEmail {
   durationLabel: string;
   simulated: boolean;
   attachments?: { filename: string; content: Buffer }[];
+  /**
+   * BCC the sender their own copy (default). The account flow passes `false`
+   * because the sender's copy is stored in Dearly instead (spec 08).
+   */
+  bccSender?: boolean;
 }
 
 /**
- * Sends the classic voice-note email (MP3 attached, sender BCC'd). Shared by
- * the public send flow and the account flow's non-user fallback. Returns the
- * provider message id; throws on failure.
+ * Sends the classic voice-note email (MP3 attached). Shared by the public
+ * send flow (sender BCC'd) and the account flow's non-user fallback (no BCC —
+ * the sender's copy lives in their Sent view). Returns the provider message
+ * id; throws on failure.
  */
 export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string | undefined> {
   const hasAudio = (opts.attachments?.length ?? 0) > 0;
@@ -151,8 +157,7 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
   const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: [opts.recipientEmail],
-    // BCC the sender on every note delivered to the recipient.
-    bcc: [opts.senderEmail],
+    bcc: opts.bccSender === false ? undefined : [opts.senderEmail],
     replyTo: opts.senderEmail,
     subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
     html: noteEmailHtml(tplOpts),
@@ -230,4 +235,33 @@ export function newNoteNotificationText(opts: {
     "Made with love — Dearly",
   ];
   return lines.filter(Boolean).join("\n");
+}
+
+/** Sends the "you have a new voice note" notification for in-app delivery. */
+export async function sendNewNoteNotification(opts: {
+  recipientEmail: string;
+  senderName: string;
+  senderEmail?: string;
+  recipientName: string;
+  subject: string;
+  inboxUrl: string;
+  /** BCC the sender (used as the free sender's delivery record). */
+  bccSender?: boolean;
+}): Promise<void> {
+  const tplOpts = {
+    senderName: opts.senderName,
+    recipientName: opts.recipientName,
+    subject: opts.subject,
+    inboxUrl: opts.inboxUrl,
+  };
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: [opts.recipientEmail],
+    bcc: opts.bccSender && opts.senderEmail ? [opts.senderEmail] : undefined,
+    replyTo: opts.senderEmail || undefined,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    html: newNoteNotificationHtml(tplOpts),
+    text: newNoteNotificationText(tplOpts),
+  });
+  if (error) throw new Error(error.message || "Notification email failed to send.");
 }

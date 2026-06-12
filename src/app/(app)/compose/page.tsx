@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { authGuardDisabled } from "@/lib/dev-auth";
 import ComposeForm from "@/components/ComposeForm";
 import type { Profile } from "@/lib/db/types";
 
@@ -10,13 +11,15 @@ export default async function ComposePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user && !authGuardDisabled()) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, email")
-    .eq("id", user.id)
-    .single<Pick<Profile, "display_name" | "email">>();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name, email")
+        .eq("id", user.id)
+        .single<Pick<Profile, "display_name" | "email">>()
+    : { data: null };
 
   return (
     <main className="card">

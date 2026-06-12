@@ -22,6 +22,8 @@ export default function NoteCard({ note, view }: { note: VoiceNote; view: "recei
 
   const counterpart = view === "received" ? note.sender_name || "Someone" : note.recipient_name || "Someone";
   const unlistened = view === "received" && !note.listened_at;
+  // Email-fallback copies have no recipient account; the MP3 went by email.
+  const sentByEmail = view === "sent" && !note.recipient_id;
 
   const remove = async () => {
     if (deleting) return;
@@ -44,6 +46,7 @@ export default function NoteCard({ note, view }: { note: VoiceNote; view: "recei
         <div className="note-title">
           {view === "received" ? "From" : "To"} <b>{counterpart}</b>
           {unlistened && <span className="note-new">New</span>}
+          {sentByEmail && <span className="note-via">via email</span>}
         </div>
         <div className="note-sub">
           {note.subject ? <span className="note-subject">{note.subject}</span> : <span className="note-subject muted">Voice note</span>}

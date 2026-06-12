@@ -10,7 +10,8 @@ export interface Profile {
 export interface VoiceNote {
   id: string;
   sender_id: string | null;
-  recipient_id: string;
+  /** Null for email-fallback sends stored as the sender's copy only. */
+  recipient_id: string | null;
   sender_name: string;
   recipient_name: string;
   subject: string | null;

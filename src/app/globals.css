@@ -1273,25 +1273,30 @@ canvas.wave {
   margin: 0 0 18px;
 }
 
-/* Accounts: authenticated shell */
+/* Accounts: authenticated shell (left sidebar) */
 .app-stage {
-  padding-top: 76px;
+  padding-left: 244px;
 }
-.app-nav {
+.app-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.app-sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
+  bottom: 0;
   z-index: 30;
+  width: 220px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 22px;
+  flex-direction: column;
+  padding: 26px 18px 22px;
   background: rgba(253, 248, 245, 0.86);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
 }
-.app-nav-brand {
+.app-sidebar-brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1300,23 +1305,80 @@ canvas.wave {
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
+  margin: 0 6px 26px;
 }
-.app-nav-brand .dot {
+.app-sidebar-brand .dot {
   color: var(--accent-deep);
 }
-.app-nav-links {
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.app-sidebar-nav a {
   display: flex;
   align-items: center;
-  gap: 18px;
-}
-.app-nav-links a {
-  font-size: 13px;
+  gap: 10px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--ink-soft);
   text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
-.app-nav-links a:hover {
+.app-sidebar-nav a:hover {
   color: var(--accent-deep);
+  background: #fbf1ec;
+}
+.app-sidebar-nav a.active {
+  color: var(--accent-deep);
+  background: #f6e7df;
+}
+.app-sidebar-nav a svg {
+  flex: 0 0 auto;
+}
+.app-sidebar-foot {
+  margin-top: auto;
+  padding: 0 6px;
+}
+@media (max-width: 840px) {
+  .app-stage {
+    padding-left: 22px;
+    padding-top: 118px;
+  }
+  .app-sidebar {
+    right: 0;
+    bottom: auto;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .app-sidebar-brand {
+    margin: 0 8px 0 0;
+    font-size: 19px;
+  }
+  .app-sidebar-nav {
+    flex-direction: row;
+    gap: 2px;
+    flex: 1;
+    overflow-x: auto;
+  }
+  .app-sidebar-nav a {
+    padding: 8px 10px;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+  .app-sidebar-foot {
+    margin: 0;
+    padding: 0;
+  }
 }
 .app-nav-signout {
   background: none;
@@ -1339,26 +1401,6 @@ canvas.wave {
 /* Accounts: inbox */
 .inbox-card {
   max-width: 560px;
-}
-.inbox-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 22px;
-}
-.inbox-tabs a {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  text-decoration: none;
-  padding: 7px 18px;
-  border-radius: 99px;
-  border: 1.5px solid transparent;
-}
-.inbox-tabs a.active {
-  color: var(--accent-deep);
-  border-color: var(--line);
-  background: #fffaf7;
 }
 .inbox-list {
   list-style: none;
@@ -1399,6 +1441,19 @@ canvas.wave {
   background: var(--accent-deep);
   border-radius: 99px;
   padding: 2px 8px;
+  vertical-align: 1px;
+}
+.note-via {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  border: 1px solid rgba(163, 106, 94, 0.35);
+  border-radius: 99px;
+  padding: 1px 8px;
   vertical-align: 1px;
 }
 .note-sub {
