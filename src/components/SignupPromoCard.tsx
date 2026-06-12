@@ -32,7 +32,7 @@ export default function SignupPromoCard({ onExplore }: { onExplore?: () => void 
     <div className="join-card" role="complementary">
       <p className="join-eyebrow">
         <span className="spark" />
-        Be first in line
+        Never miss a note
       </p>
       <h3>Want an inbox for notes like this?</h3>
       <p className="home-promo-copy">

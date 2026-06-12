@@ -1,34 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { sendVoiceNoteEmail, sendNewNoteNotification } from "@/lib/email";
 import {
-  getResend,
-  FROM_EMAIL,
-  sendVoiceNoteEmail,
-  newNoteNotificationHtml,
-  newNoteNotificationText,
-} from "@/lib/email";
+  MAX_AUDIO_BYTES,
+  sanitizeSubject,
+  durationLabel,
+  storeNote,
+  removeStoredNote,
+} from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
 import type { Profile } from "@/lib/db/types";
 
 export const runtime = "nodejs";
-
-const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
-const MAX_SUBJECT_LEN = 150;
-const BUCKET = "voice-notes";
-
-function sanitizeSubject(raw: string): string {
-  return raw
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001f\u007f]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, MAX_SUBJECT_LEN);
-}
-
-function durationLabel(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
 
 /**
  * Authenticated hybrid send: deliver in-app when the recipient has a Dearly
@@ -91,20 +74,41 @@ export async function POST(req: NextRequest) {
 
   try {
     if (!recipient) {
-      // No Dearly account: classic email with the MP3 attached.
-      const id = await sendVoiceNoteEmail({
-        senderName,
-        senderEmail,
-        recipientName,
-        recipientEmail,
-        subject,
-        durationLabel: durationLabel(durationSeconds),
-        simulated,
-        attachments: audioBuffer
-          ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
-          : undefined,
-      });
-      return NextResponse.json({ ok: true, delivery: "email", id });
+      // No Dearly account: store the sender's copy first (it replaces the old
+      // BCC and shows under "Sent"), then email the recipient the attachment.
+      const sentCopy = audioBuffer
+        ? await storeNote(supabase, service, {
+            ownerFolder: user.id,
+            senderId: user.id,
+            senderName,
+            recipientId: null,
+            recipientName,
+            subject,
+            durationSeconds,
+            audioBuffer,
+          })
+        : null;
+
+      try {
+        const id = await sendVoiceNoteEmail({
+          senderName,
+          senderEmail,
+          recipientName,
+          recipientEmail,
+          subject,
+          durationLabel: durationLabel(durationSeconds),
+          simulated,
+          attachments: audioBuffer
+            ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
+            : undefined,
+          bccSender: false,
+        });
+        return NextResponse.json({ ok: true, delivery: "email", id });
+      } catch (emailError) {
+        // Roll back the stored copy so a retry can't duplicate it.
+        if (sentCopy) await removeStoredNote(service, sentCopy);
+        throw emailError;
+      }
     }
 
     if (!audioBuffer) {
@@ -112,48 +116,26 @@ export async function POST(req: NextRequest) {
     }
 
     // In-app delivery: upload audio, insert the note, notify the recipient.
-    const noteId = crypto.randomUUID();
-    const storagePath = `${recipient.id}/${noteId}.mp3`;
-
-    const { error: uploadError } = await service.storage
-      .from(BUCKET)
-      .upload(storagePath, audioBuffer, { contentType: "audio/mpeg" });
-    if (uploadError) {
-      throw new Error("We couldn't store your note. Please try again.");
-    }
-
-    const { error: insertError } = await supabase.from("voice_notes").insert({
-      id: noteId,
-      sender_id: user.id,
-      recipient_id: recipient.id,
-      sender_name: senderName,
-      recipient_name: recipient.display_name || recipientName,
-      subject: subject || null,
-      storage_path: storagePath,
-      duration_seconds: Math.round(durationSeconds),
-    });
-    if (insertError) {
-      // Don't leave an orphaned object behind.
-      await service.storage.from(BUCKET).remove([storagePath]);
-      throw new Error("We couldn't save your note. Please try again.");
-    }
-
-    const inboxUrl = `${new URL(req.url).origin}/inbox`;
-    const notifyOpts = {
+    const { id: noteId } = await storeNote(supabase, service, {
+      ownerFolder: recipient.id,
+      senderId: user.id,
       senderName,
+      recipientId: recipient.id,
       recipientName: recipient.display_name || recipientName,
       subject,
-      inboxUrl,
-    };
+      durationSeconds,
+      audioBuffer,
+    });
+
     // Notification failure shouldn't fail the send — the note is delivered in-app.
     try {
-      await getResend().emails.send({
-        from: FROM_EMAIL,
-        to: [recipient.email],
-        replyTo: senderEmail || undefined,
-        subject: subject || `${senderName} sent you a voice note on Dearly`,
-        html: newNoteNotificationHtml(notifyOpts),
-        text: newNoteNotificationText(notifyOpts),
+      await sendNewNoteNotification({
+        recipientEmail: recipient.email,
+        senderName,
+        senderEmail,
+        recipientName: recipient.display_name || recipientName,
+        subject,
+        inboxUrl: `${new URL(req.url).origin}/inbox`,
       });
     } catch (notifyError) {
       console.warn("[notes] notification email failed:", notifyError);

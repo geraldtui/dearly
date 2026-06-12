@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { authGuardDisabled } from "@/lib/dev-auth";
 
 /** URL prefixes that require a logged-in user (the `(app)` route group). */
-const PROTECTED_PREFIXES = ["/inbox", "/compose"];
+const PROTECTED_PREFIXES = ["/inbox", "/sent", "/compose"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const needsAuth = PROTECTED_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
-  if (needsAuth && !user) {
+  if (needsAuth && !user && !authGuardDisabled()) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);

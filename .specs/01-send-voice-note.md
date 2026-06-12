@@ -30,7 +30,10 @@ As a person who wants to reach a loved one, I want to send my recorded voice not
 - `src/lib/email.ts` — Resend client factory, `FROM_EMAIL`, branded HTML/text templates (`noteEmailHtml`, `noteEmailText`).
 
 **API/Backend**:
-- `POST /api/send` (`src/app/api/send/route.ts`, Node runtime) — validates fields, enforces a max audio size (20MB), sends via Resend `to` recipient, `bcc` sender, `replyTo` sender, with the MP3 as an attachment.
+- `POST /api/send` (`src/app/api/send/route.ts`, Node runtime) — validates fields, enforces a max audio size (20MB), then checks whether the recipient has a Dearly account (service-role `profiles` lookup):
+  - **Registered recipient** → the MP3 is stored in their Dearly Inbox (`voice_notes` row with `sender_id = null`, sender name denormalized) and a lightweight notification email is sent (`to` recipient, `bcc` sender as their record, `replyTo` sender) — no attachment email.
+  - **No account (or Supabase unavailable)** → classic email via Resend `to` recipient, `bcc` sender, `replyTo` sender, with the MP3 attached.
+- Shared helpers in `src/lib/notes.ts` (subject sanitizing, store/rollback) and `src/lib/email.ts` (`sendNewNoteNotification`) — reused by the authenticated `/api/notes` flow (spec 08).
 
 **State/Configuration**:
 - Form state `{ sName, sEmail, rName, rEmail }`, `status: "idle" | "sending" | "sent"`, `sendError: string`.
@@ -53,8 +56,8 @@ As a person who wants to reach a loved one, I want to send my recorded voice not
   - When the user sends
   - Then the button shows a "Sending…" spinner, `POST /api/send` is called, and on success the success screen ("On its way.") is shown naming the recipient and their email
 
-- [ ] **AC4**: The recipient receives the note and the sender is copied
-  - Given a successful send
+- [x] **AC4**: A recipient without a Dearly account receives the note by email, sender copied
+  - Given a successful send to an email with no Dearly account
   - When Resend delivers the email
   - Then the email goes `to` the recipient, the sender is on `bcc`, `replyTo` is the sender, and the MP3 voice note is attached
 
@@ -63,18 +66,31 @@ As a person who wants to reach a loved one, I want to send my recorded voice not
   - When sending fails
   - Then status returns to "idle" and a human-readable error is shown so the user can retry
 
-- [ ] **AC6**: "Record another note" resets the flow
+- [x] **AC6**: "Record another note" resets the flow
   - Given the success screen
   - When the user clicks "Record another note"
   - Then the form, recording, and statuses clear back to the initial empty state
 
+- [x] **AC7**: A registered recipient gets the note in their Dearly Inbox (Added 2026-06-11)
+  - Given a recipient email that matches a Dearly account and a real recording
+  - When a free (no-account) sender sends
+  - Then the MP3 is stored and a `voice_notes` row created (`sender_id = null`, recipient linked), the recipient gets the "listen on Dearly" notification email instead of an attachment, and the sender is BCC'd that notification as their record
+
 ## Edge Cases
 
-- Simulated (mic-denied) recordings have no audio blob → email is sent without an attachment, with copy explaining the note couldn't be captured.
+- Simulated (mic-denied) recordings have no audio blob → email is sent without an attachment, with copy explaining the note couldn't be captured (no in-app delivery — there is nothing to store).
 - Audio over 20MB is rejected by the API with a clear message.
 - Missing `RESEND_API_KEY` fails the request with a descriptive error rather than crashing.
+- Supabase unconfigured/unreachable → the recipient-account lookup silently returns "no account" and the classic email path is used (the public flow never depends on Supabase).
+- In-app delivery: if the notification email fails, the stored note is rolled back and an error returned, so the anonymous sender can retry without duplicates (unlike the logged-in flow, neither party would otherwise know).
 
 ## Changelog
+
+### [2026-06-11] - Requirement Change (in-app delivery for registered recipients)
+- **Changed**: `/api/send` now detects registered recipients (service-role `profiles` lookup) and delivers their note to the Dearly Inbox (stored MP3, `sender_id = null`) with a notification email BCC'd to the free sender, instead of an attachment email. Added AC7; AC4 scoped to non-account recipients. Shared logic extracted to `src/lib/notes.ts` (store/rollback, subject sanitizing — also used by `/api/notes`) and `sendNewNoteNotification` in `src/lib/email.ts`.
+- **Reason**: Notes from non-account senders previously bypassed registered users' Inboxes and consumed their email storage — the exact thing accounts exist to avoid.
+- **Breaking Changes**: None visible to senders; the success flow is unchanged. The public flow still works without Supabase (lookup degrades to the email path).
+- **Author**: Claude AI
 
 ### [2026-06-11] - Re-verified
 - **Author**: Claude AI

@@ -68,7 +68,11 @@ export default function ComposeForm({ senderName }: { senderName: string }) {
             </>
           ) : (
             <>
-              Your voice note is on its way to <b>{rName}</b> at <b>{rEmail}</b> by email.
+              Your voice note is on its way to <b>{rName}</b> at <b>{rEmail}</b> by email. A copy is saved in your{" "}
+              <Link href="/sent" className="foot-link">
+                Sent notes
+              </Link>
+              .
             </>
           )}
         </p>

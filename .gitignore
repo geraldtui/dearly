@@ -28,6 +28,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# supabase CLI scratch files
+/supabase/.temp/
+
 # handoff bundle (source of truth, not part of the app)
 /_handoff
 /Dearly-handoff.zip
