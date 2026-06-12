@@ -121,3 +121,113 @@ export function noteEmailText(opts: {
   );
   return lines.filter(Boolean).join("\n");
 }
+
+export interface VoiceNoteEmail {
+  senderName: string;
+  senderEmail: string;
+  recipientName: string;
+  recipientEmail: string;
+  subject: string;
+  durationLabel: string;
+  simulated: boolean;
+  attachments?: { filename: string; content: Buffer }[];
+}
+
+/**
+ * Sends the classic voice-note email (MP3 attached, sender BCC'd). Shared by
+ * the public send flow and the account flow's non-user fallback. Returns the
+ * provider message id; throws on failure.
+ */
+export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string | undefined> {
+  const hasAudio = (opts.attachments?.length ?? 0) > 0;
+  const tplOpts = {
+    senderName: opts.senderName,
+    recipientName: opts.recipientName,
+    durationLabel: opts.durationLabel,
+    hasAudio,
+    simulated: opts.simulated,
+    subject: opts.subject,
+  };
+  const { data, error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: [opts.recipientEmail],
+    // BCC the sender on every note delivered to the recipient.
+    bcc: [opts.senderEmail],
+    replyTo: opts.senderEmail,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    html: noteEmailHtml(tplOpts),
+    text: noteEmailText(tplOpts),
+    attachments: opts.attachments,
+  });
+  if (error) throw new Error(error.message || "Email failed to send.");
+  return data?.id;
+}
+
+/** Lightweight "you have a new voice note" notification for in-app delivery. */
+export function newNoteNotificationHtml(opts: {
+  senderName: string;
+  recipientName: string;
+  subject?: string | null;
+  inboxUrl: string;
+}): string {
+  const { senderName, recipientName, subject, inboxUrl } = opts;
+  const subjectLine = subject?.trim()
+    ? `<p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;">&ldquo;${escapeHtml(subject.trim())}&rdquo;</p>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0;padding:0;background:#FDF8F5;font-family:'Helvetica Neue',Arial,sans-serif;color:${INK};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FDF8F5;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#F3E8E0;border:1px solid rgba(255,255,255,0.7);border-radius:24px;overflow:hidden;">
+          <tr>
+            <td style="padding:40px 40px 8px;text-align:center;">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Dearly<span style="color:${ACCENT};">.</span></div>
+              <div style="width:46px;height:1px;background:${ACCENT};opacity:.55;margin:14px auto 0;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 0;text-align:center;">
+              <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:${INK};">A voice note is waiting for you, ${escapeHtml(recipientName)}.</h1>
+              <p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;"><b style="color:${INK};">${escapeHtml(senderName)}</b> sent you a voice note on Dearly.</p>
+              ${subjectLine}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 8px;text-align:center;">
+              <a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 30px;border-radius:99px;">Listen on Dearly</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 40px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Dearly · voice logs for the ones you love</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function newNoteNotificationText(opts: {
+  senderName: string;
+  recipientName: string;
+  subject?: string | null;
+  inboxUrl: string;
+}): string {
+  const { senderName, recipientName, subject, inboxUrl } = opts;
+  const lines = [
+    `A voice note is waiting for you, ${recipientName}.`,
+    "",
+    `${senderName} sent you a voice note on Dearly.`,
+    subject?.trim() ? `"${subject.trim()}"` : "",
+    "",
+    `Listen here: ${inboxUrl}`,
+    "",
+    "Made with love — Dearly",
+  ];
+  return lines.filter(Boolean).join("\n");
+}

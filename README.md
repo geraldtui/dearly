@@ -51,6 +51,11 @@ Copy `.env.example` to `.env.local` and fill in:
 | `RESEND_API_KEY` | yes | Your Resend API key ([create one](https://resend.com/api-keys)). |
 | `DEARLY_FROM_EMAIL` | recommended | Verified sender, e.g. `Dearly <noreply@yourdomain.com>`. Defaults to Resend's `onboarding@resend.dev` for quick tests. |
 | `WAITLIST_NOTIFY_EMAIL` | for waitlist | Inbox that receives waitlist signups. If unset, signups still succeed in the UI but are only logged server-side. |
+| `NEXT_PUBLIC_SUPABASE_URL` | for accounts | Supabase project URL (Dearly accounts: auth, DB, audio storage). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for accounts | Supabase anon (publishable) key. |
+| `SUPABASE_SERVICE_ROLE_KEY` | for accounts | Supabase service-role key. **Server-only — never expose to the client.** |
+
+> **Dearly accounts**: apply `supabase/migrations/0001_accounts.sql` to your Supabase project (SQL editor or `supabase db push`) before using signup/login, `/compose`, or `/inbox`. Architecture: `docs/dearly-accounts-architecture.md`.
 
 ## Local development
 

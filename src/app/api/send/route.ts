@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getResend, FROM_EMAIL, noteEmailHtml, noteEmailText } from "@/lib/email";
+import { sendVoiceNoteEmail } from "@/lib/email";
 import { emailOk } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
 
   const audio = form.get("audio");
   let attachments: { filename: string; content: Buffer }[] | undefined;
-  let hasAudio = false;
 
   if (audio instanceof File && audio.size > 0) {
     if (audio.size > MAX_AUDIO_BYTES) {
@@ -57,37 +56,20 @@ export async function POST(req: NextRequest) {
     }
     const buffer = Buffer.from(await audio.arrayBuffer());
     attachments = [{ filename: audio.name || "dearly-voice-note.mp3", content: buffer }];
-    hasAudio = true;
   }
 
-  const html = noteEmailHtml({
-    senderName,
-    recipientName,
-    durationLabel: durationLabel(durationSeconds),
-    hasAudio,
-    simulated,
-    subject: customSubject,
-  });
-  const text = noteEmailText({ senderName, recipientName, hasAudio, subject: customSubject });
-
   try {
-    const resend = getResend();
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: [recipientEmail],
-      // BCC the sender on every note delivered to the recipient.
-      bcc: [senderEmail],
-      replyTo: senderEmail,
-      subject: customSubject || `${senderName} sent you a voice note on Dearly`,
-      html,
-      text,
+    const id = await sendVoiceNoteEmail({
+      senderName,
+      senderEmail,
+      recipientName,
+      recipientEmail,
+      subject: customSubject,
+      durationLabel: durationLabel(durationSeconds),
+      simulated,
       attachments,
     });
-
-    if (error) {
-      return NextResponse.json({ error: error.message || "Email failed to send." }, { status: 502 });
-    }
-    return NextResponse.json({ ok: true, id: data?.id });
+    return NextResponse.json({ ok: true, id });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Email failed to send.";
     return NextResponse.json({ error: message }, { status: 500 });

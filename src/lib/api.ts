@@ -37,6 +37,28 @@ export interface SendNotePayload {
 }
 
 /**
+ * Appends recording metadata and the audio blob (transcoded to MP3 so mail
+ * clients show an inline play button; falls back to the original blob if
+ * transcoding fails) to the multipart body.
+ */
+async function appendRecording(fd: FormData, recording: Recording | null, subject: string): Promise<void> {
+  fd.append("durationSeconds", String(Math.round(recording?.duration ?? 0)));
+  fd.append("simulated", String(recording?.simulated ?? false));
+
+  if (recording?.blob) {
+    const base = snakeCaseName(subject);
+    let audioBlob: Blob = recording.blob;
+    let ext = "mp3";
+    try {
+      audioBlob = await encodeBlobToMp3(recording.blob);
+    } catch {
+      ext = (recording.mimeType || "audio/webm").includes("ogg") ? "ogg" : "webm";
+    }
+    fd.append("audio", audioBlob, `${base}.${ext}`);
+  }
+}
+
+/**
  * Sends the voice note. The audio blob (if a real recording exists) is sent as
  * multipart/form-data so the server can attach it to the email.
  */
@@ -47,26 +69,36 @@ export async function sendNote(payload: SendNotePayload): Promise<void> {
   fd.append("recipientName", payload.recipientName);
   fd.append("recipientEmail", payload.recipientEmail);
   fd.append("subject", payload.subject);
-  fd.append("durationSeconds", String(Math.round(payload.recording?.duration ?? 0)));
-  fd.append("simulated", String(payload.recording?.simulated ?? false));
-
-  // Transcode the recording to MP3 so mail clients (Gmail, Apple Mail) show an
-  // inline play button on the attachment. If transcoding fails for any reason,
-  // fall back to sending the original recorded blob rather than dropping audio.
-  if (payload.recording?.blob) {
-    const base = snakeCaseName(payload.subject);
-    let audioBlob: Blob = payload.recording.blob;
-    let ext = "mp3";
-    try {
-      audioBlob = await encodeBlobToMp3(payload.recording.blob);
-    } catch {
-      ext = (payload.recording.mimeType || "audio/webm").includes("ogg") ? "ogg" : "webm";
-    }
-    fd.append("audio", audioBlob, `${base}.${ext}`);
-  }
+  await appendRecording(fd, payload.recording, payload.subject);
 
   const res = await fetch("/api/send", { method: "POST", body: fd });
   if (!res.ok) throw new Error(await parseError(res));
+}
+
+export interface AccountNotePayload {
+  recipientName: string;
+  recipientEmail: string;
+  subject: string;
+  recording: Recording | null;
+}
+
+export type NoteDelivery = "in-app" | "email";
+
+/**
+ * Sends a note as a logged-in Dearly user. The server decides delivery:
+ * in-app (recipient has an account) or the classic email fallback.
+ */
+export async function sendAccountNote(payload: AccountNotePayload): Promise<NoteDelivery> {
+  const fd = new FormData();
+  fd.append("recipientName", payload.recipientName);
+  fd.append("recipientEmail", payload.recipientEmail);
+  fd.append("subject", payload.subject);
+  await appendRecording(fd, payload.recording, payload.subject);
+
+  const res = await fetch("/api/notes", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(await parseError(res));
+  const data = (await res.json()) as { delivery?: NoteDelivery };
+  return data.delivery === "in-app" ? "in-app" : "email";
 }
 
 export async function joinWaitlist(email: string, source: string): Promise<void> {
