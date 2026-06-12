@@ -76,6 +76,12 @@ As a person who wants to reach a loved one, I want to send my recorded voice not
 
 ## Changelog
 
+### [2026-06-11] - Re-verified
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: Re-validated after the homepage signup changes (spec 10) restructured `page.tsx`. All 6 ACs still satisfied; the send flow (validation, recording requirement, sending/sent states, error recovery, reset) is untouched. The previously noted minor issue — inline join-card signup duplicating `Waitlist.tsx` logic — is resolved: the success-screen card is now `SignupPromoCard` and waitlist signup happens only in the modal.
+
 ### [2026-06-10] - Verified
 - **Author**: Claude AI
 - **Status**: Verified
