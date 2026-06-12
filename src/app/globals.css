@@ -110,6 +110,10 @@ body {
   text-align: center;
   margin-bottom: 30px;
 }
+.brand-mark {
+  display: block;
+  margin: 0 auto 8px;
+}
 .brand {
   font-family: var(--brand-font);
   font-size: 58px;

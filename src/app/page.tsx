@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import Waitlist from "@/components/Waitlist";
+import Logo from "@/components/Logo";
 import { FEAT_ICON } from "@/components/icons";
 import { emailOk } from "@/lib/validation";
 import { sendNote, joinWaitlist } from "@/lib/api";
@@ -204,6 +205,7 @@ export default function App() {
         ) : (
           <>
             <div className="brand-row">
+              <Logo className="brand-mark" title="" />
               <h1 className="brand">
                 Dearly<span className="dot">.</span>
               </h1>
