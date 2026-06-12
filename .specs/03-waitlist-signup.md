@@ -2,7 +2,7 @@
 
 - **Status**: Verified
 - **Created**: 2026-06-10
-- **Last Modified**: 2026-06-10
+- **Last Modified**: 2026-06-11
 - **Feature area**: Growth / waitlist
 - **Related**: `01-send-voice-note.md`
 
@@ -22,7 +22,7 @@ As an early-preview visitor, I want to leave my email to be notified about upcom
 
 **Components/Modules**:
 - `src/components/Waitlist.tsx` (OWNER) — roadmap modal listing six upcoming features; email input with validation; submitting + joined states; Escape/overlay-click to close.
-- `src/app/page.tsx` — entry points: footer "see what's coming" link (opens modal) and the success-screen "Be first in line" join card (inline signup + "+ 3 more" opens modal).
+- `src/app/page.tsx` — entry points: footer "see what's coming" link (opens modal) and the success-screen signup promo card's "see what else is coming" link (opens modal). The former inline "Be first in line" signup form was replaced by the Dearly-account promo (see `10-homepage-signup-promo.md`); waitlist signup now happens only via the modal.
 - `src/lib/api.ts` — `joinWaitlist(email, source)` client helper.
 - `src/components/icons.tsx` — `FEATURES` list + `FEAT_ICON` glyphs.
 
@@ -35,27 +35,27 @@ As an early-preview visitor, I want to leave my email to be notified about upcom
 
 ## Acceptance Criteria
 
-- [ ] **AC1**: Open the roadmap
+- [x] **AC1**: Open the roadmap
   - Given the main screen or success screen
-  - When the user clicks "see what's coming" / "+ 3 more"
+  - When the user clicks "see what's coming" / "see what else is coming"
   - Then the waitlist modal opens listing the upcoming features
 
-- [ ] **AC2**: Email is validated before submit
-  - Given the waitlist or success-card email input
+- [x] **AC2**: Email is validated before submit
+  - Given the waitlist modal email input
   - When the email is blank or invalid and the user submits
   - Then an inline error is shown and no request is made
 
-- [ ] **AC3**: Valid signup is recorded and confirmed
+- [x] **AC3**: Valid signup is recorded and confirmed
   - Given a valid email
   - When the user clicks "Notify me"
   - Then `POST /api/waitlist` is called with the email and source, and on success a "You're on the list." confirmation replaces the form
 
-- [ ] **AC4**: Signup notifies the team
+- [x] **AC4**: Signup notifies the team
   - Given a successful signup and a configured `WAITLIST_NOTIFY_EMAIL`
   - When the request is processed
   - Then an email containing the signup address and source is sent to that inbox
 
-- [ ] **AC5**: Failures are surfaced
+- [x] **AC5**: Failures are surfaced
   - Given the API returns an error
   - When joining fails
   - Then a readable error is shown and the user can retry
@@ -63,9 +63,14 @@ As an early-preview visitor, I want to leave my email to be notified about upcom
 ## Edge Cases
 
 - Modal can be dismissed with Escape, the close button, or clicking the overlay.
-- Success-card signup pre-fills the sender's email; the modal pre-fills it too when opened from the form.
+- The modal pre-fills the sender's email when opened from the form or success screen.
 
 ## Changelog
+
+### [2026-06-11] - Updated
+- **Author**: Claude AI
+- **Status**: Verified
+- **Notes**: The success-screen "Be first in line" inline waitlist signup was replaced by the Dearly-account signup promo (`HomeAuthPromo` success variant, spec 10). Waitlist remains reachable from the success screen via a "see what else is coming" link that opens the modal; the `"success"` source is no longer emitted. ACs/edge cases updated accordingly.
 
 ### [2026-06-10] - Verified
 - **Author**: Claude AI

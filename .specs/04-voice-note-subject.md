@@ -1,8 +1,8 @@
 # Spec: Custom Subject Line for a Voice Note
 
-- **Status**: Updated (was: Verified)
+- **Status**: Verified
 - **Created**: 2026-06-10
-- **Last Modified**: 2026-06-10
+- **Last Modified**: 2026-06-11
 - **Feature area**: Core send flow
 - **Related**: `01-send-voice-note.md`
 
@@ -31,32 +31,32 @@ As a sender, I want to enter a topic/subject line for my voice note, so that the
 
 ## Acceptance Criteria
 
-- [ ] **AC1**: An optional subject field is available
+- [x] **AC1**: An optional subject field is available
   - Given the compose form
   - When the user views it
   - Then there is a "Subject" input that is not required to send (no validation error when empty)
 
-- [ ] **AC2**: A provided subject becomes the email subject
+- [x] **AC2**: A provided subject becomes the email subject
   - Given the user typed a subject and sends a valid note
   - When the recipient email is delivered
   - Then the email subject equals the entered topic (and the BCC'd sender sees the same subject)
 
-- [ ] **AC3**: A blank subject falls back to the default
+- [x] **AC3**: A blank subject falls back to the default
   - Given the subject field is empty (or whitespace only)
   - When the note is sent
   - Then the email subject is the existing default `"<sender> sent you a voice note on Dearly"`
 
-- [ ] **AC4**: The subject is sanitized server-side
+- [x] **AC4**: The subject is sanitized server-side
   - Given a subject containing newlines/control characters or longer than `MAX_SUBJECT_LEN` (150)
   - When the request is processed
   - Then newlines/control chars are stripped and the subject is trimmed and capped at 150 characters (preventing header injection)
 
-- [ ] **AC5**: The subject resets with the form
+- [x] **AC5**: The subject resets with the form
   - Given a sent note on the success screen
   - When the user clicks "Record another note"
   - Then the subject field is cleared along with the rest of the form
 
-- [ ] **AC6**: The subject is the email's header (Added 2026-06-10)
+- [x] **AC6**: The subject is the email's header (Added 2026-06-10)
   - Given a provided subject
   - When the recipient opens the email
   - Then the subject appears as the email's masthead/header (in both HTML and plaintext) instead of the "Dearly." brand; when blank, the "Dearly." masthead is shown
@@ -69,6 +69,14 @@ As a sender, I want to enter a topic/subject line for my voice note, so that the
 - Long subjects render in the masthead at a smaller serif size than the "Dearly." brand to stay readable.
 
 ## Changelog
+
+### [2026-06-11] - Verified
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Quality Score**: 10/10
+- **Notes**: Re-verified after the AC6 requirement change. AC6 confirmed in `src/lib/email.ts`: `noteEmailHtml` renders the subject as the masthead (smaller 32px serif vs the 46px "Dearly." brand) with HTML escaping, `noteEmailText` leads with the subject line, and both fall back to the brand when blank. `sendVoiceNoteEmail` uses the sanitized subject (or default) as the email subject. ACs 1–5 re-confirmed against current `page.tsx`/`api.ts`/`send/route.ts`.
+- **Issues Fixed**: None
 
 ### [2026-06-10] - Approved
 - **Author**: Claude AI
