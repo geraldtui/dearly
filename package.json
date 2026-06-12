@@ -9,11 +9,11 @@
     "lint": "next lint"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "dependencies": {
     "@breezystack/lamejs": "1.2.7",
-    "next": "15.3.4",
+    "next": "15.3.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "resend": "4.5.1"
@@ -23,7 +23,7 @@
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.0",
     "eslint": "9.30.0",
-    "eslint-config-next": "15.3.4",
+    "eslint-config-next": "15.3.8",
     "typescript": "5.5.3"
   }
 }
