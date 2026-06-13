@@ -68,10 +68,42 @@ npm run dev                  # http://localhost:3000
 Other scripts:
 
 ```bash
-npm run build   # production build
-npm run start   # run the production build
-npm run lint    # eslint
+npm run build       # production build
+npm run start       # run the production build
+npm run lint        # eslint
+npm test            # run the Vitest unit/component suite once
+npm run test:watch  # run unit tests in watch mode
+npm run test:e2e    # run the Playwright browser tests
 ```
+
+## Testing
+
+**Unit / component (Vitest + React Testing Library)** cover the highest-risk
+code: the `/api/send` and `/api/notes` route handlers (validation, hybrid
+in-app/email delivery, rollback paths), shared utilities (`sanitizeSubject`,
+`emailOk`, `snakeCaseName`, email templates), and key client components
+(`SignupPopover`, `Notepad`, `ComposeForm`). Resend and Supabase are mocked at
+the module boundary, so tests need no network access or real keys.
+
+**End-to-end (Playwright)** cover the browser-only chain the unit suites can't:
+the MP3 transcoder running in a real browser, plus the homepage record → send
+happy path (with a fake microphone) and the empty-form validation guard.
+`/api/send` is intercepted in the browser, so these tests also need no backend.
+
+```bash
+# One-time local setup (uses the public npm registry; see note below):
+npx playwright install chromium
+npm run test:e2e
+```
+
+> The corporate Artifactory mirror forbids the Playwright packages, so they
+> were installed with `--registry https://registry.npmjs.org/`. CI runners are
+> not behind that firewall and install normally.
+
+**CI**: `.github/workflows/ci.yml` runs lint, type-check, and the Vitest suite
+on every PR and on pushes to `develop`/`main`. `.github/workflows/e2e.yml` runs
+Playwright on pushes to `develop`/`main` and on manual dispatch — deliberately
+not on every PR, so E2E timing never blocks merges.
 
 ## Project structure
 
