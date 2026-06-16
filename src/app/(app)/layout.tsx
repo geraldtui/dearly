@@ -11,13 +11,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user && !authGuardDisabled()) redirect("/login");
 
   return (
-    <div className="stage app-stage">
+    <div className="app-shell">
       <div className="orb a" />
       <div className="orb b" />
 
       <AppSidebar />
 
-      <div className="app-content">{children}</div>
+      <div className="app-main">{children}</div>
     </div>
   );
 }
