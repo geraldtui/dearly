@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": "22.x"
@@ -21,11 +24,18 @@
     "resend": "4.5.1"
   },
   "devDependencies": {
-    "@types/node": "20.14.10",
+    "@playwright/test": "^1.60.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.19.21",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.0",
+    "@vitejs/plugin-react": "^6.0.2",
     "eslint": "9.30.0",
     "eslint-config-next": "15.3.8",
-    "typescript": "5.5.3"
+    "jsdom": "^29.1.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.8"
   }
 }

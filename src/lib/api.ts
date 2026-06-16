@@ -4,7 +4,7 @@ import type { Recording } from "@/types";
 import { encodeBlobToMp3 } from "./audio";
 
 /** Build a safe snake_case file base from a subject, e.g. "Happy Birthday!" → "happy_birthday". */
-function snakeCaseName(input: string): string {
+export function snakeCaseName(input: string): string {
   const slug = input
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "") // strip diacritics

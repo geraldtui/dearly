@@ -49,6 +49,14 @@ export async function encodeBlobToMp3(blob: Blob): Promise<Blob> {
   );
 }
 
+// Test-only: expose the transcoder so the Playwright E2E suite can verify it
+// in a real browser without a microphone. Gated by NEXT_PUBLIC_E2E so it is
+// dead code in production builds.
+if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_E2E === "true") {
+  (window as unknown as { __encodeBlobToMp3?: typeof encodeBlobToMp3 }).__encodeBlobToMp3 =
+    encodeBlobToMp3;
+}
+
 /** Downmix all channels to mono and convert Float32 [-1,1] PCM to 16-bit. */
 function toInt16Mono(audioBuffer: AudioBuffer): Int16Array {
   const channels = audioBuffer.numberOfChannels;
