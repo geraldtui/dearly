@@ -1273,22 +1273,34 @@ canvas.wave {
   margin: 0 0 18px;
 }
 
-/* Accounts: authenticated shell (left sidebar) */
-.app-stage {
-  padding-left: 244px;
+/* Accounts: authenticated shell — connected columns (nav → contacts → notes) */
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  overflow-x: clip;
 }
-.app-content {
-  width: 100%;
+.app-main {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
+  padding: 48px 22px 64px;
+}
+/* Full-bleed when a contacts column is present (Inbox/Sent). */
+.app-main:has(.contacts-layout) {
+  padding: 0;
 }
 .app-sidebar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  bottom: 0;
+  align-self: flex-start;
+  height: 100vh;
   z-index: 30;
-  width: 220px;
+  flex: 0 0 220px;
   display: flex;
   flex-direction: column;
   padding: 26px 18px 22px;
@@ -1345,14 +1357,18 @@ canvas.wave {
   padding: 0 6px;
 }
 @media (max-width: 840px) {
-  .app-stage {
-    padding-left: 22px;
-    padding-top: 118px;
+  .app-shell {
+    flex-direction: column;
+  }
+  .app-main {
+    padding: 22px 16px 48px;
   }
   .app-sidebar {
-    right: 0;
-    bottom: auto;
+    position: sticky;
+    top: 0;
+    height: auto;
     width: auto;
+    flex: none;
     flex-direction: row;
     align-items: center;
     gap: 8px;
@@ -1398,10 +1414,170 @@ canvas.wave {
   font-size: 40px;
 }
 
-/* Accounts: inbox */
-.inbox-card {
-  max-width: 560px;
+/* Accounts: contacts column (second column, connected to the nav sidebar) */
+.contacts-layout {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
 }
+.contacts-sidebar {
+  flex: 0 0 264px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow-y: auto;
+  background: rgba(255, 250, 247, 0.55);
+  border-right: 1px solid var(--line);
+  padding: 26px 14px;
+}
+.contacts-notes {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-start;
+  padding: 44px 44px 64px;
+}
+.notes-panel {
+  width: 100%;
+  max-width: 720px;
+}
+.notes-head {
+  margin: 0 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.notes-title {
+  font-family: var(--brand-font);
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+.contacts-heading {
+  font-family: var(--brand-font);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 4px 8px 12px;
+}
+.contacts-empty {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 8px;
+}
+.contacts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.contact-item:hover {
+  background: #fbf1ec;
+}
+.contact-item.active {
+  background: #f6e7df;
+}
+.contact-avatar {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.contact-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.contact-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contact-via {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.contact-count {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 1px 8px;
+}
+.contact-item.active .contact-count {
+  color: var(--accent-deep);
+  border-color: var(--accent);
+}
+@media (max-width: 840px) {
+  .contacts-layout {
+    flex-direction: column;
+  }
+  .contacts-sidebar {
+    position: sticky;
+    top: 0;
+    height: auto;
+    width: auto;
+    flex: none;
+    align-self: stretch;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 14px;
+    background: rgba(255, 250, 247, 0.92);
+    z-index: 20;
+  }
+  .contacts-heading {
+    display: none;
+  }
+  .contacts-list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 6px;
+  }
+  .contact-item {
+    flex: 0 0 auto;
+  }
+  .contact-count {
+    display: none;
+  }
+  .contacts-notes {
+    padding: 22px 16px 48px;
+  }
+}
+
+/* Accounts: inbox */
 .inbox-list {
   list-style: none;
   margin: 0;

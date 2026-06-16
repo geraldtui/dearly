@@ -79,6 +79,12 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
 
 ## Changelog
 
+### [2026-06-16] - Re-verified (after contacts sidebar, spec 13)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: Re-validated after spec `13-contacts-sidebar.md` reworked the authenticated shell into connected columns (nav → contacts → notes). `AppSidebar` is unchanged (Inbox/Sent/Send a note/Log out + active state) so AC7 holds; `/inbox` still lists received notes and `/sent` still lists sent notes incl. email-fallback copies (AC1, AC4), now grouped per-person with the first contact selected by default. Playback, mark-as-listened, delete, and endpoint access control (AC2, AC3, AC5, AC6) are untouched. Full suite (89 tests) + production build pass.
+
 ### [2026-06-11] - Verified (sidebar + Sent)
 - **Author**: Claude AI
 - **Status**: Verified
