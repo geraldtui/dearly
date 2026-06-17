@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { sendVoiceNoteEmail, sendNewNoteNotification } from "@/lib/email";
+import { sendVoiceNoteEmail } from "@/lib/email";
 import {
   MAX_AUDIO_BYTES,
   sanitizeSubject,
@@ -14,9 +14,9 @@ import type { Profile } from "@/lib/db/types";
 export const runtime = "nodejs";
 
 /**
- * Authenticated hybrid send: deliver in-app when the recipient has a Dearly
- * account (store MP3 + row, email a notification link); otherwise fall back
- * to the classic email-with-attachment flow.
+ * Authenticated dual-delivery send: with audio, always email the recipient the
+ * MP3 attachment AND store the sender's Dearly copy. Dearly-user recipients also
+ * keep the in-app Inbox row (same row) and get a "Listen on Dearly" link.
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -72,76 +72,67 @@ export async function POST(req: NextRequest) {
     .eq("email", recipientEmail)
     .maybeSingle<Pick<Profile, "id" | "email" | "display_name">>();
 
+  const recipientDisplay = recipient?.display_name || recipientName;
+  const inboxUrl = `${new URL(req.url).origin}/inbox`;
+
+  function emailRecipient(opts: { attach: boolean; withInboxLink: boolean }) {
+    return sendVoiceNoteEmail({
+      senderName,
+      senderEmail,
+      recipientName: recipientDisplay,
+      recipientEmail,
+      subject,
+      durationLabel: durationLabel(durationSeconds),
+      simulated,
+      attachments:
+        opts.attach && audioBuffer
+          ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
+          : undefined,
+      bccSender: false,
+      inboxUrl: opts.withInboxLink ? inboxUrl : undefined,
+    });
+  }
+
   try {
-    if (!recipient) {
-      // No Dearly account: store the sender's copy first (it replaces the old
-      // BCC and shows under "Sent"), then email the recipient the attachment.
-      const sentCopy = audioBuffer
-        ? await storeNote(supabase, service, {
-            ownerFolder: user.id,
-            senderId: user.id,
-            senderName,
-            recipientId: null,
-            recipientName,
-            subject,
-            durationSeconds,
-            audioBuffer,
-          })
-        : null;
-
-      try {
-        const id = await sendVoiceNoteEmail({
-          senderName,
-          senderEmail,
-          recipientName,
-          recipientEmail,
-          subject,
-          durationLabel: durationLabel(durationSeconds),
-          simulated,
-          attachments: audioBuffer
-            ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
-            : undefined,
-          bccSender: false,
-        });
-        return NextResponse.json({ ok: true, delivery: "email", id });
-      } catch (emailError) {
-        // Roll back the stored copy so a retry can't duplicate it.
-        if (sentCopy) await removeStoredNote(service, sentCopy);
-        throw emailError;
-      }
-    }
-
+    // No audio (simulated/mic-denied): nothing to store or attach — just a heads-up.
     if (!audioBuffer) {
-      return NextResponse.json({ error: "Record a message before sending." }, { status: 400 });
+      const id = await emailRecipient({ attach: false, withInboxLink: false });
+      return NextResponse.json({ ok: true, delivery: "email", id });
     }
 
-    // In-app delivery: upload audio, insert the note, notify the recipient.
-    const { id: noteId } = await storeNote(supabase, service, {
-      ownerFolder: recipient.id,
+    // Always store the note. Dearly-user recipients own the row (Inbox + the
+    // sender's Sent); otherwise it's the sender's copy only (recipient_id null).
+    const stored = await storeNote(supabase, service, {
+      ownerFolder: recipient ? recipient.id : user.id,
       senderId: user.id,
       senderName,
-      recipientId: recipient.id,
-      recipientName: recipient.display_name || recipientName,
+      recipientId: recipient ? recipient.id : null,
+      recipientName: recipientDisplay,
       subject,
       durationSeconds,
       audioBuffer,
     });
 
-    // Notification failure shouldn't fail the send — the note is delivered in-app.
-    try {
-      await sendNewNoteNotification({
-        recipientEmail: recipient.email,
-        senderName,
-        senderEmail,
-        recipientName: recipient.display_name || recipientName,
-        subject,
-        inboxUrl: `${new URL(req.url).origin}/inbox`,
-      });
-    } catch (notifyError) {
-      console.warn("[notes] notification email failed:", notifyError);
+    if (recipient) {
+      // Delivered in-app already; the attachment email is a bonus, so a failure
+      // is non-fatal (don't roll back the Inbox copy).
+      try {
+        await emailRecipient({ attach: true, withInboxLink: true });
+      } catch (emailError) {
+        console.warn("[notes] recipient attachment email failed:", emailError);
+      }
+      return NextResponse.json({ ok: true, delivery: "in-app", id: stored.id });
     }
 
-    return NextResponse.json({ ok: true, delivery: "in-app", id: noteId });
+    // No account: the email is the recipient's only copy — roll back on failure
+    // so a retry can't duplicate the stored Sent copy.
+    try {
+      const id = await emailRecipient({ attach: true, withInboxLink: false });
+      return NextResponse.json({ ok: true, delivery: "email", id });
+    } catch (emailError) {
+      await removeStoredNote(service, stored);
+      throw emailError;
+    }
   } catch (e) {
     const message = e instanceof Error ? e.message : "We couldn't send your note.";
     return NextResponse.json({ error: message }, { status: 500 });

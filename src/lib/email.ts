@@ -37,8 +37,10 @@ export function noteEmailHtml(opts: {
   simulated: boolean;
   /** Sender-chosen subject; when present it becomes the masthead instead of "Dearly". */
   subject?: string;
+  /** When the recipient has a Dearly account, link them to their inbox to listen in-app too. */
+  inboxUrl?: string;
 }): string {
-  const { senderName, recipientName, durationLabel, hasAudio, simulated, subject } = opts;
+  const { senderName, recipientName, durationLabel, hasAudio, simulated, subject, inboxUrl } = opts;
 
   // Use the sender's subject as the masthead when provided; otherwise the brand.
   const masthead = subject?.trim()
@@ -87,6 +89,11 @@ export function noteEmailHtml(opts: {
                 senderName
               )}</b> sent you something to hear, with love.</p>
               ${audioLine}
+              ${
+                inboxUrl
+                  ? `<p style="margin:16px 0 0;"><a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 26px;border-radius:99px;">Listen on Dearly</a></p>`
+                  : ""
+              }
             </td>
           </tr>
           <tr>
@@ -107,8 +114,9 @@ export function noteEmailText(opts: {
   recipientName: string;
   hasAudio: boolean;
   subject?: string;
+  inboxUrl?: string;
 }): string {
-  const { senderName, recipientName, hasAudio, subject } = opts;
+  const { senderName, recipientName, hasAudio, subject, inboxUrl } = opts;
   const lines: string[] = [];
   if (subject?.trim()) lines.push(subject.trim(), "");
   lines.push(
@@ -116,6 +124,7 @@ export function noteEmailText(opts: {
     "",
     `${senderName} sent you something to hear, with love.`,
     hasAudio ? "Your voice note is attached below — just press play to listen." : "",
+    inboxUrl ? `You can also listen on Dearly: ${inboxUrl}` : "",
     "",
     "Made with love — Dearly"
   );
@@ -136,6 +145,8 @@ export interface VoiceNoteEmail {
    * because the sender's copy is stored in Dearly instead (spec 08).
    */
   bccSender?: boolean;
+  /** When set (recipient has a Dearly account), the email adds a "Listen on Dearly" CTA. */
+  inboxUrl?: string;
 }
 
 /**
@@ -153,6 +164,7 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
     hasAudio,
     simulated: opts.simulated,
     subject: opts.subject,
+    inboxUrl: opts.inboxUrl,
   };
   const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,

@@ -1,18 +1,18 @@
-# Spec: Send a Voice Note to a Dearly User (Hybrid)
+# Spec: Send a Voice Note to a Dearly User (Hybrid + Dual Delivery)
 
 - **Status**: Verified
 - **Created**: 2026-06-11
-- **Last Modified**: 2026-06-11
+- **Last Modified**: 2026-06-16
 - **Feature area**: Accounts (epic)
 - **Related**: `docs/dearly-accounts-architecture.md`, `01-send-voice-note.md`, `07-account-data-and-storage.md`
 
 ## User Story
 
-As a logged-in Dearly user, I want to send a voice note by recipient email, so that Dearly delivers it to their in-app inbox if they have an account, or emails it to them if they don't.
+As a logged-in Dearly user, I want every voice note I send to be both emailed to the recipient as an MP3 attachment and kept in my Dearly account, so that the file always lives in two places.
 
 ## Context
 
-**Why**: This is the heart of the accounts model — notes addressed to Dearly users are stored and delivered in-app (saving inbox space), while everyone else still receives the existing email-with-attachment. It reuses the existing recorder and client-side MP3 transcode.
+**Why**: The default for a logged-in send is now **dual delivery** — the recipient always gets the MP3 attached to their email, and the sender always keeps a stored copy in Dearly (their "Sent" view). When the recipient is a Dearly user they *additionally* get the note in their in-app Inbox (the same stored row) with a "Listen on Dearly" link in the email. This trades the old inbox-space optimization for redundancy: the file reliably exists in the recipient's email and in Dearly. It reuses the existing recorder and client-side MP3 transcode. Scope is the authenticated flow (`/api/notes`) only; the public no-account flow (`01-send-voice-note.md`) is unchanged.
 
 **Dependencies**:
 - Auth/session (`06-account-auth.md`), schema/storage/RLS (`07-account-data-and-storage.md`).
@@ -22,45 +22,46 @@ As a logged-in Dearly user, I want to send a voice note by recipient email, so t
 ## Technical Specification
 
 **Components/Modules**:
-- `src/app/api/notes/route.ts` (NEW) — authenticated POST: accepts MP3 + recipient email + subject/duration; looks up recipient in `profiles`.
-  - **Match** → upload MP3 to Storage, insert `voice_notes` row, send notification email.
-  - **No match** → store the sender's copy first (Storage upload + `voice_notes` row with `recipient_id = null`), then email the recipient the MP3 attachment **without BCC'ing the sender** — the stored copy under "Sent" replaces the BCC. If the email fails, the stored copy is cleaned up so a retry can't duplicate it.
-- `src/lib/email.ts` (MODIFIED) — add a `newNoteNotificationEmail(...)` template (recipient name + listen link), reusing the existing branded style; `sendVoiceNoteEmail` gains a `bccSender` flag (default `true`; the account fallback passes `false` — the public no-account flow keeps its BCC).
-- `supabase/migrations/0002_sent_copies.sql` (NEW) — `voice_notes.recipient_id` becomes nullable so email-fallback sends can be stored as sender-only rows (existing RLS already scopes them to the sender).
-- `src/app/(app)/compose/page.tsx` (NEW) — authenticated compose screen reusing `VoiceRecorder`; recipient is entered by email.
-- `src/lib/api.ts` (MODIFIED) — add a client helper to POST to `/api/notes`.
+- `src/app/api/notes/route.ts` (MODIFIED) — authenticated POST: accepts MP3 + recipient email + subject/duration; looks up recipient in `profiles`. With audio, it **always** stores a `voice_notes` row and **always** emails the MP3 as an attachment (`bccSender: false` — the stored copy replaces the BCC).
+  - **Recipient is a Dearly user** → row stored under the recipient's folder (`recipient_id` set) so it shows in their Inbox *and* the sender's Sent; the attachment email also carries a "Listen on Dearly" link. A failed email is non-fatal (the note is already delivered in-app).
+  - **No account** → row stored under the sender's folder (`recipient_id = null`, sender's Sent only). If the email fails, the stored copy is rolled back so a retry can't duplicate it.
+  - **No audio (simulated)** → a heads-up email is sent with no attachment and nothing is stored.
+- `src/lib/email.ts` (MODIFIED) — `sendVoiceNoteEmail`/`noteEmailHtml`/`noteEmailText` gain an optional `inboxUrl` that renders a "Listen on Dearly" CTA when the recipient has an account. `sendNewNoteNotification` remains for the public flow (spec 01).
+- `src/app/(app)/compose/page.tsx` + `ComposeForm.tsx` (MODIFIED) — success copy reflects that the recording was emailed and a copy saved (and waiting in their inbox for Dearly users).
+- `src/lib/api.ts` — `sendAccountNote` unchanged (still reports `delivery`).
+- `supabase/migrations/0002_sent_copies.sql` (existing) — nullable `recipient_id` already supports sender-only rows.
 
 **API/Backend**:
 - `POST /api/notes` (auth required) — multipart form-data (audio, recipientEmail, subject, durationSeconds).
 
 ## Acceptance Criteria
 
-- [ ] **AC1**: In-app delivery to a Dearly user
-  - Given a logged-in sender and a recipient email that matches a Dearly account
-  - When the sender submits a recorded note
-  - Then the MP3 is uploaded to Storage and a `voice_notes` row is created linking sender and recipient (no attachment emailed)
+- [x] **AC1**: Recipient always gets the MP3 attached by email
+  - Given a logged-in sender and a real recording
+  - When the sender submits the note (recipient with OR without a Dearly account)
+  - Then the recipient receives the email with the MP3 attached and the sender is NOT BCC'd
 
-- [ ] **AC2**: Notification email for in-app delivery
-  - Given an in-app delivery succeeded
-  - When the row is created
-  - Then the recipient gets a lightweight "you have a new voice note" email containing a link to their inbox (not the audio file)
+- [x] **AC2**: Sender always keeps a stored copy
+  - Given a successful send with a real recording
+  - When the note is processed
+  - Then a `voice_notes` row + Storage object is stored that appears in the sender's Sent view (under the recipient's folder when they have an account, else `recipient_id = null` under the sender's folder)
 
-- [x] **AC3**: Email fallback for non-users keeps the sender's copy in Dearly
-  - Given a recipient email with no matching Dearly account
-  - When the sender submits a recorded note
-  - Then the recipient receives the email with the MP3 attached, the sender is NOT BCC'd, and the sender's copy is stored (Storage object + `voice_notes` row with `recipient_id = null`) so it appears in their Sent view
+- [x] **AC3**: Dearly-user recipients also get the in-app Inbox copy + listen link
+  - Given a recipient email that matches a Dearly account and a real recording
+  - When the sender submits the note
+  - Then the same stored row appears in the recipient's Inbox, and their attachment email includes a "Listen on Dearly" link; a failed email is non-fatal because the note is already delivered in-app
 
-- [ ] **AC4**: Auth required
+- [x] **AC4**: Auth required
   - Given an unauthenticated request to `POST /api/notes`
   - When it is received
   - Then it is rejected (401) and nothing is stored
 
-- [ ] **AC5**: Sender identity is trusted from the session
+- [x] **AC5**: Sender identity is trusted from the session
   - Given the POST
   - When the row is written
   - Then `sender_id` is taken from the authenticated session (not client input), satisfying RLS
 
-- [ ] **AC6**: Size and validation limits
+- [x] **AC6**: Size and validation limits
   - Given an oversized audio file or invalid email
   - When submitted
   - Then the request is rejected with a friendly error and nothing is stored
@@ -70,10 +71,24 @@ As a logged-in Dearly user, I want to send a voice note by recipient email, so t
 - Recipient email equals the sender's own account → allowed (note to self) or blocked; v1 allows it.
 - Storage upload succeeds but row insert fails → the uploaded object is cleaned up (no orphan).
 - Recipient email matching is case-insensitive (normalized lower-case).
-- Email-fallback with a simulated (audio-less) recording → email is sent without an attachment and nothing is stored (there is no audio to keep).
-- Email-fallback email send fails after the copy was stored → the copy (row + object) is removed and an error returned, so retrying can't create duplicates.
+- Simulated (audio-less) recording → a heads-up email is sent without an attachment and nothing is stored (there is no audio to keep), for any recipient.
+- No-account email send fails after the copy was stored → the copy (row + object) is removed and an error returned, so retrying can't create duplicates.
+- Dearly-user recipient with a failed attachment email → the send still succeeds (note is in their Inbox); the failure is logged, not surfaced as an error.
 
 ## Changelog
+
+### [2026-06-16] - Verified (dual delivery)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Branch**: `feature/dual-delivery-default`
+- **Notes**: `/api/notes` now always stores the note + emails the MP3 attachment (`bccSender: false`); a shared `emailRecipient` helper removes branch duplication. Dearly-user recipients keep the Inbox row (owner = recipient folder) and get a "Listen on Dearly" CTA via the new optional `inboxUrl` on `sendVoiceNoteEmail`/`noteEmailHtml`/`noteEmailText`; their email failure is non-fatal. No-account sends roll back the stored copy on email failure. Simulated/no-audio sends a heads-up email and stores nothing. `ComposeForm` success copy updated. All 6 ACs satisfied; lint, tsc, production build, and 91 unit tests pass.
+
+### [2026-06-16] - Requirement Change (dual delivery default) — Approved
+- **Changed**: The default for `/api/notes` is now **dual delivery**: every send with audio emails the recipient the MP3 attachment **and** stores the sender's Dearly copy. Dearly-user recipients additionally keep the in-app Inbox row (same row) and get a "Listen on Dearly" link in the email (previously they got a notification-only email with no attachment). AC1/AC2 rewritten, AC3 repurposed; `sendVoiceNoteEmail` gains an optional `inboxUrl` CTA.
+- **Reason**: User wants every voice note stored in two places — the recipient's email and their own Dearly account.
+- **Scope**: Authenticated flow only. The public no-account flow (`01-send-voice-note.md`) is unchanged.
+- **Author**: Claude AI
 
 ### [2026-06-11] - Verified (sent copies)
 - **Author**: Claude AI

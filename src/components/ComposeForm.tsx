@@ -64,7 +64,12 @@ export default function ComposeForm({ senderName }: { senderName: string }) {
         <p>
           {delivery === "in-app" ? (
             <>
-              <b>{rName}</b> has Dearly — your note is waiting in their inbox, and we emailed them a link to listen.
+              <b>{rName}</b> has Dearly — we emailed them the recording and it&rsquo;s waiting in their inbox. A copy is
+              saved in your{" "}
+              <Link href="/sent" className="foot-link">
+                Sent notes
+              </Link>
+              .
             </>
           ) : (
             <>
