@@ -155,20 +155,26 @@ describe("POST /api/notes", () => {
     });
   });
 
-  describe("recipient with a Dearly account (in-app delivery)", () => {
+  describe("recipient with a Dearly account (dual delivery)", () => {
     const recipient = { id: "recipient-1", email: "mom@example.com", display_name: "Mum" };
 
     beforeEach(() => {
       mocks.createServiceClient.mockReturnValue(serviceClientWith(recipient));
     });
 
-    it("requires a real recording", async () => {
-      const res = await POST(buildRequest());
-      expect(res.status).toBe(400);
+    it("sends a heads-up email and stores nothing when there is no audio", async () => {
+      const res = await POST(buildRequest({ simulated: "true" }));
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body).toMatchObject({ ok: true, delivery: "email" });
       expect(mocks.storeNote).not.toHaveBeenCalled();
+      expect(mocks.sendVoiceNoteEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ attachments: undefined })
+      );
     });
 
-    it("stores the note for the recipient and notifies them without a BCC", async () => {
+    it("stores the note under the recipient and emails the MP3 with a listen link (no BCC)", async () => {
       const res = await POST(buildRequest({}, true));
       const body = await res.json();
 
@@ -184,15 +190,19 @@ describe("POST /api/notes", () => {
           recipientName: "Mum",
         })
       );
-      expect(mocks.sendNewNoteNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ recipientEmail: "mom@example.com" })
+      expect(mocks.sendVoiceNoteEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientEmail: "mom@example.com",
+          bccSender: false,
+          attachments: [expect.objectContaining({ filename: "hi_mom.mp3" })],
+          inboxUrl: expect.stringContaining("/inbox"),
+        })
       );
-      expect(mocks.sendNewNoteNotification.mock.calls[0][0].bccSender).toBeUndefined();
-      expect(mocks.sendVoiceNoteEmail).not.toHaveBeenCalled();
+      expect(mocks.sendNewNoteNotification).not.toHaveBeenCalled();
     });
 
-    it("still succeeds when the notification email fails (note is delivered in-app)", async () => {
-      mocks.sendNewNoteNotification.mockRejectedValue(new Error("smtp down"));
+    it("still succeeds in-app (no rollback) when the attachment email fails", async () => {
+      mocks.sendVoiceNoteEmail.mockRejectedValue(new Error("smtp down"));
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const res = await POST(buildRequest({}, true));

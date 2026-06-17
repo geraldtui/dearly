@@ -1603,12 +1603,22 @@ canvas.wave {
   min-width: 0;
 }
 .note-title {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15.5px;
+  font-weight: 600;
   color: var(--ink);
+}
+.note-title .note-subject {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .note-new {
   display: inline-block;
-  margin-left: 8px;
+  flex: 0 0 auto;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1621,7 +1631,7 @@ canvas.wave {
 }
 .note-via {
   display: inline-block;
-  margin-left: 8px;
+  flex: 0 0 auto;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1641,7 +1651,9 @@ canvas.wave {
   text-overflow: ellipsis;
 }
 .note-subject.muted {
+  font-weight: 500;
   font-style: italic;
+  color: var(--ink-soft);
 }
 .note-player {
   display: flex;

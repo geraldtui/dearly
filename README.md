@@ -28,16 +28,32 @@ Record a short voice note in the browser and send it, with love, to a dear one o
 
 ## Deploying to Vercel
 
-1. **Push** this repo to GitHub/GitLab/Bitbucket.
-2. In Vercel, **New Project → Import** the repo. Vercel auto-detects Next.js — no build settings to change.
-3. **Add environment variables** (Project → Settings → Environment Variables) for Production (and Preview), matching [`.env.example`](.env.example):
-   - `RESEND_API_KEY`
-   - `DEARLY_FROM_EMAIL` (must be a domain/address verified in Resend)
-   - `WAITLIST_NOTIFY_EMAIL`
-4. **Deploy.** Vercel builds and gives you a `*.vercel.app` URL.
-5. **Add your domain:** Project → Settings → Domains → add `dearlyvoice.com` (and/or `www`), then point the DNS records Vercel shows at your registrar.
+Dearly runs as **two isolated environments**, each with its own domain, branch, and
+Supabase database. See the full runbook in [`docs/environments.md`](docs/environments.md).
+
+| | Production | Development |
+| --- | --- | --- |
+| Domain | `dearlyvoice.com` | `dev.dearlyvoice.com` |
+| Branch | `main` | `develop` |
+| Supabase project | `dearly-prod` | `dearly-dev` |
+
+Quick setup:
+
+1. **Push** this repo to GitHub and **Import** it in Vercel (auto-detects Next.js).
+2. **Set the Production Branch to `main`** (Settings → Git), and add a `development`
+   environment (or Preview) tracking `develop`.
+3. **Create two Supabase projects** (`dearly-prod`, `dearly-dev`); apply
+   `supabase/migrations/*` to each and set each project's Auth Site/Redirect URLs to
+   its own domain. (Details in the runbook.)
+4. **Add environment variables** (Settings → Environment Variables) with the **same
+   names, different values per scope** — Production → prod keys, Development → dev keys:
+   - `RESEND_API_KEY`, `DEARLY_FROM_EMAIL`, `WAITLIST_NOTIFY_EMAIL`
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+5. **Add domains** (Settings → Domains): `dearlyvoice.com` → Production;
+   `dev.dearlyvoice.com` → the develop/Development environment. Point DNS at Vercel.
 
 Notes:
+- The app reads Supabase from env vars and derives all URLs from the request origin, so the same build works on either domain — separation lives entirely in per-environment config.
 - Node version is pinned via `.nvmrc` / `engines` (Node 20).
 - Secrets are never committed — `.env*` is gitignored; only `.env.example` (placeholders) is tracked.
 - Migrating to Amazon SES later? See [`docs/aws-ses-setup.md`](docs/aws-ses-setup.md).
@@ -55,7 +71,7 @@ Copy `.env.example` to `.env.local` and fill in:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for accounts | Supabase anon (publishable) key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | for accounts | Supabase service-role key. **Server-only — never expose to the client.** |
 
-> **Dearly accounts**: apply `supabase/migrations/0001_accounts.sql` to your Supabase project (SQL editor or `supabase db push`) before using signup/login, `/compose`, or `/inbox`. Architecture: `docs/dearly-accounts-architecture.md`.
+> **Dearly accounts**: apply the `supabase/migrations/*.sql` files in order (`0001_accounts.sql`, then `0002_sent_copies.sql`) to each Supabase project (SQL editor or `supabase db push`) before using signup/login, `/compose`, or `/inbox`. Architecture: `docs/dearly-accounts-architecture.md`. Per-environment setup (prod vs dev DB): `docs/environments.md`.
 
 ## Local development
 

@@ -63,6 +63,13 @@ describe("noteEmailHtml", () => {
     const html = noteEmailHtml({ ...base, hasAudio: false, simulated: true });
     expect(html).toContain("couldn&rsquo;t be captured");
   });
+
+  it("adds a Listen on Dearly CTA only when an inboxUrl is provided", () => {
+    expect(noteEmailHtml(base)).not.toContain("Listen on Dearly");
+    const html = noteEmailHtml({ ...base, inboxUrl: "https://dearlyvoice.com/inbox" });
+    expect(html).toContain("Listen on Dearly");
+    expect(html).toContain("https://dearlyvoice.com/inbox");
+  });
 });
 
 describe("noteEmailText", () => {
@@ -75,6 +82,16 @@ describe("noteEmailText", () => {
     });
     expect(text.startsWith("Happy Birthday")).toBe(true);
     expect(text).toContain("attached below");
+  });
+
+  it("includes the Dearly listen link when an inboxUrl is provided", () => {
+    const text = noteEmailText({
+      senderName: "Gerald",
+      recipientName: "Mom",
+      hasAudio: true,
+      inboxUrl: "https://dearlyvoice.com/inbox",
+    });
+    expect(text).toContain("listen on Dearly: https://dearlyvoice.com/inbox");
   });
 });
 

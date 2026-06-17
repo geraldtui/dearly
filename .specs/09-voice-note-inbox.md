@@ -79,6 +79,12 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
 
 ## Changelog
 
+### [2026-06-16] - Re-verified (NoteCard redesign)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: `NoteCard` now leads with the **subject** as the prominent title (with `New` / `via email` badges) and a secondary `duration · date` line. The per-card "From/To <name>" was removed because the counterpart is already shown (and selected) in the contacts sidebar (spec 13) — AC1's sender identity is satisfied at the contacts-column level rather than per row. Playback, listened state, and delete are unchanged. Lint, tsc, build, and 91 unit tests pass.
+
 ### [2026-06-16] - Re-verified (after contacts sidebar, spec 13)
 - **Author**: Claude AI
 - **Status**: Verified
