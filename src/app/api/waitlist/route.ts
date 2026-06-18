@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getResend, FROM_EMAIL, escapeHtml } from "@/lib/email";
+import { sendEmail, FROM_EMAIL, escapeHtml } from "@/lib/email";
 import { emailOk } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -28,18 +28,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const resend = getResend();
-    const { error } = await resend.emails.send({
+    await sendEmail({
       from: FROM_EMAIL,
-      to: [notify],
+      to: notify,
       replyTo: email,
       subject: `New Dearly waitlist signup (${source})`,
       html: `<p>New waitlist signup:</p><p><b>${escapeHtml(email)}</b></p><p>Source: ${escapeHtml(source)}</p>`,
       text: `New waitlist signup: ${email}\nSource: ${source}`,
     });
-    if (error) {
-      return NextResponse.json({ error: error.message || "Could not join the waitlist." }, { status: 502 });
-    }
     return NextResponse.json({ ok: true, stored: true });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not join the waitlist.";

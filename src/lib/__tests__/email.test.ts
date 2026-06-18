@@ -2,10 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMock = vi.hoisted(() => vi.fn());
 
-vi.mock("resend", () => ({
-  Resend: class {
-    emails = { send: sendMock };
-  },
+vi.mock("nodemailer", () => ({
+  default: { createTransport: () => ({ sendMail: sendMock }) },
+  createTransport: () => ({ sendMail: sendMock }),
 }));
 
 import {
@@ -19,7 +18,7 @@ import {
 
 beforeEach(() => {
   sendMock.mockReset();
-  sendMock.mockResolvedValue({ data: { id: "msg-1" }, error: null });
+  sendMock.mockResolvedValue({ messageId: "msg-1" });
 });
 
 describe("escapeHtml", () => {
@@ -124,8 +123,8 @@ describe("sendVoiceNoteEmail", () => {
     expect(id).toBe("msg-1");
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        to: ["mom@example.com"],
-        bcc: ["gerald@example.com"],
+        to: "mom@example.com",
+        bcc: "gerald@example.com",
         replyTo: "gerald@example.com",
         subject: "Hi Mom",
       })
@@ -145,7 +144,7 @@ describe("sendVoiceNoteEmail", () => {
   });
 
   it("throws when the provider reports an error", async () => {
-    sendMock.mockResolvedValue({ data: null, error: { message: "rate limited" } });
+    sendMock.mockRejectedValue(new Error("rate limited"));
     await expect(sendVoiceNoteEmail(emailOpts)).rejects.toThrow("rate limited");
   });
 });
@@ -168,12 +167,12 @@ describe("sendNewNoteNotification", () => {
   it("BCCs the free sender when requested", async () => {
     await sendNewNoteNotification({ ...notifyOpts, bccSender: true });
     expect(sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({ bcc: ["gerald@example.com"] })
+      expect.objectContaining({ bcc: "gerald@example.com" })
     );
   });
 
   it("throws when the provider reports an error", async () => {
-    sendMock.mockResolvedValue({ data: null, error: { message: "bad address" } });
+    sendMock.mockRejectedValue(new Error("bad address"));
     await expect(sendNewNoteNotification(notifyOpts)).rejects.toThrow("bad address");
   });
 });

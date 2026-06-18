@@ -15,8 +15,8 @@ As an early-preview visitor, I want to leave my email to be notified about upcom
 **Why**: Dearly is an early preview. Capturing interested visitors' emails lets the team gauge demand and notify people when teased features ship. Signups are surfaced to the team by email.
 
 **Dependencies**:
-- `resend` (server-side delivery of the signup notification).
-- Shares `emailOk()` validation and the Resend client/templates in `src/lib/email.ts`.
+- `nodemailer` (server-side delivery of the signup notification over Amazon SES SMTP).
+- Shares `emailOk()` validation and the SES transport (`sendEmail`) in `src/lib/email.ts`.
 
 ## Technical Specification
 
@@ -27,7 +27,7 @@ As an early-preview visitor, I want to leave my email to be notified about upcom
 - `src/components/icons.tsx` — `FEATURES` list + `FEAT_ICON` glyphs.
 
 **API/Backend**:
-- `POST /api/waitlist` (`src/app/api/waitlist/route.ts`, Node runtime) — validates email, emails the signup (with `source`) to the configured inbox via Resend.
+- `POST /api/waitlist` (`src/app/api/waitlist/route.ts`, Node runtime) — validates email, emails the signup (with `source`) to the configured inbox via SES.
 
 **State/Configuration**:
 - Env: `WAITLIST_NOTIFY_EMAIL` (inbox for signups). If unset, the signup still succeeds in the UI but is only logged server-side.

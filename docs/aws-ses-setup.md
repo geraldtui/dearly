@@ -1,10 +1,8 @@
 # AWS SES Setup — Dearly
 
-> **Status: planned future migration.** The app currently sends email via
-> **Resend**. This guide is for when you're ready to switch to Amazon SES.
-> Switching also requires the code change (Resend client → Nodemailer/SES SMTP)
-> in `src/lib/email.ts` and the two `/api/*` routes — ask the assistant to
-> re-apply that migration when you start.
+> **Status: active.** Dearly sends all email through **Amazon SES** via
+> Nodemailer over SES SMTP (`src/lib/email.ts`). This guide covers the SES/DNS
+> setup; the app just needs the `SES_SMTP_*` env vars from §5.
 
 Step-by-step guide to set up Amazon SES so Dearly can send email from
 `dearlyvoice.com`. Follow these in order. The two slow parts — DNS propagation

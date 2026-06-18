@@ -1,19 +1,45 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
+import type Mail from "nodemailer/lib/mailer";
 
-let cached: Resend | null = null;
+let cached: Transporter | null = null;
 
-/** Lazily construct the Resend client so a missing key only fails at request time. */
-export function getResend(): Resend {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    throw new Error("RESEND_API_KEY is not set. Add it to your environment to send email.");
+/**
+ * Lazily build the Amazon SES SMTP transport so missing config only fails at
+ * request time (and tests can run without real credentials). SMTP credentials
+ * and the host are region-specific — see docs/aws-ses-setup.md.
+ */
+export function getTransport(): Transporter {
+  const host = process.env.SES_SMTP_HOST;
+  const user = process.env.SES_SMTP_USER;
+  const pass = process.env.SES_SMTP_PASSWORD;
+  if (!host || !user || !pass) {
+    throw new Error(
+      "SES SMTP is not configured. Set SES_SMTP_HOST, SES_SMTP_USER and SES_SMTP_PASSWORD."
+    );
   }
-  if (!cached) cached = new Resend(key);
+  if (!cached) {
+    const port = Number(process.env.SES_SMTP_PORT || 587);
+    cached = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
+      auth: { user, pass },
+    });
+  }
   return cached;
 }
 
-/** Resend's onboarding sender works without domain verification for quick tests. */
-export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Dearly <onboarding@resend.dev>";
+/** Thin wrapper so callers don't touch the transport directly. Returns the SES message id. */
+export async function sendEmail(message: Mail.Options): Promise<string | undefined> {
+  const info = await getTransport().sendMail(message);
+  return info.messageId;
+}
+
+/**
+ * Sender address. Must be on a domain verified in SES (e.g. dearlyvoice.com);
+ * SES rejects unverified senders, so there is no public test fallback.
+ */
+export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Dearly <noreply@dearlyvoice.com>";
 
 export function escapeHtml(s: string): string {
   return s
@@ -166,18 +192,16 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
     subject: opts.subject,
     inboxUrl: opts.inboxUrl,
   };
-  const { data, error } = await getResend().emails.send({
+  return sendEmail({
     from: FROM_EMAIL,
-    to: [opts.recipientEmail],
-    bcc: opts.bccSender === false ? undefined : [opts.senderEmail],
+    to: opts.recipientEmail,
+    bcc: opts.bccSender === false ? undefined : opts.senderEmail,
     replyTo: opts.senderEmail,
     subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
     html: noteEmailHtml(tplOpts),
     text: noteEmailText(tplOpts),
     attachments: opts.attachments,
   });
-  if (error) throw new Error(error.message || "Email failed to send.");
-  return data?.id;
 }
 
 /** Lightweight "you have a new voice note" notification for in-app delivery. */
@@ -266,14 +290,13 @@ export async function sendNewNoteNotification(opts: {
     subject: opts.subject,
     inboxUrl: opts.inboxUrl,
   };
-  const { error } = await getResend().emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
-    to: [opts.recipientEmail],
-    bcc: opts.bccSender && opts.senderEmail ? [opts.senderEmail] : undefined,
+    to: opts.recipientEmail,
+    bcc: opts.bccSender && opts.senderEmail ? opts.senderEmail : undefined,
     replyTo: opts.senderEmail || undefined,
     subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
     html: newNoteNotificationHtml(tplOpts),
     text: newNoteNotificationText(tplOpts),
   });
-  if (error) throw new Error(error.message || "Notification email failed to send.");
 }
