@@ -34,6 +34,8 @@ export interface StoreNoteOpts {
   senderName: string;
   recipientId: string | null;
   recipientName: string;
+  /** Recipient's email, persisted so email-only threads can be replied to. */
+  recipientEmail: string | null;
   subject: string;
   durationSeconds: number;
   audioBuffer: Buffer;
@@ -65,6 +67,7 @@ export async function storeNote(
     recipient_id: opts.recipientId,
     sender_name: opts.senderName,
     recipient_name: opts.recipientName,
+    recipient_email: opts.recipientEmail,
     subject: opts.subject || null,
     storage_path: storagePath,
     duration_seconds: Math.round(opts.durationSeconds),

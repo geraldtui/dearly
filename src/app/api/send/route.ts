@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
         senderName,
         recipientId: recipient.id,
         recipientName: recipient.display_name || recipientName,
+        recipientEmail: recipient.email,
         subject: customSubject,
         durationSeconds,
         audioBuffer,
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
           senderEmail,
           recipientName: recipient.display_name || recipientName,
           subject: customSubject,
-          inboxUrl: `${new URL(req.url).origin}/inbox`,
+          inboxUrl: `${new URL(req.url).origin}/chats`,
           bccSender: true,
         });
       } catch (notifyError) {

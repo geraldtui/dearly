@@ -71,6 +71,7 @@ const noteOpts: StoreNoteOpts = {
   senderName: "Gerald",
   recipientId: "owner-1",
   recipientName: "Mom",
+  recipientEmail: "mom@example.com",
   subject: "Hi Mom",
   durationSeconds: 12.6,
   audioBuffer: Buffer.from("mp3-bytes"),
@@ -91,6 +92,7 @@ describe("storeNote", () => {
         id: stored.id,
         sender_id: "sender-1",
         recipient_id: "owner-1",
+        recipient_email: "mom@example.com",
         subject: "Hi Mom",
         duration_seconds: 13, // rounded
       })

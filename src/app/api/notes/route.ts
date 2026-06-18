@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle<Pick<Profile, "id" | "email" | "display_name">>();
 
   const recipientDisplay = recipient?.display_name || recipientName;
-  const inboxUrl = `${new URL(req.url).origin}/inbox`;
+  const inboxUrl = `${new URL(req.url).origin}/chats`;
 
   function emailRecipient(opts: { attach: boolean; withInboxLink: boolean }) {
     return sendVoiceNoteEmail({
@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
       senderName,
       recipientId: recipient ? recipient.id : null,
       recipientName: recipientDisplay,
+      recipientEmail,
       subject,
       durationSeconds,
       audioBuffer,

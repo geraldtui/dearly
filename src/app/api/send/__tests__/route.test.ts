@@ -150,7 +150,7 @@ describe("POST /api/send", () => {
       expect.objectContaining({
         recipientEmail: "mom@example.com",
         bccSender: true,
-        inboxUrl: "http://localhost/inbox",
+        inboxUrl: "http://localhost/chats",
       })
     );
     expect(mocks.sendVoiceNoteEmail).not.toHaveBeenCalled();
