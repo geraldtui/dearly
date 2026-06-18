@@ -11,7 +11,7 @@ const HINT_KEY = "dearly:notepad-hint";
  * compose card, and persists its text in localStorage. Never sent in the email.
  * A one-time dismissable hint introduces the feature to new users.
  */
-export default function Notepad() {
+export default function Notepad({ inline = false }: { inline?: boolean }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [hydrated, setHydrated] = useState(false);
@@ -72,8 +72,8 @@ export default function Notepad() {
   }, [open]);
 
   return (
-    <>
-      {showHint && (
+    <div className={inline ? "notepad-inline" : "notepad-floating"}>
+      {showHint && !inline && (
         <div className="notepad-callout" role="status">
           <button type="button" className="notepad-callout-body" onClick={toggleOpen}>
             <span className="spark" />
@@ -99,8 +99,14 @@ export default function Notepad() {
       >
         {showHint && <span className="notepad-dot" aria-hidden="true" />}
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          <path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6" />
+          <path d="M6 3v18" />
+          <path d="M3 7h3" />
+          <path d="M3 12h3" />
+          <path d="M3 17h3" />
+          <path d="M10 8h6" />
+          <path d="M10 12h6" />
+          <path d="M10 16h3" />
         </svg>
       </button>
 
@@ -132,6 +138,6 @@ export default function Notepad() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

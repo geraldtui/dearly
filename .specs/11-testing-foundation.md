@@ -31,13 +31,13 @@ As a developer, I want an automated test suite that runs locally and in CI, so t
 - `src/app/api/notes/__tests__/route.test.ts` (NEW) — 401 when logged out, validation, non-user email fallback with stored Sent copy (no BCC) + rollback on email failure, in-app delivery with tolerated notification failure.
 - `src/components/__tests__/SignupPopover.test.tsx` (NEW) — render for logged-out users, hidden when logged in/dismissed, dismissal persisted.
 - `src/components/__tests__/Notepad.test.tsx` (NEW) — open/close, text persistence, hint dismissal.
-- `src/components/__tests__/ComposeForm.test.tsx` (NEW) — validation errors block send, successful send shows delivery-specific success copy.
+- `src/lib/__tests__/conversations.test.ts` (NEW, 2026-06-18) — `counterpartKey` keying (account id → email → name) and the sent+received merge into conversations (specs 14/15).
 - `src/lib/api.ts` (MODIFIED) — export `snakeCaseName` so it is directly testable.
 - `package.json` (MODIFIED) — `test` / `test:watch` scripts, test devDependencies, `@types/node` bumped for Vitest peer range.
 - `.github/workflows/ci.yml` (NEW) — on PRs and pushes to `develop`/`main`: install, lint, `tsc --noEmit`, `vitest run`.
 
 **State/Configuration**:
-- No runtime/product changes; tests mock Resend and Supabase modules (no network, no real keys).
+- No runtime/product changes; tests mock the email transport (Nodemailer/SES) and Supabase modules (no network, no real keys).
 
 ## Acceptance Criteria
 
@@ -61,10 +61,10 @@ As a developer, I want an automated test suite that runs locally and in CI, so t
   - When its suite runs
   - Then it asserts 401 when logged out, the Sent-copy + no-BCC email fallback with rollback on email failure, and in-app delivery where a failed notification does not fail the send
 
-- [x] **AC5**: Key client components are covered
-  - Given jsdom suites for `SignupPopover`, `Notepad`, and `ComposeForm`
+- [x] **AC5**: Key client/unit modules are covered
+  - Given jsdom suites for `SignupPopover` and `Notepad`, plus the `conversations` unit suite
   - When they run
-  - Then popover visibility/dismissal persistence, notepad persistence/hint, and compose validation + success states are asserted
+  - Then popover visibility/dismissal persistence, notepad persistence/hint, and conversation keying/merge behavior are asserted
 
 - [x] **AC6**: CI gates changes
   - Given a PR or a push to `develop`/`main`
@@ -74,10 +74,16 @@ As a developer, I want an automated test suite that runs locally and in CI, so t
 ## Edge Cases
 
 - Route tests build real `multipart/form-data` `Request`s with Node's `File`/`FormData` — no Next server needed.
-- Resend/Supabase are mocked at the module boundary; suites never read real API keys.
+- The email transport (Nodemailer/SES) and Supabase are mocked at the module boundary; suites never read real API keys.
 - Component tests opt into jsdom per-file so route/utility suites keep the faster node environment.
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (suite tracks the chat redesign)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: Updated the suite inventory to match the codebase after the chat redesign: the `ComposeForm` component and its test were removed (sending moved into `ChatComposer`, spec 14), and a new `src/lib/__tests__/conversations.test.ts` covers `counterpartKey` and the sent+received merge (specs 14/15). AC5 reworded accordingly; `npm test`, lint, tsc, and the build remain green.
 
 ### [2026-06-12] - Verified
 - **Author**: Claude AI

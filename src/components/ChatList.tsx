@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import ConversationLabelEditor from "@/components/ConversationLabelEditor";
 import type { Conversation } from "@/lib/conversations";
+
+/** A conversation plus the owner's saved label values for the inline editor. */
+export type ChatListItem = Conversation & { nickname: string; alias: string };
 
 function initial(name: string): string {
   return name.trim().charAt(0).toUpperCase() || "?";
@@ -17,7 +21,7 @@ export default function ChatList({
   selectedKey,
   newMode,
 }: {
-  conversations: Conversation[];
+  conversations: ChatListItem[];
   selectedKey: string | null;
   newMode: boolean;
 }) {
@@ -32,7 +36,7 @@ export default function ChatList({
           {conversations.map((c) => {
             const active = !newMode && c.key === selectedKey;
             return (
-              <li key={c.key}>
+              <li key={c.key} className="chat-item-row">
                 <Link
                   href={`/chats?c=${encodeURIComponent(c.key)}`}
                   className={`chat-item${active ? " active" : ""}`}
@@ -52,6 +56,7 @@ export default function ChatList({
                     </span>
                   </span>
                 </Link>
+                <ConversationLabelEditor counterpartKey={c.key} nickname={c.nickname} alias={c.alias} />
               </li>
             );
           })}

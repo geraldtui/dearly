@@ -22,9 +22,9 @@ As a new visitor, I want to sign up for a Dearly account from the homepage, so t
 
 **Components/Modules**:
 - `src/lib/supabase/use-user.ts` (NEW) — client hook returning the current auth user (or `null`); fails gracefully to logged-out when Supabase is unconfigured/unreachable.
-- `src/components/PublicNav.tsx` (NEW) — session-aware top-right nav: logged out → "Log in" + "Sign up"; logged in → "Inbox". Replaces the inline nav markup in `page.tsx`.
+- `src/components/PublicNav.tsx` (NEW) — session-aware top-right nav: logged out → "Log in" + "Sign up"; logged in → "Chats" (→ `/chats`). Replaces the inline nav markup in `page.tsx`.
 - `src/components/SignupPopover.tsx` (NEW) — small popover anchored below the first email input the visitor focuses: "Sign up to store your contacts" pitch, "Sign up free" CTA to `/signup`, dismiss (X) remembered in `localStorage`. Hidden when logged in.
-- `src/components/SignupPromoCard.tsx` (NEW) — signup benefits card on the sent screen (replaces the old waitlist join card), with benefit chips, "Sign up free" CTA, "Log in" link, and a "see what else is coming" link that opens the waitlist modal. Logged in → "Go to your Inbox" CTA.
+- `src/components/SignupPromoCard.tsx` (NEW) — signup benefits card on the sent screen (replaces the old waitlist join card), with benefit chips, "Sign up free" CTA, "Log in" link, and a "see what else is coming" link that opens the waitlist modal. Logged in → "Go to your chats" CTA (→ `/chats`).
 - `src/app/page.tsx` (MODIFIED) — `Field` accepts `onFocus`/`children` so email fields can anchor the popover (first-focused field wins); renders `PublicNav`, the popover, and the success card.
 - `src/app/globals.css` (MODIFIED) — popover styles (arrow, pop-in animation) + promo card styles, reusing existing tokens/chip patterns.
 
@@ -48,10 +48,10 @@ As a new visitor, I want to sign up for a Dearly account from the homepage, so t
   - When a visitor records and sends a note by email without an account
   - Then the existing form/recorder/send flow works exactly as before (the popover floats above the form and never blocks input)
 
-- [x] **AC4**: Logged-in visitors get the inbox path
+- [x] **AC4**: Logged-in visitors get the app path
   - Given a logged-in user on the homepage
   - When the page renders and they focus the email fields
-  - Then no signup popover appears, the nav shows "Inbox", and the sent-screen card shows "Go to your Inbox"
+  - Then no signup popover appears, the nav shows "Chats" (→ `/chats`), and the sent-screen card shows "Go to your chats" (→ `/chats`)
 
 - [x] **AC5**: Graceful degradation without Supabase
   - Given Supabase env vars are missing or the session check fails
@@ -65,6 +65,12 @@ As a new visitor, I want to sign up for a Dearly account from the homepage, so t
 - The success screen shows `SignupPromoCard` in place of the old waitlist join card (see `03-waitlist-signup.md`).
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (logged-in path → Chats)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: After the unified chat view (`14-chat-conversations.md`) replaced the Inbox/Sent pages, the logged-in destinations on the homepage now point at `/chats`: `PublicNav` shows "Chats" and `SignupPromoCard`'s welcome-back CTA reads "Go to your chats". The signup popover, dismissal persistence, undisturbed send flow, and graceful no-Supabase degradation (AC1–AC3, AC5) are unchanged; AC4 reworded for the Chats destination.
 
 ### [2026-06-11] - Updated
 - **Author**: Claude AI

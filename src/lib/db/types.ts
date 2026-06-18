@@ -7,6 +7,17 @@ export interface Profile {
   created_at: string;
 }
 
+export interface ConversationLabel {
+  owner_id: string;
+  /** Matches the conversation key in src/lib/conversations.ts. */
+  counterpart_key: string;
+  /** How the owner privately labels the contact (display only). */
+  nickname: string | null;
+  /** How the owner signs notes they send to the contact. */
+  my_alias: string | null;
+  updated_at: string;
+}
+
 export interface VoiceNote {
   id: string;
   sender_id: string | null;

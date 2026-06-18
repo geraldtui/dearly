@@ -1,10 +1,12 @@
 # Spec: Voice-Note Inbox & Playback
 
-- **Status**: Verified
+- **Status**: Superseded (UI) by `14-chat-conversations.md` — playback/delete/access-control endpoints retained
 - **Created**: 2026-06-11
-- **Last Modified**: 2026-06-11
+- **Last Modified**: 2026-06-18
 - **Feature area**: Accounts (epic)
-- **Related**: `docs/dearly-accounts-architecture.md`, `07-account-data-and-storage.md`, `08-send-to-dearly-user.md`
+- **Related**: `docs/dearly-accounts-architecture.md`, `07-account-data-and-storage.md`, `08-send-to-dearly-user.md`, `14-chat-conversations.md`
+
+> **Note (2026-06-18):** The separate Inbox/Sent pages and their contacts sidebar were replaced by the unified WhatsApp-style `/chats` view (`14-chat-conversations.md`). The list/navigation parts of this spec (AC1, AC4, AC7; `AppSidebar` Inbox/Sent items, `NotesList`, `NoteCard`) are **superseded**. The playback-via-signed-URL, mark-as-listened, delete, and endpoint access-control behavior (AC2, AC3, AC5, AC6) is **still in force** — `NotePlayer`, `POST /api/notes/[id]/url`, and `DELETE /api/notes/[id]` are now consumed by `ChatThread`.
 
 ## User Story
 
@@ -78,6 +80,11 @@ As a logged-in Dearly user, I want an inbox of the voice notes sent to me (and o
 - Deleting a note already opened in another tab → graceful "not found" handling.
 
 ## Changelog
+
+### [2026-06-18] - Superseded (UI) by the unified Chats view
+- **Author**: Claude AI
+- **Status**: Superseded (UI) — endpoints retained
+- **Notes**: `14-chat-conversations.md` replaced the `/inbox` and `/sent` pages with a single `/chats` conversation view; both routes now redirect to `/chats`, and `AppSidebar` shows "Chats"/"New chat" instead of Inbox/Sent. `NotesList` and `NoteCard` were removed. The reusable parts of this spec remain in production and unchanged: `NotePlayer` (signed-URL fetch on play), `POST /api/notes/[id]/url` (participant-checked signed URL + first-play `listened_at`), and `DELETE /api/notes/[id]` (row + Storage object). AC2/AC3/AC5/AC6 still hold via `ChatThread`; AC1/AC4/AC7 are superseded by the chat list/thread.
 
 ### [2026-06-16] - Re-verified (NoteCard redesign)
 - **Author**: Claude AI

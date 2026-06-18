@@ -9,6 +9,7 @@ import {
   removeStoredNote,
 } from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
+import { counterpartKey } from "@/lib/conversations";
 import type { Profile } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
 
   const recipientName = String(form.get("recipientName") || "").trim();
   const recipientEmail = String(form.get("recipientEmail") || "").trim().toLowerCase();
+  const aliasInput = String(form.get("alias") || "").trim().slice(0, 80);
   const subject = sanitizeSubject(String(form.get("subject") || ""));
   const durationSeconds = Number(form.get("durationSeconds") || 0);
   const simulated = String(form.get("simulated") || "false") === "true";
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
     .select("id, email, display_name")
     .eq("id", user.id)
     .single<Pick<Profile, "id" | "email" | "display_name">>();
-  const senderName = senderProfile?.display_name || senderProfile?.email || "Someone";
+  const profileName = senderProfile?.display_name || senderProfile?.email || "Someone";
   const senderEmail = senderProfile?.email || user.email || "";
 
   const audioBuffer =
@@ -74,6 +76,23 @@ export async function POST(req: NextRequest) {
 
   const recipientDisplay = recipient?.display_name || recipientName;
   const inboxUrl = `${new URL(req.url).origin}/chats`;
+
+  // Per-conversation alias: how the sender signs to this recipient (e.g. "Dad").
+  // A new-chat alias is persisted; otherwise we use any previously saved one.
+  const convoKey = counterpartKey({ id: recipient?.id ?? null, email: recipientEmail });
+  if (aliasInput) {
+    await supabase.from("conversation_labels").upsert(
+      { owner_id: user.id, counterpart_key: convoKey, my_alias: aliasInput, updated_at: new Date().toISOString() },
+      { onConflict: "owner_id,counterpart_key" }
+    );
+  }
+  const { data: label } = await supabase
+    .from("conversation_labels")
+    .select("my_alias")
+    .eq("owner_id", user.id)
+    .eq("counterpart_key", convoKey)
+    .maybeSingle<{ my_alias: string | null }>();
+  const senderName = aliasInput || label?.my_alias || profileName;
 
   function emailRecipient(opts: { attach: boolean; withInboxLink: boolean }) {
     return sendVoiceNoteEmail({

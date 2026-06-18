@@ -33,17 +33,23 @@ import { POST } from "../route";
 
 const SENDER = { id: "user-1", email: "gerald@example.com", display_name: "Gerald" };
 
-/** User-scoped client: session user + the sender's own profile row. */
+/**
+ * User-scoped client: session user, the sender's own profile row (single → SENDER),
+ * and conversation_labels lookups (maybeSingle → no saved alias). The chainable
+ * builder supports both profiles (.select().eq().single()) and labels
+ * (.select().eq().eq().maybeSingle() / .upsert()).
+ */
 function userClient(user: { id: string; email: string } | null) {
+  const chain: Record<string, ReturnType<typeof vi.fn>> = {
+    select: vi.fn(() => chain),
+    eq: vi.fn(() => chain),
+    single: vi.fn().mockResolvedValue({ data: SENDER }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+    upsert: vi.fn().mockResolvedValue({ error: null }),
+  };
   return {
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user } }) },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValue({ data: SENDER }),
-        })),
-      })),
-    })),
+    from: vi.fn(() => chain),
   };
 }
 

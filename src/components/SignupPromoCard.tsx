@@ -53,7 +53,7 @@ export default function SignupPromoCard({ onExplore }: { onExplore?: () => void 
       </div>
       {onExplore && (
         <button className="home-promo-explore" onClick={onExplore}>
-          or see what else is coming to Dearly
+          or see everything Dearly can do
         </button>
       )}
     </div>

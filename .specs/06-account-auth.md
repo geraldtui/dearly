@@ -71,6 +71,12 @@ As a person, I want to create and log into a Dearly account with my email and pa
 
 ## Changelog
 
+### [2026-06-18] - Re-verified (authenticated area moved to /chats)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: The authenticated landing changed from `/inbox` & `/compose` to the unified `/chats` view (`14-chat-conversations.md`). `src/middleware.ts` now gates `/chats` (the legacy `/inbox`, `/sent`, `/compose` prefixes remain gated and redirect to `/chats`), and post-login/post-signup redirects target `/chats`. Auth + profile provisioning behavior (the 5 ACs) is unchanged.
+
 ### [2026-06-11] - Updated (dev auth bypass)
 - **Author**: Claude AI
 - **Status**: Verified

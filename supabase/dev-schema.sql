@@ -103,6 +103,41 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
+-- conversation_labels (spec 15): per-owner nickname + alias per counterpart
+-- ---------------------------------------------------------------------------
+create table if not exists public.conversation_labels (
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  counterpart_key text not null,
+  nickname text,
+  my_alias text,
+  updated_at timestamptz not null default now(),
+  primary key (owner_id, counterpart_key)
+);
+
+alter table public.conversation_labels enable row level security;
+
+drop policy if exists "conversation_labels: owner reads" on public.conversation_labels;
+create policy "conversation_labels: owner reads"
+  on public.conversation_labels for select
+  using (auth.uid() = owner_id);
+
+drop policy if exists "conversation_labels: owner inserts" on public.conversation_labels;
+create policy "conversation_labels: owner inserts"
+  on public.conversation_labels for insert
+  with check (auth.uid() = owner_id);
+
+drop policy if exists "conversation_labels: owner updates" on public.conversation_labels;
+create policy "conversation_labels: owner updates"
+  on public.conversation_labels for update
+  using (auth.uid() = owner_id)
+  with check (auth.uid() = owner_id);
+
+drop policy if exists "conversation_labels: owner deletes" on public.conversation_labels;
+create policy "conversation_labels: owner deletes"
+  on public.conversation_labels for delete
+  using (auth.uid() = owner_id);
+
+-- ---------------------------------------------------------------------------
 -- Private audio bucket (reads happen via service-role signed URLs)
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)

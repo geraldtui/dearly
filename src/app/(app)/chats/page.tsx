@@ -9,7 +9,7 @@ import {
   resolveSelectedKey,
   type ConversationMessage,
 } from "@/lib/conversations";
-import type { VoiceNote } from "@/lib/db/types";
+import type { VoiceNote, ConversationLabel } from "@/lib/db/types";
 
 export const metadata = { title: "Chats — Dearly" };
 
@@ -56,7 +56,27 @@ export default async function ChatsPage({
 
   const notes = (data ?? []) as VoiceNote[];
   const userId = user?.id ?? "";
-  const conversations = buildConversations(notes, userId);
+
+  // Owner's private labels (nickname override + sender alias), keyed by counterpart.
+  const { data: labelRows } = user
+    ? await supabase
+        .from("conversation_labels")
+        .select("counterpart_key, nickname, my_alias")
+        .eq("owner_id", user.id)
+    : { data: [] };
+  const labels = new Map<string, Pick<ConversationLabel, "nickname" | "my_alias">>(
+    (labelRows ?? []).map((l) => [l.counterpart_key, { nickname: l.nickname, my_alias: l.my_alias }])
+  );
+
+  const conversations = buildConversations(notes, userId).map((c) => {
+    const label = labels.get(c.key);
+    return {
+      ...c,
+      name: label?.nickname || c.name,
+      nickname: label?.nickname ?? "",
+      alias: label?.my_alias ?? "",
+    };
+  });
 
   const params = await searchParams;
   const newMode = params.new === "1";
@@ -73,7 +93,13 @@ export default async function ChatsPage({
     messages = messagesForConversation(notes, userId, selectedKey);
     const email = await resolveReplyEmail(convo.counterpartEmail, convo.counterpartId);
     mode = "conversation";
-    counterpart = { name: convo.name, email, viaEmail: convo.viaEmail, canReply: Boolean(email) };
+    counterpart = {
+      key: selectedKey,
+      name: convo.name,
+      email,
+      viaEmail: convo.viaEmail,
+      canReply: Boolean(email),
+    };
   }
 
   return (
