@@ -19,9 +19,10 @@ As Dearly, I want a database schema and private audio storage with strict access
 
 ## Technical Specification
 
-**Data Models** (Supabase Postgres — defined via SQL migration):
+**Data Models** (Supabase Postgres — defined via SQL migrations):
 - `profiles` — `id` (uuid, = `auth.users.id`), `email` (unique, lower-cased), `display_name`, `created_at`.
-- `voice_notes` — `id`, `sender_id`, `recipient_id`, `sender_name`, `recipient_name`, `subject` (nullable), `storage_path`, `duration_seconds`, `listened_at` (nullable), `created_at`.
+- `voice_notes` — `id`, `sender_id` (nullable, for anonymous public sends), `recipient_id` (nullable, for email-fallback "Sent" copies), `sender_name`, `recipient_name`, `recipient_email` (nullable — persisted so email-only threads stay replyable), `subject` (nullable), `storage_path`, `duration_seconds`, `listened_at` (nullable), `created_at`.
+- `conversation_labels` — `owner_id`, `counterpart_key` (matches `src/lib/conversations.ts`), `nickname` (nullable — the owner's private name for the contact), `my_alias` (nullable — how the owner signs notes to them), `updated_at`; primary key `(owner_id, counterpart_key)`. Added for `15-conversation-aliases.md`.
 
 **Storage**:
 - Private bucket `voice-notes`; object key `{recipient_id}/{voice_note_id}.mp3`.
@@ -29,7 +30,11 @@ As Dearly, I want a database schema and private audio storage with strict access
 
 **Components/Modules**:
 - `supabase/migrations/0001_accounts.sql` (NEW) — tables, indexes, RLS policies, and a trigger to insert a `profiles` row on new `auth.users`.
-- `src/lib/db/types.ts` (NEW) — TypeScript types for `Profile` and `VoiceNote`.
+- `supabase/migrations/0002_sent_copies.sql` — makes `recipient_id` nullable for sender-only "Sent" copies (spec 08).
+- `supabase/migrations/0003_recipient_email.sql` — adds `voice_notes.recipient_email` so email-only threads stay replyable (spec 14).
+- `supabase/migrations/0004_conversation_labels.sql` — adds the `conversation_labels` table + RLS (spec 15).
+- `supabase/dev-schema.sql` — consolidated, idempotent script mirroring 0001–0004 for dev setup (DB is still pre-production; formal per-migration files become the source of truth once live).
+- `src/lib/db/types.ts` (NEW) — TypeScript types for `Profile`, `VoiceNote` (incl. `recipient_email`), and `ConversationLabel`.
 
 ## Acceptance Criteria
 
@@ -69,6 +74,12 @@ As Dearly, I want a database schema and private audio storage with strict access
 - Orphaned Storage objects avoided by deleting the object in the same operation as the row.
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (schema grew with later specs)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT (static — migrations must be applied to Supabase)
+- **Notes**: Re-aligned the data model with downstream specs. `voice_notes.recipient_id` and `sender_id` are nullable (sender-only "Sent" copies / anonymous public sends), `recipient_email` was added (migration 0003) to keep email-only threads replyable, and the new `conversation_labels` table (migration 0004, owner-scoped RLS) backs nicknames/aliases (spec 15). `src/lib/db/types.ts` carries `recipient_email` on `VoiceNote` and a `ConversationLabel` type. A consolidated idempotent `supabase/dev-schema.sql` mirrors 0001–0004 for the still-pre-production database. The original 6 ACs (schema, profile trigger, RLS read/insert/delete, private bucket) are unchanged.
 
 ### [2026-06-11] - Approved
 - **Author**: Claude AI

@@ -79,6 +79,8 @@ export interface AccountNotePayload {
   recipientName: string;
   recipientEmail: string;
   subject: string;
+  /** New-chat only: how the sender signs to this recipient (e.g. "Dad"). */
+  alias?: string;
   recording: Recording | null;
 }
 
@@ -93,12 +95,27 @@ export async function sendAccountNote(payload: AccountNotePayload): Promise<Note
   fd.append("recipientName", payload.recipientName);
   fd.append("recipientEmail", payload.recipientEmail);
   fd.append("subject", payload.subject);
+  if (payload.alias) fd.append("alias", payload.alias);
   await appendRecording(fd, payload.recording, payload.subject);
 
   const res = await fetch("/api/notes", { method: "POST", body: fd });
   if (!res.ok) throw new Error(await parseError(res));
   const data = (await res.json()) as { delivery?: NoteDelivery };
   return data.delivery === "in-app" ? "in-app" : "email";
+}
+
+/** Saves the owner's nickname + alias for one conversation. */
+export async function saveConversationLabel(payload: {
+  counterpartKey: string;
+  nickname: string;
+  alias: string;
+}): Promise<void> {
+  const res = await fetch("/api/conversations/label", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
 }
 
 export async function joinWaitlist(email: string, source: string): Promise<void> {

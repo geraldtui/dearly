@@ -8,6 +8,7 @@ import ChatComposer from "@/components/ChatComposer";
 import type { ConversationMessage } from "@/lib/conversations";
 
 export interface ThreadCounterpart {
+  key: string;
   name: string;
   email: string | null;
   viaEmail: boolean;

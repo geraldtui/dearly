@@ -26,9 +26,10 @@ As a logged-in Dearly user, I want every voice note I send to be both emailed to
   - **Recipient is a Dearly user** → row stored under the recipient's folder (`recipient_id` set) so it shows in their Inbox *and* the sender's Sent; the attachment email also carries a "Listen on Dearly" link. A failed email is non-fatal (the note is already delivered in-app).
   - **No account** → row stored under the sender's folder (`recipient_id = null`, sender's Sent only). If the email fails, the stored copy is rolled back so a retry can't duplicate it.
   - **No audio (simulated)** → a heads-up email is sent with no attachment and nothing is stored.
-- `src/lib/email.ts` (MODIFIED) — `sendVoiceNoteEmail`/`noteEmailHtml`/`noteEmailText` gain an optional `inboxUrl` that renders a "Listen on Dearly" CTA when the recipient has an account. `sendNewNoteNotification` remains for the public flow (spec 01).
-- `src/app/(app)/compose/page.tsx` + `ComposeForm.tsx` (MODIFIED) — success copy reflects that the recording was emailed and a copy saved (and waiting in their inbox for Dearly users).
-- `src/lib/api.ts` — `sendAccountNote` unchanged (still reports `delivery`).
+- `src/lib/email.ts` (MODIFIED) — `sendVoiceNoteEmail`/`noteEmailHtml`/`noteEmailText` gain an optional `inboxUrl` that renders a "Listen on Dearly" CTA when the recipient has an account (now pointing at `/chats`). `sendNewNoteNotification` remains for the public flow (spec 01).
+- Compose UI (UPDATED 2026-06-18) — the standalone `/compose` page + `ComposeForm` were superseded by the in-thread `ChatComposer` (`14-chat-conversations.md`); `/compose` now redirects to `/chats`. Sends still go through `POST /api/notes`; success/feedback is shown inline in the chat thread.
+- `src/lib/api.ts` — `sendAccountNote` still reports `delivery`; it also accepts an optional `alias` (the sender's per-conversation display name, spec 15).
+- `/api/notes` resolves `sender_name` from the per-conversation alias when set (spec 15), else the profile name, and persists `recipient_email` on the stored row (spec 14) so the thread stays replyable.
 - `supabase/migrations/0002_sent_copies.sql` (existing) — nullable `recipient_id` already supports sender-only rows.
 
 **API/Backend**:
@@ -76,6 +77,12 @@ As a logged-in Dearly user, I want every voice note I send to be both emailed to
 - Dearly-user recipient with a failed attachment email → the send still succeeds (note is in their Inbox); the failure is logged, not surfaced as an error.
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (chat UI + aliases + recipient_email)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: The dual-delivery contract on `POST /api/notes` (all 6 ACs) is unchanged, but its surroundings moved: the standalone `/compose` + `ComposeForm` were replaced by the in-thread `ChatComposer` (`14-chat-conversations.md`) and `/compose` now redirects to `/chats`; the "Listen on Dearly" `inboxUrl` CTA points at `/chats`; the stored row now also persists `recipient_email` (so email-only threads stay replyable); and `sender_name` is resolved from a per-conversation alias when set (`15-conversation-aliases.md`), falling back to the profile name. tsc, lint, the full unit suite, and the production build pass.
 
 ### [2026-06-16] - Verified (dual delivery)
 - **Author**: Claude AI

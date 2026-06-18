@@ -1,10 +1,12 @@
 # Spec: Contacts Sidebar for Inbox & Sent
 
-- **Status**: Verified
+- **Status**: Superseded by `14-chat-conversations.md`
 - **Created**: 2026-06-16
-- **Last Modified**: 2026-06-16
+- **Last Modified**: 2026-06-18
 - **Feature area**: Accounts (epic)
-- **Related**: `09-voice-note-inbox.md`, `08-send-to-dearly-user.md`, `07-account-data-and-storage.md`
+- **Related**: `09-voice-note-inbox.md`, `08-send-to-dearly-user.md`, `07-account-data-and-storage.md`, `14-chat-conversations.md`
+
+> **Note (2026-06-18):** This spec is **superseded** by `14-chat-conversations.md`. Inbox/Sent were merged into one `/chats` view, so the separate "pick a contact, then filter Inbox or Sent" model no longer exists. `src/lib/contacts.ts`, `ContactsSidebar.tsx`, and their tests were removed; the idea of a left contact rail lives on as `ChatList` (one merged conversation per counterpart), and the conversation keying moved to `src/lib/conversations.ts` (`counterpartKey`). Kept for history only — do not implement against it.
 
 ## User Story
 
@@ -78,6 +80,11 @@ This adds a **second sidebar** between the existing `AppSidebar` (Send a note / 
 - Same display name from two different accounts → kept separate (keyed by account id, not name).
 
 ## Changelog
+
+### [2026-06-18] - Superseded by the unified Chats view
+- **Author**: Claude AI
+- **Status**: Superseded
+- **Notes**: `14-chat-conversations.md` replaced the split Inbox/Sent pages with a single `/chats` conversation view, removing the premise of this spec (a contextual contacts sidebar that filters one of two flat lists). `src/lib/contacts.ts`, `ContactsSidebar.tsx`, and `contacts.test.ts` were deleted; `/inbox` and `/sent` redirect to `/chats`. The left contact rail is now `ChatList` (sent+received merged per counterpart) and the grouping logic lives in `src/lib/conversations.ts` (`counterpartKey`, with `conversations.test.ts`). No ACs from this spec are active in the current UI.
 
 ### [2026-06-16] - Layout: flat connected notes column
 - **Author**: Claude AI

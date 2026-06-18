@@ -55,10 +55,16 @@ function Field({
 }
 
 type Status = "idle" | "sending" | "sent";
-type FormState = { sName: string; sEmail: string; rName: string; rEmail: string; subject: string };
+type FormState = { sEmail: string; rEmail: string };
+
+/** Derive a friendly display name from an email's local part, e.g. "mary.j@x.com" → "Mary J". */
+function nameFromEmail(email: string): string {
+  const local = email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ?? "";
+  return local ? local.replace(/\b\w/g, (c) => c.toUpperCase()) : "there";
+}
 
 export default function App() {
-  const [form, setForm] = useState<FormState>({ sName: "", sEmail: "", rName: "", rEmail: "", subject: "" });
+  const [form, setForm] = useState<FormState>({ sEmail: "", rEmail: "" });
   const [recording, setRecording] = useState<Recording | null>(null);
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
@@ -69,9 +75,7 @@ export default function App() {
   const anchorPop = (field: "sEmail" | "rEmail") => () => setPopAnchor((a) => a ?? field);
 
   const errors = {
-    sName: form.sName.trim() ? "" : "Please add your name",
     sEmail: !form.sEmail.trim() ? "Your email is needed" : emailOk(form.sEmail) ? "" : "That email looks off",
-    rName: form.rName.trim() ? "" : "Who is this for?",
     rEmail: !form.rEmail.trim() ? "Their email is needed" : emailOk(form.rEmail) ? "" : "That email looks off",
   };
   const formValid = Object.values(errors).every((e) => !e);
@@ -84,11 +88,11 @@ export default function App() {
     setStatus("sending");
     try {
       await sendNote({
-        senderName: form.sName,
+        senderName: nameFromEmail(form.sEmail),
         senderEmail: form.sEmail,
-        recipientName: form.rName,
+        recipientName: nameFromEmail(form.rEmail),
         recipientEmail: form.rEmail,
-        subject: form.subject,
+        subject: "",
         recording,
       });
       setStatus("sent");
@@ -100,7 +104,7 @@ export default function App() {
 
   const reset = () => {
     if (recording?.url) URL.revokeObjectURL(recording.url);
-    setForm({ sName: "", sEmail: "", rName: "", rEmail: "", subject: "" });
+    setForm({ sEmail: "", rEmail: "" });
     setRecording(null);
     setTouched(false);
     setStatus("idle");
@@ -125,7 +129,7 @@ export default function App() {
             </div>
             <h2>On its way.</h2>
             <p>
-              Your voice note is on its way to <b>{form.rName}</b>. They&rsquo;ll hear it at <b>{form.rEmail}</b> in a moment.
+              Your voice note is on its way. They&rsquo;ll hear it at <b>{form.rEmail}</b> in a moment.
             </p>
 
             <SignupPromoCard onExplore={() => setWaitlist(true)} />
@@ -154,22 +158,14 @@ export default function App() {
             </div>
 
             <div className="section-label">From you</div>
-            <div className="grid-2">
-              <Field id="sName" label="Your name" value={form.sName} placeholder="Eleanor" onChange={set("sName")} error={errors.sName} show={touched} />
-              <Field id="sEmail" label="Your email" type="email" value={form.sEmail} placeholder="you@email.com" onChange={set("sEmail")} onFocus={anchorPop("sEmail")} error={errors.sEmail} show={touched}>
-                {popAnchor === "sEmail" && <SignupPopover />}
-              </Field>
-            </div>
+            <Field id="sEmail" label="Your email" type="email" value={form.sEmail} placeholder="you@email.com" onChange={set("sEmail")} onFocus={anchorPop("sEmail")} error={errors.sEmail} show={touched}>
+              {popAnchor === "sEmail" && <SignupPopover />}
+            </Field>
 
             <div className="section-label">To your dear one</div>
-            <div className="grid-2">
-              <Field id="rName" label="Their name" value={form.rName} placeholder="Mom" onChange={set("rName")} error={errors.rName} show={touched} />
-              <Field id="rEmail" label="Their email" type="email" value={form.rEmail} placeholder="them@email.com" onChange={set("rEmail")} onFocus={anchorPop("rEmail")} error={errors.rEmail} show={touched}>
-                {popAnchor === "rEmail" && <SignupPopover />}
-              </Field>
-            </div>
-
-            <Field id="subject" label="Subject (optional)" value={form.subject} placeholder="Thinking of you" onChange={set("subject")} error="" show={false} />
+            <Field id="rEmail" label="Their email" type="email" value={form.rEmail} placeholder="them@email.com" onChange={set("rEmail")} onFocus={anchorPop("rEmail")} error={errors.rEmail} show={touched}>
+              {popAnchor === "rEmail" && <SignupPopover />}
+            </Field>
 
             <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
 
@@ -204,7 +200,7 @@ export default function App() {
             <p className="foot">
               Made with <span className="heart">♥</span> —{" "}
               <button className="foot-link" onClick={() => setWaitlist(true)}>
-                see what&rsquo;s coming to Dearly
+                see what Dearly can do
               </button>
             </p>
           </>
@@ -213,7 +209,7 @@ export default function App() {
 
       {status !== "sent" && <Notepad />}
 
-      {waitlist && <Waitlist defaultEmail={form.sEmail} onClose={() => setWaitlist(false)} />}
+      {waitlist && <Waitlist onClose={() => setWaitlist(false)} />}
     </div>
   );
 }

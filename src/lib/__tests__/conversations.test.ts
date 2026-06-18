@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildConversations,
   conversationKey,
+  counterpartKey,
   messagesForConversation,
   resolveSelectedKey,
 } from "@/lib/conversations";
@@ -42,6 +43,19 @@ describe("conversationKey", () => {
     expect(conversationKey(byEmail, ME)).toBe("email:pat@x.com");
     const byName = note({ sender_id: ME, recipient_name: "Lee Ann" });
     expect(conversationKey(byName, ME)).toBe("name:lee ann");
+  });
+});
+
+describe("counterpartKey", () => {
+  it("prefers account id, then email (lowercased), then name", () => {
+    expect(counterpartKey({ id: "abc", email: "x@y.com", name: "X" })).toBe("id:abc");
+    expect(counterpartKey({ email: "Pat@X.com" })).toBe("email:pat@x.com");
+    expect(counterpartKey({ name: "Lee Ann" })).toBe("name:lee ann");
+  });
+
+  it("matches the key a note resolves to (route ↔ page agreement)", () => {
+    const n = note({ sender_id: ME, recipient_id: "abc", recipient_name: "Mae" });
+    expect(counterpartKey({ id: "abc", email: null })).toBe(conversationKey(n, ME));
   });
 });
 

@@ -51,10 +51,22 @@ function counterpartOf(note: VoiceNote, userId: string): Counterpart {
 }
 
 /** Grouping id: account id, else email, else a normalized name. */
+export function counterpartKey({
+  id,
+  email,
+  name,
+}: {
+  id?: string | null;
+  email?: string | null;
+  name?: string | null;
+}): string {
+  if (id) return `id:${id}`;
+  if (email) return `email:${email.toLowerCase()}`;
+  return `name:${(name ?? "").trim().toLowerCase()}`;
+}
+
 function keyFor(c: Counterpart): string {
-  if (c.id) return `id:${c.id}`;
-  if (c.email) return `email:${c.email.toLowerCase()}`;
-  return `name:${c.name.toLowerCase()}`;
+  return counterpartKey(c);
 }
 
 export function conversationKey(note: VoiceNote, userId: string): string {

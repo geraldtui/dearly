@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import VoiceRecorder from "@/components/VoiceRecorder";
+import Notepad from "@/components/Notepad";
 import { emailOk } from "@/lib/validation";
 import { sendAccountNote } from "@/lib/api";
 import type { Recording } from "@/types";
@@ -28,6 +29,7 @@ export default function ChatComposer({
   const [subject, setSubject] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [alias, setAlias] = useState("");
   const [touched, setTouched] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -61,10 +63,17 @@ export default function ChatComposer({
     setError("");
     setSending(true);
     try {
-      await sendAccountNote({ recipientName: toName, recipientEmail: toEmail, subject, recording });
+      await sendAccountNote({
+        recipientName: toName,
+        recipientEmail: toEmail,
+        subject,
+        alias: mode === "new" ? alias.trim() || undefined : undefined,
+        recording,
+      });
       if (recording?.url) URL.revokeObjectURL(recording.url);
       setRecording(null);
       setSubject("");
+      setAlias("");
       // New chats become the most recent thread → land on /chats so it's auto-selected.
       if (mode === "new") router.replace("/chats");
       router.refresh();
@@ -102,20 +111,32 @@ export default function ChatComposer({
             />
             <span className="err">{touched ? fieldErrors.email : ""}</span>
           </div>
+          <div className="field chat-new-alias">
+            <input
+              aria-label="Your name to them (optional)"
+              value={alias}
+              placeholder="Your name to them, e.g. Dad (optional)"
+              onChange={(e) => setAlias(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
         </div>
       )}
 
-      <div className="field chat-subject">
-        <input
-          aria-label="Subject (optional)"
-          value={subject}
-          placeholder="Subject (optional)"
-          onChange={(e) => setSubject(e.target.value)}
-          autoComplete="off"
-        />
+      <div className="chat-subject-row">
+        <div className="field chat-subject">
+          <input
+            aria-label="Subject (optional)"
+            value={subject}
+            placeholder="Subject (optional)"
+            onChange={(e) => setSubject(e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <Notepad inline />
       </div>
 
-      <div className="chat-composer-row">
+      <div className="chat-recorder-row">
         <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
         <button
           type="button"
