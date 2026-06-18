@@ -65,7 +65,10 @@ In the Vercel project (Settings):
    | `NEXT_PUBLIC_SUPABASE_URL` | prod project URL | dev project URL |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | prod anon key | dev anon key |
    | `SUPABASE_SERVICE_ROLE_KEY` | prod service-role key | dev service-role key |
-   | `RESEND_API_KEY` | prod key | prod or test key |
+   | `SES_SMTP_HOST` | region endpoint | region endpoint |
+   | `SES_SMTP_PORT` | `587` | `587` |
+   | `SES_SMTP_USER` | prod SMTP user | prod or test SMTP user |
+   | `SES_SMTP_PASSWORD` | prod SMTP password | prod or test SMTP password |
    | `DEARLY_FROM_EMAIL` | verified sender | verified sender |
    | `WAITLIST_NOTIFY_EMAIL` | prod inbox | dev inbox |
 

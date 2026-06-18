@@ -28,7 +28,7 @@ is preserved as a **fallback** for recipients who don't have an account.
 - **Supabase Auth** — email/password, sessions via cookies.
 - **Supabase Storage** — a private bucket for the MP3 files; access via short-lived signed URLs.
 - **Next.js App Router (existing)** — use `@supabase/ssr` for cookie-based sessions in Server Components, Route Handlers, and middleware.
-- **Resend (existing)** — reused for the "new voice note" notification email and the existing non-user fallback send.
+- **Amazon SES (existing)** — Nodemailer over SES SMTP, reused for the "new voice note" notification email and the existing non-user fallback send.
 - **Hosting** — still Vercel; add Supabase env vars (below).
 
 ## Data model (Postgres)
@@ -78,7 +78,7 @@ is preserved as a **fallback** for recipients who don't have an account.
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...        # server-only
-# Existing: RESEND_API_KEY, DEARLY_FROM_EMAIL, WAITLIST_NOTIFY_EMAIL
+# Existing: SES_SMTP_HOST, SES_SMTP_PORT, SES_SMTP_USER, SES_SMTP_PASSWORD, DEARLY_FROM_EMAIL, WAITLIST_NOTIFY_EMAIL
 ```
 
 ## Retention / management (initial policy)

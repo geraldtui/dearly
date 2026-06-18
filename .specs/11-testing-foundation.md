@@ -26,7 +26,7 @@ As a developer, I want an automated test suite that runs locally and in CI, so t
 - `src/lib/__tests__/notes.test.ts` (NEW) — `sanitizeSubject` (control chars, whitespace, length cap), `durationLabel`, `storeNote` upload/insert/cleanup behavior, `removeStoredNote`.
 - `src/lib/__tests__/validation.test.ts` (NEW) — `emailOk` accept/reject cases.
 - `src/lib/__tests__/api.test.ts` (NEW) — `snakeCaseName` (exported for testing) slug rules.
-- `src/lib/__tests__/email.test.ts` (NEW) — template HTML/text (masthead vs brand, escaping, audio lines) and `sendVoiceNoteEmail` / `sendNewNoteNotification` BCC + error behavior with a mocked Resend client.
+- `src/lib/__tests__/email.test.ts` (NEW) — template HTML/text (masthead vs brand, escaping, audio lines) and `sendVoiceNoteEmail` / `sendNewNoteNotification` BCC + error behavior with a mocked email transport.
 - `src/app/api/send/__tests__/route.test.ts` (NEW) — validation 400s, oversized audio 413, email fallback when no account matches, in-app delivery for registered recipients, rollback when the notification email fails.
 - `src/app/api/notes/__tests__/route.test.ts` (NEW) — 401 when logged out, validation, non-user email fallback with stored Sent copy (no BCC) + rollback on email failure, in-app delivery with tolerated notification failure.
 - `src/components/__tests__/SignupPopover.test.tsx` (NEW) — render for logged-out users, hidden when logged in/dismissed, dismissal persisted.
