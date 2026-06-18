@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { authGuardDisabled } from "@/lib/dev-auth";
 
 /** URL prefixes that require a logged-in user (the `(app)` route group). */
-const PROTECTED_PREFIXES = ["/inbox", "/sent", "/compose"];
+const PROTECTED_PREFIXES = ["/chats", "/inbox", "/sent", "/compose"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });

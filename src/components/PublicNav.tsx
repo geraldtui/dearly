@@ -12,8 +12,8 @@ export default function PublicNav() {
   return (
     <nav className="public-nav" aria-label="Account">
       {user ? (
-        <Link href="/inbox" className="public-nav-cta">
-          Inbox
+        <Link href="/chats" className="public-nav-cta">
+          Chats
         </Link>
       ) : (
         <>

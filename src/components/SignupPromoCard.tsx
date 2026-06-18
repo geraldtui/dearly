@@ -21,8 +21,8 @@ export default function SignupPromoCard({ onExplore }: { onExplore?: () => void 
           Welcome back
         </p>
         <h3>Your voice notes are waiting.</h3>
-        <Link href="/inbox" className="btn btn-primary home-promo-cta">
-          Go to your Inbox
+        <Link href="/chats" className="btn btn-primary home-promo-cta">
+          Go to your chats
         </Link>
       </div>
     );

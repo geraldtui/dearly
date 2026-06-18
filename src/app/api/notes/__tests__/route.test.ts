@@ -195,7 +195,7 @@ describe("POST /api/notes", () => {
           recipientEmail: "mom@example.com",
           bccSender: false,
           attachments: [expect.objectContaining({ filename: "hi_mom.mp3" })],
-          inboxUrl: expect.stringContaining("/inbox"),
+          inboxUrl: expect.stringContaining("/chats"),
         })
       );
       expect(mocks.sendNewNoteNotification).not.toHaveBeenCalled();

@@ -67,7 +67,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           password,
         });
         if (error) throw error;
-        router.push(params.get("next") || "/inbox");
+        router.push(params.get("next") || "/chats");
         router.refresh();
       }
     } catch (err) {

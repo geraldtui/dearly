@@ -14,6 +14,8 @@ export interface VoiceNote {
   recipient_id: string | null;
   sender_name: string;
   recipient_name: string;
+  /** Recipient's email; persisted so email-only threads can be replied to. */
+  recipient_email: string | null;
   subject: string | null;
   storage_path: string;
   duration_seconds: number;
