@@ -30,6 +30,7 @@ vi.mock("@/lib/notes", async (importOriginal) => {
 });
 
 import { POST } from "../route";
+import { __resetRateLimit } from "@/lib/rate-limit";
 
 const SENDER = { id: "user-1", email: "gerald@example.com", display_name: "Gerald" };
 
@@ -86,6 +87,7 @@ function buildRequest(overrides: Record<string, string | null> = {}, withAudio =
 
 beforeEach(() => {
   vi.clearAllMocks();
+  __resetRateLimit();
   mocks.sendVoiceNoteEmail.mockResolvedValue("msg-1");
   mocks.sendNewNoteNotification.mockResolvedValue(undefined);
   mocks.storeNote.mockResolvedValue({ id: "note-1", storagePath: "user-1/note-1.mp3" });
@@ -110,6 +112,13 @@ describe("POST /api/notes", () => {
   it("rejects an invalid recipient email with 400", async () => {
     const res = await POST(buildRequest({ recipientEmail: "nope" }, true));
     expect(res.status).toBe(400);
+  });
+
+  it("rate-limits a burst from one user with 429 (after the auth check)", async () => {
+    for (let i = 0; i < 20; i++) {
+      expect((await POST(buildRequest({}, true))).status).toBe(200);
+    }
+    expect((await POST(buildRequest({}, true))).status).toBe(429);
   });
 
   describe("recipient without a Dearly account (email fallback)", () => {

@@ -31,6 +31,7 @@ vi.mock("@/lib/notes", async (importOriginal) => {
 });
 
 import { POST } from "../route";
+import { __resetRateLimit } from "@/lib/rate-limit";
 
 interface Recipient {
   id: string;
@@ -74,6 +75,7 @@ function buildRequest(overrides: Record<string, string | null> = {}, audioBytes?
 
 beforeEach(() => {
   vi.clearAllMocks();
+  __resetRateLimit();
   mocks.sendVoiceNoteEmail.mockResolvedValue("msg-1");
   mocks.sendNewNoteNotification.mockResolvedValue(undefined);
   mocks.storeNote.mockResolvedValue({ id: "note-1", storagePath: "recipient-1/note-1.mp3" });
@@ -182,5 +184,14 @@ describe("POST /api/send", () => {
     expect(res.status).toBe(200);
     expect(body.delivery).toBe("email");
     expect(mocks.sendVoiceNoteEmail).toHaveBeenCalled();
+  });
+
+  it("rate-limits a burst from one IP with 429 and a Retry-After header", async () => {
+    for (let i = 0; i < 5; i++) {
+      expect((await POST(buildRequest())).status).toBe(200);
+    }
+    const limited = await POST(buildRequest());
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get("Retry-After")).toBeTruthy();
   });
 });

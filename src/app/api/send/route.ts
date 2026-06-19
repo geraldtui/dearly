@@ -10,6 +10,8 @@ import {
   removeStoredNote,
 } from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { clientIp, bodyTooLarge } from "@/lib/http";
 import type { Profile } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -38,6 +40,12 @@ async function findRecipientAccount(
 }
 
 export async function POST(req: NextRequest) {
+  const oversized = bodyTooLarge(req, MAX_AUDIO_BYTES + 1024 * 1024);
+  if (oversized) return oversized;
+
+  const limit = rateLimit(`send:${clientIp(req)}`, { limit: 5, windowMs: 60_000 });
+  if (!limit.allowed) return tooManyRequests(limit.resetAt);
+
   let form: FormData;
   try {
     form = await req.formData();
