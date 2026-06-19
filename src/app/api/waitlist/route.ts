@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail, FROM_EMAIL, escapeHtml } from "@/lib/email";
 import { emailOk } from "@/lib/validation";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { clientIp, bodyTooLarge } from "@/lib/http";
 
 export const runtime = "nodejs";
 
+const MAX_JSON_BYTES = 16 * 1024;
+
 export async function POST(req: NextRequest) {
+  const oversized = bodyTooLarge(req, MAX_JSON_BYTES);
+  if (oversized) return oversized;
+
+  const limit = rateLimit(`waitlist:${clientIp(req)}`, { limit: 5, windowMs: 60_000 });
+  if (!limit.allowed) return tooManyRequests(limit.resetAt);
+
   let body: { email?: string; source?: string };
   try {
     body = await req.json();

@@ -149,11 +149,7 @@ export default function App() {
               <h1 className="brand">
                 Dearly<span className="dot">.</span>
               </h1>
-              <p className="tagline"></p>
-              <div className="preview-pill">
-                <span className="spark" />
-                Early preview
-              </div>
+                <p className="tagline"></p>
               <div className="divider" />
             </div>
 

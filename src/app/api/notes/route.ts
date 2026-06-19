@@ -10,6 +10,8 @@ import {
 } from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
 import { counterpartKey } from "@/lib/conversations";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { bodyTooLarge } from "@/lib/http";
 import type { Profile } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -20,6 +22,9 @@ export const runtime = "nodejs";
  * keep the in-app Inbox row (same row) and get a "Listen on Dearly" link.
  */
 export async function POST(req: NextRequest) {
+  const oversized = bodyTooLarge(req, MAX_AUDIO_BYTES + 1024 * 1024);
+  if (oversized) return oversized;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,6 +32,9 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Please log in to send a note." }, { status: 401 });
   }
+
+  const limit = rateLimit(`notes:${user.id}`, { limit: 20, windowMs: 60_000 });
+  if (!limit.allowed) return tooManyRequests(limit.resetAt);
 
   let form: FormData;
   try {
