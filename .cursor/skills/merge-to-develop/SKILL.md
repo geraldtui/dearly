@@ -74,10 +74,20 @@ git merge --no-ff <feature-branch-name> -m "Merge branch '<feature-branch-name>'
 git push origin develop
 ```
 
-### 7. Return to Feature Branch (optional)
+### 7. Clean Up Feature Branch
 ```bash
-git checkout <feature-branch-name>
+# Stay on develop (don't return to feature branch)
+# Delete local feature branch
+git branch -d <feature-branch-name>
+
+# Delete remote feature branch
+git push origin --delete <feature-branch-name>
 ```
+
+**Why clean up?**
+- Keeps repository clean and organized
+- Removes merged branches to reduce clutter
+- Uses `-d` (not `-D`) for safety - only deletes if fully merged
 
 ## Error Handling
 
@@ -92,6 +102,11 @@ git checkout <feature-branch-name>
 
 **Network errors:**
 - If fetch/push fails due to network, report and suggest retry
+
+**Branch deletion failures:**
+- If local branch deletion fails, it may have unmerged commits (safety feature)
+- If remote branch deletion fails, it may not exist on remote (already deleted or never pushed)
+- Report but continue - deletion failures are non-critical
 
 ## Usage Examples
 
@@ -114,15 +129,15 @@ Provide a clear summary after completion:
 **Branch**: feature/chat-navigation-performance → develop
 **Commits**: 3 commits merged
 **Status**: Pushed to origin
+**Cleanup**: Feature branch deleted (local + remote)
 
-**Next steps:**
-- Feature branch still exists locally (delete with: `git branch -d feature/...`)
-- You're now on: [current-branch]
+**You're now on**: develop
 ```
 
 ## Important Notes
 
 - Always use `--no-ff` for merges to preserve branch history
 - Auto-commit uses descriptive messages based on actual changes
-- Original feature branch is preserved (not deleted)
-- User is returned to the feature branch after merge
+- Feature branch is deleted after successful merge (local + remote)
+- Uses `git branch -d` (not `-D`) for safety - only deletes if fully merged
+- User ends on `develop` branch after completion
