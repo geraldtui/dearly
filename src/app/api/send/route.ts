@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
           senderEmail,
           recipientName: recipient.display_name || recipientName,
           subject: customSubject,
-          inboxUrl: `${new URL(req.url).origin}/chats`,
+          inboxUrl: `${new URL(req.url).origin}/voicenotes`,
           bccSender: true,
         });
       } catch (notifyError) {
