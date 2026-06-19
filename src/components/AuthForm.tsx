@@ -51,6 +51,21 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     const supabase = createClient();
     try {
       if (mode === "signup") {
+        // Check if email already exists before attempting signup
+        const checkRes = await fetch("/api/auth/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        });
+        
+        if (checkRes.ok) {
+          const { exists } = await checkRes.json();
+          if (exists) {
+            throw new Error("An account with that email already exists — try logging in.");
+          }
+        }
+        // If check fails, continue with signup (fail open)
+        
         const { error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
@@ -115,6 +130,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
         />
+        {mode === "login" && (
+          <Link href="/forgot-password" style={{ fontSize: "13px", color: "var(--accent-deep)", marginTop: "6px", display: "inline-block" }}>
+            Forgot password?
+          </Link>
+        )}
       </div>
 
       {error && <div className="err auth-err">{error}</div>}

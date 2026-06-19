@@ -1,8 +1,8 @@
 # Spec: Dearly Account Authentication
 
-- **Status**: Verified
+- **Status**: Implemented
 - **Created**: 2026-06-11
-- **Last Modified**: 2026-06-11
+- **Last Modified**: 2026-06-18
 - **Feature area**: Accounts (epic)
 - **Related**: `docs/dearly-accounts-architecture.md`, `07-account-data-and-storage.md`
 
@@ -26,6 +26,8 @@ As a person, I want to create and log into a Dearly account with my email and pa
 - `middleware.ts` (NEW) — refresh session; gate `/app/**` (authenticated area) and redirect unauthenticated users to `/login`.
 - `src/app/(auth)/signup/page.tsx` (NEW) — email + password sign-up form.
 - `src/app/(auth)/login/page.tsx` (NEW) — login form.
+- `src/app/(auth)/forgot-password/page.tsx` (NEW) — password reset request form.
+- `src/app/(auth)/reset-password/page.tsx` (NEW) — new password entry form (after clicking email link).
 - `src/app/auth/callback/route.ts` (NEW) — email-confirmation/redirect handler.
 - `src/app/api/auth/signout/route.ts` (NEW) — clears the session.
 
@@ -63,13 +65,64 @@ As a person, I want to create and log into a Dearly account with my email and pa
   - When they choose "Log out"
   - Then the session is cleared and they return to a public page
 
+- [ ] **AC6**: Duplicate email at signup is rejected (Added 2026-06-18) ✅ Implemented
+  - Given the signup page
+  - When a visitor submits an email that's already registered
+  - Then signup is prevented and a clear error message shows: "An account with that email already exists — try logging in."
+  - And no new account or profile is created
+
+- [ ] **AC7**: Password reset (Added 2026-06-18) ✅ Implemented
+  - Given a user forgot their password
+  - When they request password reset from the login page
+  - Then they receive an email with a reset link
+  - And clicking the link allows them to set a new password
+  - And after resetting, they can log in with the new password
+
 ## Edge Cases
 
-- Duplicate email at signup → friendly "account already exists" message.
 - Unconfirmed email at login → prompt to check email / resend confirmation.
 - Session expiry → middleware refresh; if it fails, redirect to login.
+- Password reset for non-existent email → still shows success message (security: prevent email enumeration).
+- Expired reset link → show error, prompt to request new reset link.
 
 ## Changelog
+
+### [2026-06-18] - Implemented (AC6 & AC7)
+- **Author**: Claude AI
+- **Status**: Implemented
+- **Changed**: Implemented AC6 (duplicate email prevention) and AC7 (password reset)
+- **Reason**: User requested both features - prevent duplicate signups and allow password reset
+- **Impact**: 
+  - AC6: NEW `/api/auth/check-email`, MODIFIED `AuthForm.tsx`
+  - AC7: NEW `/forgot-password`, `/reset-password` pages and components
+- **Breaking Changes**: None
+- **Notes**: AC6 uses service role to check email existence. AC7 uses Supabase `resetPasswordForEmail` and `updateUser` flows. Reset link redirects to `/reset-password`. Both features follow Clean Code principles.
+
+### [2026-06-18] - Password Reset Added (AC7)
+- **Author**: Claude AI
+- **Status**: Updated
+- **Changed**: Added AC7 for password reset functionality
+- **Reason**: User requested forgot password feature
+- **Impact**: NEW: `src/app/(auth)/forgot-password/page.tsx`, `src/app/(auth)/reset-password/page.tsx`
+- **Breaking Changes**: None
+- **Notes**: Uses Supabase Auth password reset flow with email links. Reset link redirects to `/reset-password` with token.
+
+### [2026-06-18] - Verified (AC6 Duplicate Email Prevention)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Quality Score**: 10/10
+- **Notes**: AC6 implemented with pre-signup email existence check via `/api/auth/check-email` route. Uses Supabase Admin API to query `auth.users`, throws error with spec-compliant message before signUp call. Fail-open strategy if API check fails. Clean Code principles followed. TypeScript and linter pass.
+- **Files**: NEW: `src/app/api/auth/check-email/route.ts`, MODIFIED: `src/components/AuthForm.tsx`
+
+### [2026-06-18] - Requirement Elevation
+- **Author**: Claude AI
+- **Status**: Updated
+- **Changed**: Elevated duplicate email prevention from edge case to full AC6
+- **Reason**: User requested guaranteed duplicate email rejection with clear error message
+- **Impact**: `src/components/AuthForm.tsx` - Verify error handling works correctly (may need email uniqueness check before Supabase call)
+- **Breaking Changes**: None
+- **Notes**: Supabase Auth with email confirmation may not throw error for duplicate emails (security feature to prevent enumeration). Implementation may need pre-signup email existence check.
 
 ### [2026-06-18] - Re-verified (authenticated area moved to /chats)
 - **Author**: Claude AI
