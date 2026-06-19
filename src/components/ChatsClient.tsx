@@ -66,7 +66,7 @@ export default function ChatsClient({ userId }: { userId: string }) {
         rawConvos.map(async (c: Conversation) => {
           const label = labels.get(c.key);
           let email = c.counterpartEmail;
-          
+
           // If no stored email but has account ID, fetch from profiles
           if (!email && c.counterpartId) {
             try {
@@ -150,7 +150,7 @@ export default function ChatsClient({ userId }: { userId: string }) {
           <h2 className="chat-list-head">Voice Notes</h2>
           <div className="chat-loading">
             <span className="spinner" />
-            <p>Loading conversations...</p>
+            <p>Loading voice notes...</p>
           </div>
         </aside>
         <section className="chat-thread chat-thread-empty">
