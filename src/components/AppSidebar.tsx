@@ -33,7 +33,7 @@ export default function AppSidebar() {
       <nav className="app-sidebar-nav" aria-label="Dearly">
         <Link href="/chats" className={pathname.startsWith("/chats") && !pathname.includes("new") ? "active" : ""}>
           {CHATS_ICON}
-          Chats
+          Voice Notes
         </Link>
         <button
           type="button"

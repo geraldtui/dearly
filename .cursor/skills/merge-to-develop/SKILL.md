@@ -48,18 +48,43 @@ EOF
 - Blank line
 - Detailed description if needed
 
-### 3. Ensure Branch is Up to Date
+### 3. Run All Tests on Feature Branch
+```bash
+# TypeScript type check
+npx tsc --noEmit
+
+# Linter
+npm run lint
+
+# Unit tests
+npm test
+
+# E2E tests (if applicable)
+npm run test:e2e
+```
+
+**If any test fails:**
+- Stop the workflow immediately
+- Report which test failed and the error
+- Do NOT proceed with merge
+- User must fix the issues before merging
+
+**Test output:**
+- Show test results summary
+- Report pass/fail status for each test suite
+
+### 4. Ensure Branch is Up to Date
 ```bash
 git fetch origin
 ```
 
-### 4. Switch to Develop
+### 5. Switch to Develop
 ```bash
 git checkout develop
 git pull origin develop
 ```
 
-### 5. Merge Feature Branch (with --no-ff)
+### 6. Merge Feature Branch (with --no-ff)
 ```bash
 git merge --no-ff <feature-branch-name> -m "Merge branch '<feature-branch-name>'"
 ```
@@ -69,12 +94,39 @@ git merge --no-ff <feature-branch-name> -m "Merge branch '<feature-branch-name>'
 - Creates a merge commit for easy rollback
 - Maintains clear project timeline
 
-### 6. Push to Origin
+### 7. Run All Tests on Develop
+```bash
+# TypeScript type check
+npx tsc --noEmit
+
+# Linter
+npm run lint
+
+# Unit tests
+npm test
+
+# E2E tests (if applicable)
+npm run test:e2e
+```
+
+**If any test fails after merge:**
+- Stop before pushing
+- Report the failure
+- The merge is complete locally but NOT pushed
+- User must fix issues on develop before pushing
+- Consider: `git reset --hard origin/develop` to undo local merge if needed
+
+**Why run tests again?**
+- Ensures merge didn't introduce integration issues
+- Validates that develop remains stable
+- Prevents pushing broken code to origin
+
+### 8. Push to Origin
 ```bash
 git push origin develop
 ```
 
-### 7. Clean Up Feature Branch
+### 9. Clean Up Feature Branch
 ```bash
 # Stay on develop (don't return to feature branch)
 # Delete local feature branch
@@ -103,6 +155,12 @@ git push origin --delete <feature-branch-name>
 **Network errors:**
 - If fetch/push fails due to network, report and suggest retry
 
+**Test failures:**
+- If tests fail on feature branch (step 3), stop immediately - do NOT merge
+- If tests fail on develop after merge (step 7), stop before push - do NOT push
+- Report which tests failed and suggest fixes
+- User must resolve test failures before proceeding
+
 **Branch deletion failures:**
 - If local branch deletion fails, it may have unmerged commits (safety feature)
 - If remote branch deletion fails, it may not exist on remote (already deleted or never pushed)
@@ -128,6 +186,7 @@ Provide a clear summary after completion:
 
 **Branch**: feature/chat-navigation-performance → develop
 **Commits**: 3 commits merged
+**Tests**: ✅ All tests passed (feature branch + develop)
 **Status**: Pushed to origin
 **Cleanup**: Feature branch deleted (local + remote)
 
@@ -136,8 +195,18 @@ Provide a clear summary after completion:
 
 ## Important Notes
 
+- **All tests must pass** before merging and before pushing (non-negotiable)
+- Tests are run twice: once on feature branch, once on develop after merge
 - Always use `--no-ff` for merges to preserve branch history
 - Auto-commit uses descriptive messages based on actual changes
 - Feature branch is deleted after successful merge (local + remote)
 - Uses `git branch -d` (not `-D`) for safety - only deletes if fully merged
 - User ends on `develop` branch after completion
+
+## Test Suite
+
+This workflow runs the following tests:
+- **TypeScript**: `npx tsc --noEmit` - Type checking
+- **Linter**: `npm run lint` - Code style and quality
+- **Unit Tests**: `npm test` - Vitest unit and component tests
+- **E2E Tests**: `npm run test:e2e` - Playwright end-to-end tests (if applicable)

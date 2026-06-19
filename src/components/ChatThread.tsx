@@ -3,6 +3,7 @@
 import { useState } from "react";
 import NotePlayer from "@/components/NotePlayer";
 import ChatComposer from "@/components/ChatComposer";
+import ConversationLabelEditor from "@/components/ConversationLabelEditor";
 import type { ConversationMessage } from "@/lib/conversations";
 
 export interface ThreadCounterpart {
@@ -11,6 +12,8 @@ export interface ThreadCounterpart {
   email: string | null;
   viaEmail: boolean;
   canReply: boolean;
+  nickname: string;
+  alias: string;
 }
 
 function initial(name: string): string {
@@ -143,7 +146,13 @@ export default function ChatThread({
           {initial(counterpart.name)}
         </span>
         <div className="chat-thread-id">
-          <h1 className="chat-thread-name">{counterpart.name}</h1>
+          <ConversationLabelEditor
+            counterpartKey={counterpart.key}
+            nickname={counterpart.nickname}
+            alias={counterpart.alias}
+            email={counterpart.email}
+            displayName={counterpart.name}
+          />
           {counterpart.viaEmail && <span className="chat-thread-sub">via email</span>}
         </div>
       </header>

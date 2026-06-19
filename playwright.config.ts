@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
-import { ensureFakeAudio } from "./e2e/support/fake-audio";
+import { resolve } from "node:path";
 
-const fakeAudio = ensureFakeAudio();
+const fakeAudio = resolve(process.cwd(), "e2e/fixtures/fake-audio.wav");
 const PORT = 3100;
 
 /**

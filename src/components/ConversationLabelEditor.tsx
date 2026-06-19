@@ -6,17 +6,22 @@ import { useRouter } from "next/navigation";
 import { saveConversationLabel } from "@/lib/api";
 
 /**
- * Hover-revealed pencil on a chat-list row that opens a small modal to rename a
- * contact (private nickname) and set how the user signs notes to them (alias).
+ * Clickable name in the chat thread header that opens a modal to rename a
+ * contact (private nickname), set how the user signs notes to them (alias),
+ * and view the counterpart's email.
  */
 export default function ConversationLabelEditor({
   counterpartKey,
   nickname,
   alias,
+  email,
+  displayName,
 }: {
   counterpartKey: string;
   nickname: string;
   alias: string;
+  email: string | null;
+  displayName: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -59,13 +64,18 @@ export default function ConversationLabelEditor({
   }, [open, saving]);
 
   return (
-    <div className="chat-label-wrap">
-      <button type="button" className="chat-edit-btn" onClick={start} aria-label="Edit names" title="Edit names">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-        </svg>
-      </button>
+    <>
+      <h1 className="chat-thread-name">
+        <button
+          type="button"
+          className="chat-name-btn"
+          onClick={start}
+          aria-label={`Edit names for ${displayName}`}
+          title="Click to edit names"
+        >
+          {displayName}
+        </button>
+      </h1>
 
       {open && mounted && createPortal(
         <div
@@ -82,6 +92,17 @@ export default function ConversationLabelEditor({
           aria-label="Edit names"
           onClick={(e) => e.stopPropagation()}
         >
+          {email && (
+            <div className="field">
+              <label>Email</label>
+              <input
+                value={email}
+                readOnly
+                disabled
+                className="readonly-field"
+              />
+            </div>
+          )}
           <div className="field">
             <label htmlFor="lbl-nick">Their name (only you see this)</label>
             <input
@@ -115,6 +136,6 @@ export default function ConversationLabelEditor({
         </div>,
         document.body
       )}
-    </div>
+    </>
   );
 }
