@@ -30,6 +30,11 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  // Suppress annoying SWC lockfile patching warnings
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import NotePlayer from "@/components/NotePlayer";
 import ChatComposer from "@/components/ChatComposer";
 import type { ConversationMessage } from "@/lib/conversations";
@@ -34,8 +32,13 @@ function timestamp(iso: string): string {
 }
 
 /** A single voice-note message bubble with playback and delete. */
-function MessageBubble({ msg }: { msg: ConversationMessage }) {
-  const router = useRouter();
+function MessageBubble({
+  msg,
+  onDeleteSuccess,
+}: {
+  msg: ConversationMessage;
+  onDeleteSuccess: () => void;
+}) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const unlistened = !msg.outgoing && !msg.listened_at;
@@ -47,7 +50,7 @@ function MessageBubble({ msg }: { msg: ConversationMessage }) {
     try {
       const res = await fetch(`/api/notes/${msg.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("We couldn't delete that note.");
-      router.refresh();
+      onDeleteSuccess();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setDeleting(false);
@@ -88,10 +91,16 @@ export default function ChatThread({
   mode,
   messages,
   counterpart,
+  onSendSuccess,
+  onDeleteSuccess,
+  onNewChat,
 }: {
   mode: "conversation" | "new" | "empty";
   messages: ConversationMessage[];
   counterpart: ThreadCounterpart | null;
+  onSendSuccess: () => void;
+  onDeleteSuccess: () => void;
+  onNewChat: () => void;
 }) {
   if (mode === "empty") {
     return (
@@ -99,9 +108,9 @@ export default function ChatThread({
         <div className="chat-empty">
           <h1>No conversations yet</h1>
           <p>Start a new chat to send your first voice note.</p>
-          <Link href="/chats?new=1" className="btn btn-primary">
+          <button className="btn btn-primary" onClick={onNewChat}>
             New chat
-          </Link>
+          </button>
         </div>
       </section>
     );
@@ -122,7 +131,7 @@ export default function ChatThread({
         <div className="chat-scroll chat-scroll-empty">
           <p className="chat-hint">Your conversation will appear here.</p>
         </div>
-        <ChatComposer mode="new" />
+        <ChatComposer mode="new" onSendSuccess={onSendSuccess} />
       </section>
     );
   }
@@ -141,7 +150,7 @@ export default function ChatThread({
 
       <div className="chat-scroll">
         {messages.map((m) => (
-          <MessageBubble key={m.id} msg={m} />
+          <MessageBubble key={m.id} msg={m} onDeleteSuccess={onDeleteSuccess} />
         ))}
       </div>
 
@@ -150,6 +159,7 @@ export default function ChatThread({
         recipientName={counterpart.name}
         recipientEmail={counterpart.email}
         canReply={counterpart.canReply}
+        onSendSuccess={onSendSuccess}
       />
     </section>
   );

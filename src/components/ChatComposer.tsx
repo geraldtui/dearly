@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import Notepad from "@/components/Notepad";
 import { emailOk } from "@/lib/validation";
@@ -15,6 +14,8 @@ interface ChatComposerProps {
   recipientEmail?: string | null;
   /** Reply mode: false when the thread has no account/email to reply to. */
   canReply?: boolean;
+  /** Callback invoked after successful send. */
+  onSendSuccess: () => void;
 }
 
 /** Inline recorder + send for a chat thread (or a new conversation). */
@@ -23,8 +24,8 @@ export default function ChatComposer({
   recipientName = "",
   recipientEmail = null,
   canReply = true,
+  onSendSuccess,
 }: ChatComposerProps) {
-  const router = useRouter();
   const [recording, setRecording] = useState<Recording | null>(null);
   const [subject, setSubject] = useState("");
   const [name, setName] = useState("");
@@ -74,9 +75,10 @@ export default function ChatComposer({
       setRecording(null);
       setSubject("");
       setAlias("");
-      // New chats become the most recent thread → land on /chats so it's auto-selected.
-      if (mode === "new") router.replace("/chats");
-      router.refresh();
+      setName("");
+      setEmail("");
+      setTouched(false);
+      onSendSuccess();
     } catch (e) {
       setError(e instanceof Error ? e.message : "We couldn't send your note. Please try again.");
     } finally {
