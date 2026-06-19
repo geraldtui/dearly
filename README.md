@@ -112,8 +112,18 @@ happy path (with a fake microphone) and the empty-form validation guard.
 ```bash
 # One-time local setup (uses the public npm registry; see note below):
 npx playwright install chromium
+
+# E2E tests require Node 20.x due to Playwright compatibility
+# If you're on Node 22.x, switch to Node 20 first:
+# nvm use 20  # or your Node version manager
+
 npm run test:e2e
 ```
+
+> **Note on Node versions**: The app runs on Node 20.x or 22.x, but E2E tests
+> currently require **Node 20.x** due to a Playwright module loader compatibility
+> issue with Node 22.x (`context.conditions?.includes` error). Use Node 20 for
+> running E2E tests. The `.nvmrc` file specifies Node 20 for this reason.
 
 > The corporate Artifactory mirror forbids the Playwright packages, so they
 > were installed with `--registry https://registry.npmjs.org/`. CI runners are
