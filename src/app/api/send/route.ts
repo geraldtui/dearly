@@ -1,30 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getResend, FROM_EMAIL, noteEmailHtml, noteEmailText } from "@/lib/email";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createServiceClient } from "@/lib/supabase/server";
+import { sendVoiceNoteEmail, sendNewNoteNotification } from "@/lib/email";
+import {
+  MAX_AUDIO_BYTES,
+  sanitizeSubject,
+  durationLabel,
+  storeNote,
+  removeStoredNote,
+} from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { clientIp, bodyTooLarge } from "@/lib/http";
+import type { Profile } from "@/lib/db/types";
 
 export const runtime = "nodejs";
 
-// Resend caps total message size around 40MB; keep attachments well under it.
-const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
-const MAX_SUBJECT_LEN = 150;
+type RecipientProfile = Pick<Profile, "id" | "email" | "display_name">;
 
-function durationLabel(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
-// Strip control characters (incl. CR/LF, which would allow header injection),
-// collapse whitespace, trim, and cap length.
-function sanitizeSubject(raw: string): string {
-  return raw
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001f\u007f]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, MAX_SUBJECT_LEN);
+/**
+ * Looks up a Dearly account for the recipient. Returns null when there is no
+ * match — or when Supabase isn't configured/reachable, so the public send
+ * flow degrades to the classic email instead of failing.
+ */
+async function findRecipientAccount(
+  recipientEmail: string
+): Promise<{ service: SupabaseClient; recipient: RecipientProfile } | null> {
+  try {
+    const service = createServiceClient();
+    const { data } = await service
+      .from("profiles")
+      .select("id, email, display_name")
+      .eq("email", recipientEmail.toLowerCase())
+      .maybeSingle<RecipientProfile>();
+    return data ? { service, recipient: data } : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: NextRequest) {
+  const oversized = bodyTooLarge(req, MAX_AUDIO_BYTES + 1024 * 1024);
+  if (oversized) return oversized;
+
+  const limit = rateLimit(`send:${clientIp(req)}`, { limit: 5, windowMs: 60_000 });
+  if (!limit.allowed) return tooManyRequests(limit.resetAt);
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -48,46 +69,67 @@ export async function POST(req: NextRequest) {
   }
 
   const audio = form.get("audio");
-  let attachments: { filename: string; content: Buffer }[] | undefined;
-  let hasAudio = false;
+  let audioBuffer: Buffer | null = null;
 
   if (audio instanceof File && audio.size > 0) {
     if (audio.size > MAX_AUDIO_BYTES) {
       return NextResponse.json({ error: "That recording is too large to email." }, { status: 413 });
     }
-    const buffer = Buffer.from(await audio.arrayBuffer());
-    attachments = [{ filename: audio.name || "dearly-voice-note.mp3", content: buffer }];
-    hasAudio = true;
+    audioBuffer = Buffer.from(await audio.arrayBuffer());
   }
 
-  const html = noteEmailHtml({
-    senderName,
-    recipientName,
-    durationLabel: durationLabel(durationSeconds),
-    hasAudio,
-    simulated,
-    subject: customSubject,
-  });
-  const text = noteEmailText({ senderName, recipientName, hasAudio, subject: customSubject });
+  // Registered recipients get the note in their Dearly Inbox instead of an
+  // email attachment (anonymous sender; the free sender is BCC'd the
+  // notification as their record). Requires real audio to store.
+  const account = audioBuffer ? await findRecipientAccount(recipientEmail) : null;
 
   try {
-    const resend = getResend();
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: [recipientEmail],
-      // BCC the sender on every note delivered to the recipient.
-      bcc: [senderEmail],
-      replyTo: senderEmail,
-      subject: customSubject || `${senderName} sent you a voice note on Dearly`,
-      html,
-      text,
-      attachments,
-    });
+    if (account && audioBuffer) {
+      const { service, recipient } = account;
+      const storedNote = await storeNote(service, service, {
+        ownerFolder: recipient.id,
+        senderId: null,
+        senderName,
+        recipientId: recipient.id,
+        recipientName: recipient.display_name || recipientName,
+        recipientEmail: recipient.email,
+        subject: customSubject,
+        durationSeconds,
+        audioBuffer,
+      });
 
-    if (error) {
-      return NextResponse.json({ error: error.message || "Email failed to send." }, { status: 502 });
+      try {
+        await sendNewNoteNotification({
+          recipientEmail: recipient.email,
+          senderName,
+          senderEmail,
+          recipientName: recipient.display_name || recipientName,
+          subject: customSubject,
+          inboxUrl: `${new URL(req.url).origin}/voicenotes`,
+          bccSender: true,
+        });
+      } catch (notifyError) {
+        // Without the notification the recipient may never know — roll back
+        // so the sender can retry without creating duplicates.
+        await removeStoredNote(service, storedNote);
+        throw notifyError;
+      }
+      return NextResponse.json({ ok: true, delivery: "in-app", id: storedNote.id });
     }
-    return NextResponse.json({ ok: true, id: data?.id });
+
+    const id = await sendVoiceNoteEmail({
+      senderName,
+      senderEmail,
+      recipientName,
+      recipientEmail,
+      subject: customSubject,
+      durationLabel: durationLabel(durationSeconds),
+      simulated,
+      attachments: audioBuffer
+        ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
+        : undefined,
+    });
+    return NextResponse.json({ ok: true, delivery: "email", id });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Email failed to send.";
     return NextResponse.json({ error: message }, { status: 500 });

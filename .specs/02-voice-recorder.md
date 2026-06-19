@@ -25,11 +25,11 @@ As a sender, I want to record a short voice note directly in the browser with vi
 - `Recording` interface in `src/types.ts` — `{ url, blob, mimeType, duration, bars, simulated }`.
 
 **Components/Modules**:
-- `src/components/VoiceRecorder.tsx` (OWNER) — phases `idle | recording | recorded`; mic capture with `MediaRecorder`; live RMS waveform via analyser; static seekable waveform + playback for the take; redo; 90-second cap; simulated fallback when `getUserMedia` is denied/unavailable.
+- `src/components/VoiceRecorder.tsx` (OWNER) — phases `idle | recording | recorded`; mic capture with `MediaRecorder`; live RMS waveform via analyser; static seekable waveform + playback for the take; redo; 5-minute cap; simulated fallback when `getUserMedia` is denied/unavailable.
 - `src/components/icons.tsx` — mic/stop/play/pause/redo glyphs.
 
 **State/Configuration**:
-- Constants: `MAX_SECONDS = 90`, `N_BARS = 64`.
+- Constants: `MAX_SECONDS = 300`, `N_BARS = 64`.
 - Reports the completed take upward via `onRecordingChange(recording | null)`.
 
 ## Acceptance Criteria
@@ -37,11 +37,11 @@ As a sender, I want to record a short voice note directly in the browser with vi
 - [ ] **AC1**: Start recording with live feedback
   - Given the idle recorder
   - When the user taps the mic button and grants access
-  - Then recording begins, a timer counts up against "/ 1:30", and a live waveform + progress meter animate
+  - Then recording begins, a timer counts up against "/ 5:00", and a live waveform + progress meter animate
 
 - [ ] **AC2**: Stop produces a reviewable take
   - Given an active recording
-  - When the user stops (or the 90s cap is reached)
+  - When the user stops (or the 5:00 cap is reached)
   - Then the recorder shows a static waveform with play/pause, elapsed duration, and a "Redo recording" option
 
 - [ ] **AC3**: Playback and seeking work
@@ -65,6 +65,12 @@ As a sender, I want to record a short voice note directly in the browser with vi
 - Simulated takes have `url`/`blob` null; playback uses a timer-driven progress simulation.
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (longer recordings)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: Raised the recording cap from 90s to 5 minutes — `MAX_SECONDS = 300` in `src/components/VoiceRecorder.tsx`, with the "up to" hint and the timer's max label now reading "5:00". The cap auto-stop, progress meter, simulated fallback, and teardown are otherwise unchanged. The 20MB upload limit and MP3 transcode bitrate comfortably accommodate the longer duration. AC1/AC2 wording updated to "5:00".
 
 ### [2026-06-10] - Verified
 - **Author**: Claude AI

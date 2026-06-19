@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { RecIcon } from "./icons";
 import type { Recording } from "@/types";
 
-const MAX_SECONDS = 90;
+const MAX_SECONDS = 300;
 const N_BARS = 64;
 
 function cssVar(name: string, fallback: string): string {
@@ -388,7 +388,7 @@ export default function VoiceRecorder({
           <button className="rec-btn" onClick={start} aria-label="Start recording">
             {RecIcon.mic()}
           </button>
-          <div className="rec-hint">Tap to record — up to 1:30</div>
+          <div className="rec-hint">Tap to record — up to 5:00</div>
         </div>
       )}
 
@@ -400,7 +400,7 @@ export default function VoiceRecorder({
               {simulated ? "Recording (demo)" : "Recording"}
             </div>
             <div className="timer">
-              {fmt(elapsed)} <span className="max">/ 1:30</span>
+              {fmt(elapsed)} <span className="max">/ 5:00</span>
             </div>
           </div>
           <div className="wave-wrap">

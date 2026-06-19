@@ -1,25 +1,50 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import Link from "next/link";
 import { FEATURES, FEAT_ICON } from "./icons";
-import { emailOk } from "@/lib/validation";
-import { joinWaitlist } from "@/lib/api";
 
-export default function Waitlist({
-  defaultEmail,
-  onClose,
-}: {
-  defaultEmail?: string;
-  onClose: () => void;
-}) {
-  const [email, setEmail] = useState(defaultEmail || "");
-  const [touched, setTouched] = useState(false);
-  const [joined, setJoined] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [sendError, setSendError] = useState("");
+/** What Dearly can do today — each shown in the showcase modal. */
+const EXISTING: { icon: React.ReactNode; t: string; d: string }[] = [
+  {
+    t: "Record in your browser",
+    d: "Tap once and capture up to five minutes of voice. Nothing to download.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="2.5" width="6" height="11" rx="3" />
+        <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+        <line x1="12" y1="17.5" x2="12" y2="21" />
+        <line x1="8.5" y1="21" x2="15.5" y2="21" />
+      </svg>
+    ),
+  },
+  {
+    t: "Send to any inbox",
+    d: "We deliver your note as an MP3 email — with your own subject line — to anyone.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2.5" />
+        <path d="m4 7 8 6 8-6" />
+      </svg>
+    ),
+  },
+  {
+    t: "Keep them in Dearly",
+    d: "With a free account, notes you send and receive live in tidy chats — out of your email.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 20.5l1.9-4.2A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z" />
+      </svg>
+    ),
+  },
+  {
+    t: "Reply back and forth",
+    d: "Hold a real conversation — every voice note in a chat is replyable.",
+    icon: FEAT_ICON.reply,
+  },
+];
 
-  const err = !email.trim() ? "Pop in your email to join" : emailOk(email) ? "" : "That email looks off";
-
+export default function Waitlist({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -27,21 +52,6 @@ export default function Waitlist({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
-  const join = async () => {
-    setTouched(true);
-    if (err || submitting) return;
-    setSubmitting(true);
-    setSendError("");
-    try {
-      await joinWaitlist(email, "modal");
-      setJoined(true);
-    } catch (e) {
-      setSendError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="overlay" onClick={onClose}>
@@ -52,64 +62,46 @@ export default function Waitlist({
           </svg>
         </button>
 
-        {joined ? (
-          <div className="wl-joined">
-            <div className="seal">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12.5 10 17l9-10" />
-              </svg>
+        <p className="modal-eyebrow">Why Dearly</p>
+        <h2 className="modal-title">Everything you can do today.</h2>
+        <p className="modal-sub">
+          A heartfelt voice note in seconds — free, no app to install. Sign up to keep every note in one place.
+        </p>
+
+        <div className="feature-list">
+          {EXISTING.map((f) => (
+            <div className="feature" key={f.t}>
+              <div className="fi">{f.icon}</div>
+              <div className="ft">
+                <h4>{f.t}</h4>
+                <p>{f.d}</p>
+              </div>
             </div>
-            <h3>You&rsquo;re on the list.</h3>
-            <p>
-              We&rsquo;ll write to <b style={{ color: "var(--ink)" }}>{email}</b> the moment these arrive. Thank you for being early.
-            </p>
-            <button className="btn btn-primary" style={{ maxWidth: 220, margin: "0 auto" }} onClick={onClose}>
-              Back to Dearly
-            </button>
+          ))}
+        </div>
+
+        <div className="wl-cta">
+          <Link href="/signup" className="btn btn-primary wl-cta-btn">
+            Sign up free
+          </Link>
+          <Link href="/login" className="wl-cta-login">
+            Already have an account? Log in
+          </Link>
+        </div>
+
+        <div className="wl-soon">
+          <p className="wl-soon-head">On the way</p>
+          <div className="wl-soon-list">
+            {FEATURES.map((f) => (
+              <div className="wl-soon-item" key={f.k}>
+                <span className="wl-soon-ic">{FEAT_ICON[f.k]}</span>
+                <span className="wl-soon-text">
+                  <b>{f.t}</b> — {f.d}
+                </span>
+              </div>
+            ))}
           </div>
-        ) : (
-          <>
-            <p className="modal-eyebrow">The road ahead</p>
-            <h2 className="modal-title">Dearly is just beginning.</h2>
-            <p className="modal-sub">
-              You&rsquo;re using an early preview. Join the list and we&rsquo;ll let you know the moment these land:
-            </p>
-
-            <div className="feature-list">
-              {FEATURES.map((f) => (
-                <div className="feature" key={f.k}>
-                  <div className="fi">{FEAT_ICON[f.k]}</div>
-                  <div className="ft">
-                    <h4>{f.t}</h4>
-                    <p>{f.d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="wl-form">
-              <input
-                type="email"
-                value={email}
-                placeholder="you@email.com"
-                onChange={(e) => setEmail(e.target.value)}
-                className={touched && err ? "invalid" : ""}
-                onKeyDown={(e) => e.key === "Enter" && join()}
-              />
-              <button className="btn btn-primary" onClick={join} disabled={submitting}>
-                {submitting ? (
-                  <span className="sending">
-                    <span className="spinner" /> Joining…
-                  </span>
-                ) : (
-                  "Notify me"
-                )}
-              </button>
-            </div>
-            <div className="wl-err">{(touched && err) || sendError}</div>
-            <p className="wl-fine">No spam, ever — just one gentle note when something new is ready.</p>
-          </>
-        )}
+        </div>
       </div>
     </div>
   );

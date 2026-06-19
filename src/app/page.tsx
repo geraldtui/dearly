@@ -5,9 +5,11 @@ import VoiceRecorder from "@/components/VoiceRecorder";
 import Waitlist from "@/components/Waitlist";
 import Logo from "@/components/Logo";
 import Notepad from "@/components/Notepad";
-import { FEAT_ICON } from "@/components/icons";
+import PublicNav from "@/components/PublicNav";
+import SignupPromoCard from "@/components/SignupPromoCard";
+import SignupPopover from "@/components/SignupPopover";
 import { emailOk } from "@/lib/validation";
-import { sendNote, joinWaitlist } from "@/lib/api";
+import { sendNote } from "@/lib/api";
 import type { Recording } from "@/types";
 
 function Field({
@@ -17,8 +19,10 @@ function Field({
   value,
   placeholder,
   onChange,
+  onFocus,
   error,
   show,
+  children,
 }: {
   id: string;
   label: string;
@@ -26,8 +30,10 @@ function Field({
   value: string;
   placeholder?: string;
   onChange: (v: string) => void;
+  onFocus?: () => void;
   error: string;
   show: boolean;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="field">
@@ -38,35 +44,38 @@ function Field({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         className={show && error ? "invalid" : ""}
         autoComplete="off"
       />
       <span className="err">{show && error ? error : ""}</span>
+      {children}
     </div>
   );
 }
 
 type Status = "idle" | "sending" | "sent";
-type FormState = { sName: string; sEmail: string; rName: string; rEmail: string; subject: string };
+type FormState = { sEmail: string; rEmail: string };
+
+/** Derive a friendly display name from an email's local part, e.g. "mary.j@x.com" → "Mary J". */
+function nameFromEmail(email: string): string {
+  const local = email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ?? "";
+  return local ? local.replace(/\b\w/g, (c) => c.toUpperCase()) : "there";
+}
 
 export default function App() {
-  const [form, setForm] = useState<FormState>({ sName: "", sEmail: "", rName: "", rEmail: "", subject: "" });
+  const [form, setForm] = useState<FormState>({ sEmail: "", rEmail: "" });
   const [recording, setRecording] = useState<Recording | null>(null);
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [sendError, setSendError] = useState("");
   const [waitlist, setWaitlist] = useState(false);
-  const [joinEmail, setJoinEmail] = useState("");
-  const [joinTouched, setJoinTouched] = useState(false);
-  const [joined, setJoined] = useState(false);
-  const [joining, setJoining] = useState(false);
-  const [joinSendError, setJoinSendError] = useState("");
+  const [popAnchor, setPopAnchor] = useState<"sEmail" | "rEmail" | null>(null);
   const set = (k: keyof FormState) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const anchorPop = (field: "sEmail" | "rEmail") => () => setPopAnchor((a) => a ?? field);
 
   const errors = {
-    sName: form.sName.trim() ? "" : "Please add your name",
     sEmail: !form.sEmail.trim() ? "Your email is needed" : emailOk(form.sEmail) ? "" : "That email looks off",
-    rName: form.rName.trim() ? "" : "Who is this for?",
     rEmail: !form.rEmail.trim() ? "Their email is needed" : emailOk(form.rEmail) ? "" : "That email looks off",
   };
   const formValid = Object.values(errors).every((e) => !e);
@@ -75,16 +84,15 @@ export default function App() {
   const send = async () => {
     setTouched(true);
     if (!canSend || status === "sending") return;
-    setJoinEmail(form.sEmail);
     setSendError("");
     setStatus("sending");
     try {
       await sendNote({
-        senderName: form.sName,
+        senderName: nameFromEmail(form.sEmail),
         senderEmail: form.sEmail,
-        recipientName: form.rName,
+        recipientName: nameFromEmail(form.rEmail),
         recipientEmail: form.rEmail,
-        subject: form.subject,
+        subject: "",
         recording,
       });
       setStatus("sent");
@@ -94,38 +102,21 @@ export default function App() {
     }
   };
 
-  const joinErr = !joinEmail.trim() ? "Add your email to join" : emailOk(joinEmail) ? "" : "That email looks off";
-  const joinNow = async () => {
-    setJoinTouched(true);
-    if (joinErr || joining) return;
-    setJoining(true);
-    setJoinSendError("");
-    try {
-      await joinWaitlist(joinEmail, "success");
-      setJoined(true);
-    } catch (e) {
-      setJoinSendError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
-    } finally {
-      setJoining(false);
-    }
-  };
-
   const reset = () => {
     if (recording?.url) URL.revokeObjectURL(recording.url);
-    setForm({ sName: "", sEmail: "", rName: "", rEmail: "", subject: "" });
+    setForm({ sEmail: "", rEmail: "" });
     setRecording(null);
     setTouched(false);
     setStatus("idle");
     setSendError("");
-    setJoinTouched(false);
-    setJoined(false);
-    setJoinSendError("");
   };
 
   return (
     <div className="stage">
       <div className="orb a" />
       <div className="orb b" />
+
+      <PublicNav />
 
       <main className="card">
         {status === "sent" ? (
@@ -138,62 +129,10 @@ export default function App() {
             </div>
             <h2>On its way.</h2>
             <p>
-              Your voice note is on its way to <b>{form.rName}</b>. They&rsquo;ll hear it at <b>{form.rEmail}</b> in a moment.
+              Your voice note is on its way. They&rsquo;ll hear it at <b>{form.rEmail}</b> in a moment.
             </p>
 
-            <div className="join-card">
-              <p className="join-eyebrow">
-                <span className="spark" />
-                Be first in line
-              </p>
-              {joined ? (
-                <div className="join-done">
-                  <div className="tick">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12.5 10 17l9-10" />
-                    </svg>
-                  </div>
-                  <div className="jd-txt">
-                    <h4>You&rsquo;re on the list.</h4>
-                    <p>
-                      We&rsquo;ll write to <b style={{ color: "var(--ink)" }}>{joinEmail}</b> the moment these land.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h3>Want contacts, video notes &amp; more?</h3>
-                  <div className="join-chips">
-                    <span className="chip">{FEAT_ICON.contacts} Saved contacts</span>
-                    <span className="chip">{FEAT_ICON.video} Video notes</span>
-                    <span className="chip">{FEAT_ICON.clock} Time capsules</span>
-                    <button className="chip more" onClick={() => setWaitlist(true)}>
-                      + 3 more
-                    </button>
-                  </div>
-                  <div className="join-form">
-                    <input
-                      type="email"
-                      value={joinEmail}
-                      placeholder="you@email.com"
-                      onChange={(e) => setJoinEmail(e.target.value)}
-                      className={joinTouched && joinErr ? "invalid" : ""}
-                      onKeyDown={(e) => e.key === "Enter" && joinNow()}
-                    />
-                    <button className="btn btn-primary" onClick={joinNow} disabled={joining}>
-                      {joining ? (
-                        <span className="sending">
-                          <span className="spinner" /> Joining…
-                        </span>
-                      ) : (
-                        "Notify me"
-                      )}
-                    </button>
-                  </div>
-                  <div className="join-err">{(joinTouched && joinErr) || joinSendError}</div>
-                </>
-              )}
-            </div>
+            <SignupPromoCard onExplore={() => setWaitlist(true)} />
 
             <button className="record-again" onClick={reset}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -210,29 +149,24 @@ export default function App() {
               <h1 className="brand">
                 Dearly<span className="dot">.</span>
               </h1>
-              <p className="tagline"></p>
-              <div className="preview-pill">
-                <span className="spark" />
-                Early preview
-              </div>
+                <p className="tagline"></p>
               <div className="divider" />
             </div>
 
             <div className="section-label">From you</div>
-            <div className="grid-2">
-              <Field id="sName" label="Your name" value={form.sName} placeholder="Eleanor" onChange={set("sName")} error={errors.sName} show={touched} />
-              <Field id="sEmail" label="Your email" type="email" value={form.sEmail} placeholder="you@email.com" onChange={set("sEmail")} error={errors.sEmail} show={touched} />
-            </div>
+            <Field id="sEmail" label="Your email" type="email" value={form.sEmail} placeholder="you@email.com" onChange={set("sEmail")} onFocus={anchorPop("sEmail")} error={errors.sEmail} show={touched}>
+              {popAnchor === "sEmail" && <SignupPopover />}
+            </Field>
 
             <div className="section-label">To your dear one</div>
-            <div className="grid-2">
-              <Field id="rName" label="Their name" value={form.rName} placeholder="Mom" onChange={set("rName")} error={errors.rName} show={touched} />
-              <Field id="rEmail" label="Their email" type="email" value={form.rEmail} placeholder="them@email.com" onChange={set("rEmail")} error={errors.rEmail} show={touched} />
+            <Field id="rEmail" label="Their email" type="email" value={form.rEmail} placeholder="them@email.com" onChange={set("rEmail")} onFocus={anchorPop("rEmail")} error={errors.rEmail} show={touched}>
+              {popAnchor === "rEmail" && <SignupPopover />}
+            </Field>
+
+            <div className="recorder-wrap">
+              <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
+              <Notepad />
             </div>
-
-            <Field id="subject" label="Subject (optional)" value={form.subject} placeholder="Thinking of you" onChange={set("subject")} error="" show={false} />
-
-            <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
 
             {touched && !recording && (
               <div className="err" style={{ textAlign: "center", marginTop: -10, marginBottom: 14 }}>
@@ -265,16 +199,14 @@ export default function App() {
             <p className="foot">
               Made with <span className="heart">♥</span> —{" "}
               <button className="foot-link" onClick={() => setWaitlist(true)}>
-                see what&rsquo;s coming to Dearly
+                see what Dearly can do
               </button>
             </p>
           </>
         )}
       </main>
 
-      {status !== "sent" && <Notepad />}
-
-      {waitlist && <Waitlist defaultEmail={form.sEmail} onClose={() => setWaitlist(false)} />}
+      {waitlist && <Waitlist onClose={() => setWaitlist(false)} />}
     </div>
   );
 }

@@ -46,11 +46,7 @@ export const FEAT_ICON: Record<string, React.ReactNode> = {
 };
 
 export const FEATURES = [
-  { k: "contacts", t: "Saved contacts", d: "Keep your dear ones close — no retyping names or emails." },
-  { k: "video", t: "Video notes", d: "Send a face, not just a voice." },
   { k: "clock", t: "Time capsules", d: "Schedule a note for a birthday — or years from now." },
-  { k: "reply", t: "Voice replies", d: "Let them write back, in their own voice." },
-  { k: "archive", t: "Private keepsake", d: "Every note you send, gathered in one tender archive." },
   { k: "family", t: "Family circles", d: "One note, lovingly delivered to the whole family." },
 ] as const;
 

@@ -15,14 +15,15 @@ As a sender, I want a temporary notepad to jot down my thoughts before recording
 **Why**: People often want to draft or outline a voice note before pressing record. A lightweight scratchpad makes this easy. It is purely private (never emailed) and stays hidden until the user opens it, so it never disrupts the existing compose layout (form → recorder → send).
 
 **Dependencies**:
-- Lives on the compose screen rendered by `src/app/page.tsx` (alongside `02-voice-recorder.md`).
+- Lives on the public compose screen rendered by `src/app/page.tsx` (alongside `02-voice-recorder.md`) and, in the authenticated app, inside the chat composer (`14-chat-conversations.md`).
 - No backend; notes are stored only in the browser.
 
 ## Technical Specification
 
 **Components/Modules**:
-- `src/components/Notepad.tsx` (NEW) — a self-contained client component: a fixed floating toggle button plus an overlay panel containing a textarea, a "Clear" control, and a close control. Reads/writes its text to `localStorage`. Manages its own open/closed and text state; takes no props.
-- `src/app/page.tsx` (MODIFIED) — render `<Notepad />` within the compose view only (not on the success screen). It is a floating sibling and does not alter the existing form/recorder/send markup.
+- `src/components/Notepad.tsx` (NEW) — a self-contained client component: a toggle button plus an overlay panel containing a textarea, a "Clear" control, and a close control. Reads/writes its text to `localStorage`. Manages its own open/closed and text state. Takes one optional prop, `inline` (default `false`): when `false` it renders as a fixed floating FAB (`.notepad-floating`) with the one-time awareness hint; when `true` it renders as an inline button (`.notepad-inline`, no hint) sized to sit in a control row.
+- `src/app/page.tsx` (MODIFIED) — render `<Notepad />` (floating) within the compose view only (not on the success screen). It is a floating sibling and does not alter the existing form/recorder/send markup.
+- `src/components/ChatComposer.tsx` (MODIFIED, 2026-06-18) — renders `<Notepad inline />` beside the optional subject input in the chat composer's subject row, so the scratchpad is available while composing a chat note.
 - `src/app/globals.css` (MODIFIED) — add styles for the floating button and overlay panel using existing design tokens (`--card`, `--accent`, `--accent-deep`, `--radius`, shadows), positioned `fixed` so the card layout is untouched.
 
 **Storage**:
@@ -77,6 +78,12 @@ As a sender, I want a temporary notepad to jot down my thoughts before recording
 - Long text: the textarea scrolls within the fixed panel; the panel itself does not grow to disrupt the viewport.
 
 ## Changelog
+
+### [2026-06-18] - Re-verified (inline variant in chat composer)
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Notes**: `Notepad` gained an optional `inline` prop. Default (`inline={false}`) is unchanged: floating FAB + awareness hint on the public compose screen (`page.tsx`). When `inline` is true it renders as a static button (`.notepad-inline`, hint suppressed) and is now placed in the chat composer's subject row (`ChatComposer.tsx`, spec 14). Storage keys, open/close/Escape, persistence, and Clear behave identically across both variants. All ACs still hold; the scratchpad remains private and is never part of any send.
 
 ### [2026-06-11] - Draft
 - **Author**: Claude AI

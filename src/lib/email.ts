@@ -1,19 +1,45 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
+import type Mail from "nodemailer/lib/mailer";
 
-let cached: Resend | null = null;
+let cached: Transporter | null = null;
 
-/** Lazily construct the Resend client so a missing key only fails at request time. */
-export function getResend(): Resend {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    throw new Error("RESEND_API_KEY is not set. Add it to your environment to send email.");
+/**
+ * Lazily build the Amazon SES SMTP transport so missing config only fails at
+ * request time (and tests can run without real credentials). SMTP credentials
+ * and the host are region-specific — see docs/aws-ses-setup.md.
+ */
+export function getTransport(): Transporter {
+  const host = process.env.SES_SMTP_HOST;
+  const user = process.env.SES_SMTP_USER;
+  const pass = process.env.SES_SMTP_PASSWORD;
+  if (!host || !user || !pass) {
+    throw new Error(
+      "SES SMTP is not configured. Set SES_SMTP_HOST, SES_SMTP_USER and SES_SMTP_PASSWORD."
+    );
   }
-  if (!cached) cached = new Resend(key);
+  if (!cached) {
+    const port = Number(process.env.SES_SMTP_PORT || 587);
+    cached = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
+      auth: { user, pass },
+    });
+  }
   return cached;
 }
 
-/** Resend's onboarding sender works without domain verification for quick tests. */
-export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Dearly <onboarding@resend.dev>";
+/** Thin wrapper so callers don't touch the transport directly. Returns the SES message id. */
+export async function sendEmail(message: Mail.Options): Promise<string | undefined> {
+  const info = await getTransport().sendMail(message);
+  return info.messageId;
+}
+
+/**
+ * Sender address. Must be on a domain verified in SES (e.g. dearlyvoice.com);
+ * SES rejects unverified senders, so there is no public test fallback.
+ */
+export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Dearly <noreply@dearlyvoice.com>";
 
 export function escapeHtml(s: string): string {
   return s
@@ -37,8 +63,10 @@ export function noteEmailHtml(opts: {
   simulated: boolean;
   /** Sender-chosen subject; when present it becomes the masthead instead of "Dearly". */
   subject?: string;
+  /** When the recipient has a Dearly account, link them to their inbox to listen in-app too. */
+  inboxUrl?: string;
 }): string {
-  const { senderName, recipientName, durationLabel, hasAudio, simulated, subject } = opts;
+  const { senderName, recipientName, durationLabel, hasAudio, simulated, subject, inboxUrl } = opts;
 
   // Use the sender's subject as the masthead when provided; otherwise the brand.
   const masthead = subject?.trim()
@@ -87,6 +115,11 @@ export function noteEmailHtml(opts: {
                 senderName
               )}</b> sent you something to hear, with love.</p>
               ${audioLine}
+              ${
+                inboxUrl
+                  ? `<p style="margin:16px 0 0;"><a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 26px;border-radius:99px;">Listen on Dearly</a></p>`
+                  : ""
+              }
             </td>
           </tr>
           <tr>
@@ -107,8 +140,9 @@ export function noteEmailText(opts: {
   recipientName: string;
   hasAudio: boolean;
   subject?: string;
+  inboxUrl?: string;
 }): string {
-  const { senderName, recipientName, hasAudio, subject } = opts;
+  const { senderName, recipientName, hasAudio, subject, inboxUrl } = opts;
   const lines: string[] = [];
   if (subject?.trim()) lines.push(subject.trim(), "");
   lines.push(
@@ -116,8 +150,153 @@ export function noteEmailText(opts: {
     "",
     `${senderName} sent you something to hear, with love.`,
     hasAudio ? "Your voice note is attached below — just press play to listen." : "",
+    inboxUrl ? `You can also listen on Dearly: ${inboxUrl}` : "",
     "",
     "Made with love — Dearly"
   );
   return lines.filter(Boolean).join("\n");
+}
+
+export interface VoiceNoteEmail {
+  senderName: string;
+  senderEmail: string;
+  recipientName: string;
+  recipientEmail: string;
+  subject: string;
+  durationLabel: string;
+  simulated: boolean;
+  attachments?: { filename: string; content: Buffer }[];
+  /**
+   * BCC the sender their own copy (default). The account flow passes `false`
+   * because the sender's copy is stored in Dearly instead (spec 08).
+   */
+  bccSender?: boolean;
+  /** When set (recipient has a Dearly account), the email adds a "Listen on Dearly" CTA. */
+  inboxUrl?: string;
+}
+
+/**
+ * Sends the classic voice-note email (MP3 attached). Shared by the public
+ * send flow (sender BCC'd) and the account flow's non-user fallback (no BCC —
+ * the sender's copy lives in their Sent view). Returns the provider message
+ * id; throws on failure.
+ */
+export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string | undefined> {
+  const hasAudio = (opts.attachments?.length ?? 0) > 0;
+  const tplOpts = {
+    senderName: opts.senderName,
+    recipientName: opts.recipientName,
+    durationLabel: opts.durationLabel,
+    hasAudio,
+    simulated: opts.simulated,
+    subject: opts.subject,
+    inboxUrl: opts.inboxUrl,
+  };
+  return sendEmail({
+    from: FROM_EMAIL,
+    to: opts.recipientEmail,
+    bcc: opts.bccSender === false ? undefined : opts.senderEmail,
+    replyTo: opts.senderEmail,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    html: noteEmailHtml(tplOpts),
+    text: noteEmailText(tplOpts),
+    attachments: opts.attachments,
+  });
+}
+
+/** Lightweight "you have a new voice note" notification for in-app delivery. */
+export function newNoteNotificationHtml(opts: {
+  senderName: string;
+  recipientName: string;
+  subject?: string | null;
+  inboxUrl: string;
+}): string {
+  const { senderName, recipientName, subject, inboxUrl } = opts;
+  const subjectLine = subject?.trim()
+    ? `<p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;">&ldquo;${escapeHtml(subject.trim())}&rdquo;</p>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0;padding:0;background:#FDF8F5;font-family:'Helvetica Neue',Arial,sans-serif;color:${INK};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FDF8F5;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#F3E8E0;border:1px solid rgba(255,255,255,0.7);border-radius:24px;overflow:hidden;">
+          <tr>
+            <td style="padding:40px 40px 8px;text-align:center;">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Dearly<span style="color:${ACCENT};">.</span></div>
+              <div style="width:46px;height:1px;background:${ACCENT};opacity:.55;margin:14px auto 0;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 0;text-align:center;">
+              <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:${INK};">A voice note is waiting for you, ${escapeHtml(recipientName)}.</h1>
+              <p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;"><b style="color:${INK};">${escapeHtml(senderName)}</b> sent you a voice note on Dearly.</p>
+              ${subjectLine}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 8px;text-align:center;">
+              <a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 30px;border-radius:99px;">Listen on Dearly</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 40px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Dearly · voice logs for the ones you love</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function newNoteNotificationText(opts: {
+  senderName: string;
+  recipientName: string;
+  subject?: string | null;
+  inboxUrl: string;
+}): string {
+  const { senderName, recipientName, subject, inboxUrl } = opts;
+  const lines = [
+    `A voice note is waiting for you, ${recipientName}.`,
+    "",
+    `${senderName} sent you a voice note on Dearly.`,
+    subject?.trim() ? `"${subject.trim()}"` : "",
+    "",
+    `Listen here: ${inboxUrl}`,
+    "",
+    "Made with love — Dearly",
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
+/** Sends the "you have a new voice note" notification for in-app delivery. */
+export async function sendNewNoteNotification(opts: {
+  recipientEmail: string;
+  senderName: string;
+  senderEmail?: string;
+  recipientName: string;
+  subject: string;
+  inboxUrl: string;
+  /** BCC the sender (used as the free sender's delivery record). */
+  bccSender?: boolean;
+}): Promise<void> {
+  const tplOpts = {
+    senderName: opts.senderName,
+    recipientName: opts.recipientName,
+    subject: opts.subject,
+    inboxUrl: opts.inboxUrl,
+  };
+  await sendEmail({
+    from: FROM_EMAIL,
+    to: opts.recipientEmail,
+    bcc: opts.bccSender && opts.senderEmail ? opts.senderEmail : undefined,
+    replyTo: opts.senderEmail || undefined,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    html: newNoteNotificationHtml(tplOpts),
+    text: newNoteNotificationText(tplOpts),
+  });
 }
