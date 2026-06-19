@@ -1438,7 +1438,27 @@ canvas.wave {
     background 0.15s ease,
     color 0.15s ease;
 }
-.app-sidebar-nav a:hover {
+.app-sidebar-nav button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.app-sidebar-nav a:hover,
+.app-sidebar-nav button:hover {
   color: var(--accent-deep);
   background: #fbf1ec;
 }
@@ -1446,7 +1466,8 @@ canvas.wave {
   color: var(--accent-deep);
   background: #f6e7df;
 }
-.app-sidebar-nav a svg {
+.app-sidebar-nav a svg,
+.app-sidebar-nav button svg {
   flex: 0 0 auto;
 }
 .app-sidebar-foot {
@@ -2003,17 +2024,74 @@ canvas.wave {
   border-right: 1px solid var(--line);
   padding: 22px 12px;
 }
+.chat-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 0;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 10;
+}
+
 .chat-list-head {
   font-family: var(--brand-font);
   font-size: 22px;
   font-weight: 600;
   color: var(--ink);
-  margin: 4px 10px 14px;
+  margin: 0;
 }
 .chat-list-empty {
   font-size: 13px;
   color: var(--ink-soft);
   margin: 4px 10px;
+  text-align: center;
+}
+
+.chat-new-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 2px 6px rgba(163, 106, 94, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+.chat-new-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 8px rgba(163, 106, 94, 0.4);
+}
+
+.chat-new-btn:active {
+  transform: scale(0.95);
+}
+
+.chat-loading,
+.chat-error {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.chat-loading p,
+.chat-error p {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.chat-error .btn {
+  margin-top: 8px;
 }
 .chat-items {
   list-style: none;
@@ -2032,6 +2110,12 @@ canvas.wave {
   text-decoration: none;
   color: var(--ink);
   transition: background 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font: inherit;
 }
 .chat-item:hover {
   background: #fbf1ec;

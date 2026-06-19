@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import ConversationLabelEditor from "@/components/ConversationLabelEditor";
 import type { Conversation } from "@/lib/conversations";
 
@@ -20,10 +19,12 @@ export default function ChatList({
   conversations,
   selectedKey,
   newMode,
+  onSelectConversation,
 }: {
   conversations: ChatListItem[];
   selectedKey: string | null;
   newMode: boolean;
+  onSelectConversation: (key: string) => void;
 }) {
   return (
     <aside className="chat-list" aria-label="Conversations">
@@ -37,8 +38,9 @@ export default function ChatList({
             const active = !newMode && c.key === selectedKey;
             return (
               <li key={c.key} className="chat-item-row">
-                <Link
-                  href={`/chats?c=${encodeURIComponent(c.key)}`}
+                <button
+                  type="button"
+                  onClick={() => onSelectConversation(c.key)}
                   className={`chat-item${active ? " active" : ""}`}
                   aria-current={active ? "true" : undefined}
                 >
@@ -55,7 +57,7 @@ export default function ChatList({
                       {c.count} note{c.count === 1 ? "" : "s"}
                     </span>
                   </span>
-                </Link>
+                </button>
                 <ConversationLabelEditor counterpartKey={c.key} nickname={c.nickname} alias={c.alias} />
               </li>
             );
