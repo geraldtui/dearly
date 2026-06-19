@@ -59,11 +59,8 @@ test.describe("Dearly send flow (real browser)", () => {
 
     await page.goto("/");
 
-    await page.getByLabel("Your name").fill("Eleanor");
     await page.getByLabel("Your email").fill("eleanor@example.com");
-    await page.getByLabel("Their name").fill("Mom");
     await page.getByLabel("Their email").fill("mom@example.com");
-    await page.getByLabel("Subject (optional)").fill("Thinking of you");
 
     await page.getByRole("button", { name: "Start recording" }).click();
     const stop = page.getByRole("button", { name: "Stop recording" });
@@ -76,7 +73,7 @@ test.describe("Dearly send flow (real browser)", () => {
 
     await page.getByRole("button", { name: /send with love/i }).click();
 
-    await expect(page.getByText("On its way.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "On its way." })).toBeVisible();
 
     expect(captured, "no /api/send body captured").not.toBeNull();
     const audio = extractFilePart(captured!, "audio");
@@ -101,7 +98,7 @@ test.describe("Dearly send flow (real browser)", () => {
     await page.goto("/");
     await page.getByRole("button", { name: /send with love/i }).click();
 
-    await expect(page.getByText("Please add your name")).toBeVisible();
+    await expect(page.getByText("Your email is needed")).toBeVisible();
     await expect(page.getByText("Record a short message before sending.")).toBeVisible();
     await expect(page.getByText("On its way.")).toHaveCount(0);
     expect(sendCalled).toBe(false);

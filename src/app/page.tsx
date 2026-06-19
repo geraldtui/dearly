@@ -163,7 +163,10 @@ export default function App() {
               {popAnchor === "rEmail" && <SignupPopover />}
             </Field>
 
-            <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
+            <div className="recorder-wrap">
+              <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
+              <Notepad />
+            </div>
 
             {touched && !recording && (
               <div className="err" style={{ textAlign: "center", marginTop: -10, marginBottom: 14 }}>
@@ -202,8 +205,6 @@ export default function App() {
           </>
         )}
       </main>
-
-      {status !== "sent" && <Notepad />}
 
       {waitlist && <Waitlist onClose={() => setWaitlist(false)} />}
     </div>

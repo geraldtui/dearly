@@ -270,17 +270,47 @@ body {
 }
 
 /* ---------- recorder ---------- */
+.recorder-wrap {
+  position: relative;
+  margin-bottom: 22px;
+}
+
 .recorder {
   background: #fffaf7;
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
   padding: 22px 20px;
-  margin-bottom: 22px;
+  margin-bottom: 0;
   transition: border-color 0.2s ease;
 }
 .recorder.live {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(212, 163, 150, 0.14);
+}
+
+/* Notepad positioned in the bottom-right of the recorder */
+.recorder-wrap .notepad-floating {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+}
+
+.recorder-wrap .notepad-fab {
+  position: static;
+  box-shadow: 0 8px 20px -8px rgba(163, 106, 94, 0.5);
+}
+
+.recorder-wrap .notepad-fab:hover {
+  box-shadow: 0 12px 24px -8px rgba(163, 106, 94, 0.6);
+}
+
+.recorder-wrap .notepad-panel {
+  position: absolute;
+  right: 0;
+  bottom: 66px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
 }
 
 .rec-idle {
