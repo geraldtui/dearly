@@ -147,7 +147,7 @@ export default function ChatsClient({ userId }: { userId: string }) {
     return (
       <div className="chat-layout">
         <aside className="chat-list" aria-label="Conversations">
-          <h2 className="chat-list-head">Chats</h2>
+          <h2 className="chat-list-head">Voice Notes</h2>
           <div className="chat-loading">
             <span className="spinner" />
             <p>Loading conversations...</p>
@@ -167,7 +167,7 @@ export default function ChatsClient({ userId }: { userId: string }) {
     return (
       <div className="chat-layout">
         <aside className="chat-list" aria-label="Conversations">
-          <h2 className="chat-list-head">Chats</h2>
+          <h2 className="chat-list-head">Voice Notes</h2>
           <div className="chat-error">
             <p className="err">{error}</p>
             <button className="btn btn-primary" onClick={fetchData}>
@@ -202,6 +202,8 @@ export default function ChatsClient({ userId }: { userId: string }) {
         email: convo.counterpartEmail,
         viaEmail: convo.viaEmail,
         canReply: Boolean(convo.counterpartEmail || convo.counterpartId),
+        nickname: convo.nickname,
+        alias: convo.alias,
       };
     }
   } else if (conversations.length === 0) {

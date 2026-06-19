@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { authGuardDisabled } from "@/lib/dev-auth";
 import ChatsClient from "@/components/ChatsClient";
 
-export const metadata = { title: "Chats — Dearly" };
+export const metadata = { title: "Voice Notes — Dearly" };
 
 export default async function ChatsPage() {
   const supabase = await createClient();

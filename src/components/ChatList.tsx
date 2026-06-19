@@ -1,6 +1,5 @@
 "use client";
 
-import ConversationLabelEditor from "@/components/ConversationLabelEditor";
 import type { Conversation } from "@/lib/conversations";
 
 /** A conversation plus the owner's saved label values for the inline editor. */
@@ -28,7 +27,7 @@ export default function ChatList({
 }) {
   return (
     <aside className="chat-list" aria-label="Conversations">
-      <h2 className="chat-list-head">Chats</h2>
+      <h2 className="chat-list-head">Voice Notes</h2>
 
       {conversations.length === 0 ? (
         <p className="chat-list-empty">No conversations yet.</p>
@@ -58,7 +57,6 @@ export default function ChatList({
                     </span>
                   </span>
                 </button>
-                <ConversationLabelEditor counterpartKey={c.key} nickname={c.nickname} alias={c.alias} />
               </li>
             );
           })}

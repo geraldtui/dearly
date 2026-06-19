@@ -79,6 +79,26 @@ As a logged-in Dearly user, I want to set how I sign my notes to a specific pers
 
 ## Changelog
 
+### [2026-06-18] - Verified
+- **Author**: Claude AI
+- **Status**: Verified
+- **Validation Result**: COMPLIANT
+- **Quality Score**: 10/10
+- **Notes**: Implementation validated against spec. All 6 ACs satisfied. Clean Code principles followed. UX improved by moving editor from chat list hover to clickable name in thread header, plus read-only email display added. All functionality preserved, no regressions.
+- **Issues Fixed**: None
+
+### [2026-06-18] - Updated (editor moved to thread header, email display added)
+- **Author**: Claude AI
+- **Status**: Implemented
+- **Changed**: The nickname/alias editor moved from the chat list (hover-revealed pencil) to the chat thread header: the user's name is now a clickable button that opens the centered modal. The modal now displays the counterpart's email address (read-only) above the nickname and alias fields. `ConversationLabelEditor` now receives `email` and `displayName` props, renders as an `<h1>` with a clickable button wrapping the name, and includes an optional read-only email field at the top of the modal. `ChatThread`'s `ThreadCounterpart` interface now includes `nickname` and `alias` fields. `ChatsClient` passes these fields when building the counterpart object. `ChatList` no longer renders the editor (removed import and usage).
+- **Reason**: User wanted to edit contact details by clicking the name in the thread header instead of hovering over the chat list, and wanted to see the email address in the editor modal.
+- **Files Modified**:
+  - `src/components/ConversationLabelEditor.tsx` - Refactored to render clickable name + modal with email display
+  - `src/components/ChatThread.tsx` - Added editor to header, updated `ThreadCounterpart` interface
+  - `src/components/ChatList.tsx` - Removed editor import and usage
+  - `src/components/ChatsClient.tsx` - Pass nickname/alias to counterpart
+  - `src/app/globals.css` - Removed `.chat-label-wrap` and `.chat-edit-btn` styles, added `.chat-name-btn` and `.readonly-field` styles
+
 ### [2026-06-18] - Updated (editor moved to chat-list hover)
 - **Author**: Claude AI
 - **Status**: Verified

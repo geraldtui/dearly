@@ -13,7 +13,7 @@ export default function PublicNav() {
     <nav className="public-nav" aria-label="Account">
       {user ? (
         <Link href="/chats" className="public-nav-cta">
-          Chats
+          Voice Notes
         </Link>
       ) : (
         <>
