@@ -57,7 +57,8 @@ export default function ChatComposer({
     if (!canSend) return;
     const toName = mode === "new" ? name.trim() : recipientName;
     const toEmail = mode === "new" ? email.trim() : recipientEmail ?? "";
-    if (!emailOk(toEmail)) {
+    // For new chats, email is required. For replies, email validation is handled server-side.
+    if (mode === "new" && !emailOk(toEmail)) {
       setError("That email looks off.");
       return;
     }

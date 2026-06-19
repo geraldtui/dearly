@@ -1,10 +1,14 @@
 -- ===========================================================================
 -- Dearly — consolidated DEV schema (run once in the Supabase SQL editor).
 --
--- Combines migrations 0001 (accounts) + 0002 (nullable recipient) + 0003
--- (recipient_email). Idempotent: safe to re-run, and works whether the tables
--- already exist or not. We'll split this back into ordered migrations when the
--- production database goes live.
+-- Combines all migrations up to 2026-06-18:
+-- - 0001 (accounts: profiles, voice_notes, auto-profile trigger)
+-- - 0002 (nullable recipient for sent copies)
+-- - 0003 (recipient_email for email-fallback contacts)
+-- - 0004 (conversation_labels for nicknames/aliases)
+-- - RLS fix (allow authenticated users to read profiles for reply functionality)
+--
+-- Idempotent: safe to re-run. For production, proper migrations will be created.
 -- ===========================================================================
 
 -- ---------------------------------------------------------------------------
@@ -19,10 +23,13 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+-- Allow authenticated users to read any profile (needed for reply functionality)
 drop policy if exists "profiles: read own row" on public.profiles;
-create policy "profiles: read own row"
+drop policy if exists "profiles: read any profile" on public.profiles;
+create policy "profiles: read any profile"
   on public.profiles for select
-  using (auth.uid() = id);
+  to authenticated
+  using (true);
 
 drop policy if exists "profiles: update own row" on public.profiles;
 create policy "profiles: update own row"
