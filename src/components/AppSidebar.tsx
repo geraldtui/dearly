@@ -23,7 +23,7 @@ export default function AppSidebar() {
 
   return (
     <aside className="app-sidebar">
-      <Link href="/chats" className="app-sidebar-brand">
+      <Link href="/voicenotes" className="app-sidebar-brand">
         <Logo size={26} title="" />
         <span>
           Dearly<span className="dot">.</span>
@@ -31,7 +31,7 @@ export default function AppSidebar() {
       </Link>
 
       <nav className="app-sidebar-nav" aria-label="Dearly">
-        <Link href="/chats" className={pathname.startsWith("/chats") && !pathname.includes("new") ? "active" : ""}>
+        <Link href="/voicenotes" className={pathname.startsWith("/voicenotes") && !pathname.includes("new") ? "active" : ""}>
           {CHATS_ICON}
           Voice Notes
         </Link>

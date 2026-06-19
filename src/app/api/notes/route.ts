@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle<Pick<Profile, "id" | "email" | "display_name">>();
 
   const recipientDisplay = recipient?.display_name || recipientName;
-  const inboxUrl = `${new URL(req.url).origin}/chats`;
+  const inboxUrl = `${new URL(req.url).origin}/voicenotes`;
 
   // Per-conversation alias: how the sender signs to this recipient (e.g. "Dad").
   // A new-chat alias is persisted; otherwise we use any previously saved one.

@@ -82,7 +82,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           password,
         });
         if (error) throw error;
-        router.push(params.get("next") || "/chats");
+        router.push(params.get("next") || "/voicenotes");
         router.refresh();
       }
     } catch (err) {

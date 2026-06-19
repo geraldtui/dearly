@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { authGuardDisabled } from "@/lib/dev-auth";
 
 /** URL prefixes that require a logged-in user (the `(app)` route group). */
-const PROTECTED_PREFIXES = ["/chats", "/inbox", "/sent", "/compose"];
+const PROTECTED_PREFIXES = ["/voicenotes", "/inbox", "/sent", "/compose"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -29,6 +29,13 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Redirect authenticated users away from homepage to their voice notes
+  if (user && request.nextUrl.pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/voicenotes";
+    return NextResponse.redirect(url);
+  }
 
   const needsAuth = PROTECTED_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
   if (needsAuth && !user && !authGuardDisabled()) {
