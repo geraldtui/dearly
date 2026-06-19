@@ -1,5 +1,6 @@
 import { mkdirSync, existsSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * Writes (once) a small mono 16-bit PCM WAV used as Chromium's fake microphone
@@ -7,6 +8,8 @@ import { dirname, resolve } from "node:path";
  * real, decodable audio so the transcode path runs end-to-end.
  */
 export function ensureFakeAudio(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
   const filePath = resolve(__dirname, "../fixtures/fake-audio.wav");
   if (existsSync(filePath)) return filePath;
 
