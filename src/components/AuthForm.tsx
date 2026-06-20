@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getSiteUrl } from "@/lib/site-url";
 import { emailOk } from "@/lib/validation";
 
 type Mode = "login" | "signup";
@@ -71,7 +72,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           password,
           options: {
             data: { display_name: displayName.trim() },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${getSiteUrl()}/auth/callback`,
           },
         });
         if (error) throw error;

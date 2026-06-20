@@ -15,13 +15,19 @@ export default function ResetPasswordForm() {
   const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
-    // Check if user has a valid session (from reset link)
+    const supabase = createClient();
+
+    // PKCE flow: session is set by /auth/callback before we land here.
     const checkSession = async () => {
-      const supabase = createClient();
       const { data } = await supabase.auth.getSession();
       setHasSession(!!data.session);
     };
     checkSession();
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) setHasSession(true);
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
 
   const validate = (): string => {
@@ -48,7 +54,7 @@ export default function ResetPasswordForm() {
       setSuccess(true);
       // Redirect to chats after 2 seconds
       setTimeout(() => {
-        router.push("/chats");
+        router.push("/voicenotes");
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
