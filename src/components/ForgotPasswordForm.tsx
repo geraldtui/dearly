@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getSiteUrl } from "@/lib/site-url";
 import { emailOk } from "@/lib/validation";
 
 export default function ForgotPasswordForm() {
@@ -30,7 +31,9 @@ export default function ForgotPasswordForm() {
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         {
-          redirectTo: `${window.location.origin}/reset-password`,
+          // Route through the callback so PKCE `code` is exchanged server-side,
+          // then redirect to the reset form with a valid session.
+          redirectTo: `${getSiteUrl()}/auth/callback?next=/reset-password`,
         }
       );
       if (error) throw error;

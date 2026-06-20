@@ -30,12 +30,22 @@ For **each** project:
    - `supabase/migrations/0001_accounts.sql` — profiles, voice_notes, RLS,
      profile trigger, **and the private `voice-notes` storage bucket**.
    - `supabase/migrations/0002_sent_copies.sql` — makes `recipient_id` nullable.
-2. **Auth → URL Configuration** (required — signup confirmation uses an
-   origin-based redirect that Supabase validates against an allowlist):
-   - `dearly-prod`: **Site URL** `https://dearlyvoice.com`; **Redirect URLs**
-     `https://dearlyvoice.com/auth/callback` (add `https://www.dearlyvoice.com/auth/callback` if you serve `www`).
-   - `dearly-dev`: **Site URL** `https://dev.dearlyvoice.com`; **Redirect URLs**
-     `https://dev.dearlyvoice.com/auth/callback` (add `http://localhost:3000/auth/callback` for local dev against the dev DB).
+2. **Auth → URL Configuration** (required — signup confirmation and password reset
+   links use these; must match `NEXT_PUBLIC_SITE_URL` in Vercel):
+   - **`dearly-prod`**
+     - **Site URL:** `https://dearlyvoice.com`
+     - **Redirect URLs** (add each on its own line):
+       - `https://dearlyvoice.com/auth/callback`
+       - `https://dearlyvoice.com/reset-password`
+       - `https://www.dearlyvoice.com/auth/callback` (if you serve `www`)
+   - **`dearly-dev`**
+     - **Site URL:** `https://dev.dearlyvoice.com`
+     - **Redirect URLs:**
+       - `https://dev.dearlyvoice.com/auth/callback`
+       - `https://dev.dearlyvoice.com/reset-password`
+       - `http://localhost:3000/auth/callback` (local dev against dev DB)
+       - `http://localhost:3000/reset-password`
+   - If **Site URL** is still `http://localhost:3000`, auth emails will point at localhost.
 3. **Copy the keys** (Project Settings → API): Project URL, anon/publishable key,
    and service-role key. You'll paste these into the matching Vercel scope below.
 
@@ -65,6 +75,7 @@ In the Vercel project (Settings):
    | `NEXT_PUBLIC_SUPABASE_URL` | prod project URL | dev project URL |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | prod anon key | dev anon key |
    | `SUPABASE_SERVICE_ROLE_KEY` | prod service-role key | dev service-role key |
+   | `NEXT_PUBLIC_SITE_URL` | `https://dearlyvoice.com` | `https://dev.dearlyvoice.com` |
    | `SES_SMTP_HOST` | region endpoint | region endpoint |
    | `SES_SMTP_PORT` | `587` | `587` |
    | `SES_SMTP_USER` | prod SMTP user | prod or test SMTP user |
