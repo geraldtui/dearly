@@ -8,13 +8,13 @@ Record a short voice note in the browser and send it, with love, to a dear one o
 
 - **Client side**: the entire UI — the form, the live-waveform voice recorder, the waitlist modal, and the success screen — runs in the browser as a React client component.
 - **Server side (tiny)**: two Next.js Route Handlers hold the secret Amazon SES SMTP credentials and do the actual sending:
-  - `POST /api/send` — emails the voice note to the recipient, **BCCs the sender**, and attaches the recorded audio.
+  - `POST /api/send` — emails the voice note to the recipient and attaches the recorded audio (sender is not copied).
   - `POST /api/waitlist` — emails you when someone joins the waitlist (from either the success-screen card or the roadmap modal).
 
 ### Email behaviour
 
 - Sent **to** the recipient's email.
-- The sender is added as **BCC** on every recipient email (as requested), so they always get a copy.
+- The sender is **not** copied on recipient emails; logged-in senders keep a copy in Dearly (see spec 08).
 - `Reply-To` is set to the sender, so replies go to the right place.
 - The browser audio `Blob` is transcoded to **MP3 in the browser** (via `@breezystack/lamejs`) and attached to the recipient email. MP3 is used so that major mail clients render an **inline play button** on the attachment — **Gmail** (web/mobile) and **Apple Mail** let the recipient listen without downloading the file. If transcoding fails, it falls back to attaching the original WebM/Ogg recording.
 - Note: email clients strip `<audio>` tags from the message body for security, so a player can't be embedded in the body itself — the inline play button comes from the MP3 *attachment*. Outlook desktop doesn't preview audio attachments; for guaranteed in-browser playback everywhere you'd need to host the file and link to it.
@@ -133,7 +133,7 @@ src/
     globals.css             # full design system ported from the handoff
     page.tsx                # main Dearly app (form, success, waitlist wiring)
     api/
-      send/route.ts         # SES: voice note → recipient (BCC sender)
+      send/route.ts         # SES: voice note → recipient (no sender BCC)
       waitlist/route.ts     # SES: waitlist signup → your inbox
   components/
     VoiceRecorder.tsx       # MediaRecorder + Web Audio waveform (+ demo fallback)

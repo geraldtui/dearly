@@ -31,20 +31,10 @@ export default function AppSidebar() {
       </Link>
 
       <nav className="app-sidebar-nav" aria-label="Dearly">
-        <Link href="/voicenotes" className={pathname.startsWith("/voicenotes") && !pathname.includes("new") ? "active" : ""}>
+        <Link href="/voicenotes" className={pathname.startsWith("/voicenotes") ? "active" : ""}>
           {CHATS_ICON}
           Voice Notes
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            // Dispatch a custom event to notify ChatsClient
-            window.dispatchEvent(new CustomEvent('newChatRequested'));
-          }}
-        >
-          {NEW_CHAT_ICON}
-          New chat
-        </button>
       </nav>
 
       <form action="/api/auth/signout" method="post" className="app-sidebar-foot">

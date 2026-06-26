@@ -2044,7 +2044,7 @@ canvas.wave {
 .chat-list-empty {
   font-size: 13px;
   color: var(--ink-soft);
-  margin: 4px 10px;
+  margin: 24px 10px 4px;
   text-align: center;
 }
 

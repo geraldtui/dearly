@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import NotePlayer from "@/components/NotePlayer";
-import ChatComposer from "@/components/ChatComposer";
-import ConversationLabelEditor from "@/components/ConversationLabelEditor";
-import type { ConversationMessage } from "@/lib/conversations";
+import VoiceNoteComposer from "@/components/VoiceNoteComposer";
+import ThreadLabelEditor from "@/components/ThreadLabelEditor";
+import type { ThreadMessage } from "@/lib/threads";
 
 export interface ThreadCounterpart {
   key: string;
@@ -39,7 +39,7 @@ function MessageBubble({
   msg,
   onDeleteSuccess,
 }: {
-  msg: ConversationMessage;
+  msg: ThreadMessage;
   onDeleteSuccess: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
@@ -89,30 +89,30 @@ function MessageBubble({
   );
 }
 
-/** Middle pane: conversation timeline + inline composer, or the new-chat / empty states. */
-export default function ChatThread({
+/** Middle pane: thread timeline + inline composer, or the new-note / empty states. */
+export default function VoiceNoteThread({
   mode,
   messages,
   counterpart,
   onSendSuccess,
   onDeleteSuccess,
-  onNewChat,
+  onNewNote,
 }: {
-  mode: "conversation" | "new" | "empty";
-  messages: ConversationMessage[];
+  mode: "thread" | "new" | "empty";
+  messages: ThreadMessage[];
   counterpart: ThreadCounterpart | null;
   onSendSuccess: () => void;
   onDeleteSuccess: () => void;
-  onNewChat: () => void;
+  onNewNote: () => void;
 }) {
   if (mode === "empty") {
     return (
       <section className="chat-thread chat-thread-empty">
         <div className="chat-empty">
-          <h1>No conversations yet</h1>
-          <p>Start a new chat to send your first voice note.</p>
-          <button className="btn btn-primary" onClick={onNewChat}>
-            New chat
+          <h1>No voice notes yet</h1>
+          <p>Send your first voice note to get started.</p>
+          <button className="btn btn-primary" onClick={onNewNote}>
+            New voice note
           </button>
         </div>
       </section>
@@ -127,14 +127,14 @@ export default function ChatThread({
             +
           </span>
           <div className="chat-thread-id">
-            <h1 className="chat-thread-name">New chat</h1>
+            <h1 className="chat-thread-name">New voice note</h1>
             <span className="chat-thread-sub">Record a voice note and send it to someone.</span>
           </div>
         </header>
         <div className="chat-scroll chat-scroll-empty">
-          <p className="chat-hint">Your conversation will appear here.</p>
+          <p className="chat-hint">Your thread will appear here.</p>
         </div>
-        <ChatComposer mode="new" onSendSuccess={onSendSuccess} />
+        <VoiceNoteComposer mode="new" onSendSuccess={onSendSuccess} />
       </section>
     );
   }
@@ -146,7 +146,7 @@ export default function ChatThread({
           {initial(counterpart.name)}
         </span>
         <div className="chat-thread-id">
-          <ConversationLabelEditor
+          <ThreadLabelEditor
             counterpartKey={counterpart.key}
             nickname={counterpart.nickname}
             alias={counterpart.alias}
@@ -163,7 +163,7 @@ export default function ChatThread({
         ))}
       </div>
 
-      <ChatComposer
+      <VoiceNoteComposer
         mode="reply"
         recipientName={counterpart.name}
         recipientEmail={counterpart.email}

@@ -3,28 +3,28 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import ChatList, { type ChatListItem } from "@/components/ChatList";
-import ChatThread, { type ThreadCounterpart } from "@/components/ChatThread";
+import ThreadList, { type ThreadListItem } from "@/components/ThreadList";
+import VoiceNoteThread, { type ThreadCounterpart } from "@/components/VoiceNoteThread";
 import {
-  buildConversations,
-  messagesForConversation,
-  type ConversationMessage,
-  type Conversation,
-} from "@/lib/conversations";
-import type { VoiceNote, ConversationLabel } from "@/lib/db/types";
+  buildThreads,
+  messagesForThread,
+  type ThreadMessage,
+  type Thread,
+} from "@/lib/threads";
+import type { VoiceNote, ThreadLabel } from "@/lib/db/types";
 
 type LoadState = "loading" | "loaded" | "error";
 
 /**
- * Client Component that manages chat state entirely in React (no URL navigation).
- * Fetches all conversations + messages once on mount, then switches between them
+ * Client Component that manages voice note thread state entirely in React (no URL navigation).
+ * Fetches all threads + messages once on mount, then switches between them
  * via local state for instant (<50ms) navigation.
  */
-export default function ChatsClient({ userId }: { userId: string }) {
+export default function VoiceNotesClient({ userId }: { userId: string }) {
   const router = useRouter();
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [error, setError] = useState("");
-  const [conversations, setConversations] = useState<ChatListItem[]>([]);
+  const [threads, setThreads] = useState<ThreadListItem[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [newMode, setNewMode] = useState(false);
   const [notes, setNotes] = useState<VoiceNote[]>([]);
@@ -53,17 +53,17 @@ export default function ChatsClient({ userId }: { userId: string }) {
 
       if (labelsError) throw labelsError;
 
-      const labels = new Map<string, Pick<ConversationLabel, "nickname" | "my_alias">>(
+      const labels = new Map<string, Pick<ThreadLabel, "nickname" | "my_alias">>(
         (labelRows ?? []).map((l) => [l.counterpart_key, { nickname: l.nickname, my_alias: l.my_alias }])
       );
 
       const rawNotes = (notesData ?? []) as VoiceNote[];
       setNotes(rawNotes);
 
-      // Build conversations and fetch emails for account-based contacts
-      const rawConvos = buildConversations(rawNotes, userId);
-      const convosWithEmails = await Promise.all(
-        rawConvos.map(async (c: Conversation) => {
+      // Build threads and fetch emails for account-based contacts
+      const rawThreads = buildThreads(rawNotes, userId);
+      const threadsWithEmails = await Promise.all(
+        rawThreads.map(async (c: Thread) => {
           const label = labels.get(c.key);
           let email = c.counterpartEmail;
 
@@ -91,16 +91,16 @@ export default function ChatsClient({ userId }: { userId: string }) {
         })
       );
 
-      setConversations(convosWithEmails);
+      setThreads(threadsWithEmails);
 
-      // Auto-select first conversation if available
-      if (convosWithEmails.length > 0 && !selectedKey && !newMode) {
-        setSelectedKey(convosWithEmails[0].key);
+      // Auto-select first thread if available
+      if (threadsWithEmails.length > 0 && !selectedKey && !newMode) {
+        setSelectedKey(threadsWithEmails[0].key);
       }
 
       setLoadState("loaded");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load conversations");
+      setError(e instanceof Error ? e.message : "Failed to load voice notes");
       setLoadState("error");
     }
   };
@@ -110,29 +110,29 @@ export default function ChatsClient({ userId }: { userId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  // Listen for new chat requests from the sidebar
+  // Listen for new note requests from the sidebar (deprecated - now handled via prop)
   useEffect(() => {
-    const handleNewChatRequest = () => {
+    const handleNewNoteRequest = () => {
       setSelectedKey(null);
       setNewMode(true);
     };
 
-    window.addEventListener('newChatRequested', handleNewChatRequest);
-    return () => window.removeEventListener('newChatRequested', handleNewChatRequest);
+    window.addEventListener('newNoteRequested', handleNewNoteRequest);
+    return () => window.removeEventListener('newNoteRequested', handleNewNoteRequest);
   }, []);
 
-  const handleSelectConversation = (key: string) => {
+  const handleSelectThread = (key: string) => {
     setSelectedKey(key);
     setNewMode(false);
   };
 
-  const handleNewChat = () => {
+  const handleNewThread = () => {
     setSelectedKey(null);
     setNewMode(true);
   };
 
   const handleSendSuccess = () => {
-    // Refresh data and auto-select newest conversation
+    // Refresh data and auto-select newest thread
     fetchData();
     setNewMode(false);
   };
@@ -146,8 +146,10 @@ export default function ChatsClient({ userId }: { userId: string }) {
   if (loadState === "loading") {
     return (
       <div className="chat-layout">
-        <aside className="chat-list" aria-label="Conversations">
-          <h2 className="chat-list-head">Voice Notes</h2>
+        <aside className="chat-list" aria-label="Voice Notes">
+          <div className="chat-list-header">
+            <h2 className="chat-list-head">Voice Notes</h2>
+          </div>
           <div className="chat-loading">
             <span className="spinner" />
             <p>Loading voice notes...</p>
@@ -166,8 +168,10 @@ export default function ChatsClient({ userId }: { userId: string }) {
   if (loadState === "error") {
     return (
       <div className="chat-layout">
-        <aside className="chat-list" aria-label="Conversations">
-          <h2 className="chat-list-head">Voice Notes</h2>
+        <aside className="chat-list" aria-label="Voice Notes">
+          <div className="chat-list-header">
+            <h2 className="chat-list-head">Voice Notes</h2>
+          </div>
           <div className="chat-error">
             <p className="err">{error}</p>
             <button className="btn btn-primary" onClick={fetchData}>
@@ -177,7 +181,7 @@ export default function ChatsClient({ userId }: { userId: string }) {
         </aside>
         <section className="chat-thread chat-thread-empty">
           <div className="chat-empty">
-            <p>Failed to load conversations</p>
+            <p>Failed to load voice notes</p>
           </div>
         </section>
       </div>
@@ -185,46 +189,47 @@ export default function ChatsClient({ userId }: { userId: string }) {
   }
 
   // Determine thread mode and data
-  let mode: "conversation" | "new" | "empty" = "empty";
-  let messages: ConversationMessage[] = [];
+  let mode: "thread" | "new" | "empty" = "empty";
+  let messages: ThreadMessage[] = [];
   let counterpart: ThreadCounterpart | null = null;
 
   if (newMode) {
     mode = "new";
   } else if (selectedKey) {
-    const convo = conversations.find((c) => c.key === selectedKey);
-    if (convo) {
-      messages = messagesForConversation(notes, userId, selectedKey);
-      mode = "conversation";
+    const thread = threads.find((c) => c.key === selectedKey);
+    if (thread) {
+      messages = messagesForThread(notes, userId, selectedKey);
+      mode = "thread";
       counterpart = {
         key: selectedKey,
-        name: convo.name,
-        email: convo.counterpartEmail,
-        viaEmail: convo.viaEmail,
-        canReply: Boolean(convo.counterpartEmail || convo.counterpartId),
-        nickname: convo.nickname,
-        alias: convo.alias,
+        name: thread.name,
+        email: thread.counterpartEmail,
+        viaEmail: thread.viaEmail,
+        canReply: Boolean(thread.counterpartEmail || thread.counterpartId),
+        nickname: thread.nickname,
+        alias: thread.alias,
       };
     }
-  } else if (conversations.length === 0) {
+  } else if (threads.length === 0) {
     mode = "empty";
   }
 
   return (
     <div className="chat-layout">
-      <ChatList
-        conversations={conversations}
+      <ThreadList
+        threads={threads}
         selectedKey={selectedKey}
         newMode={newMode}
-        onSelectConversation={handleSelectConversation}
+        onSelectThread={handleSelectThread}
+        onNewThread={handleNewThread}
       />
-      <ChatThread
+      <VoiceNoteThread
         mode={mode}
         messages={messages}
         counterpart={counterpart}
         onSendSuccess={handleSendSuccess}
         onDeleteSuccess={handleDeleteSuccess}
-        onNewChat={handleNewChat}
+        onNewNote={handleNewThread}
       />
     </div>
   );

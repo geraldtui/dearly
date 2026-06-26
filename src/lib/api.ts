@@ -104,13 +104,13 @@ export async function sendAccountNote(payload: AccountNotePayload): Promise<Note
   return data.delivery === "in-app" ? "in-app" : "email";
 }
 
-/** Saves the owner's nickname + alias for one conversation. */
-export async function saveConversationLabel(payload: {
+/** Saves the owner's nickname + alias for one thread. */
+export async function saveThreadLabel(payload: {
   counterpartKey: string;
   nickname: string;
   alias: string;
 }): Promise<void> {
-  const res = await fetch("/api/conversations/label", {
+  const res = await fetch("/api/threads/label", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

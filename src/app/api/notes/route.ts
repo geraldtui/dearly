@@ -9,7 +9,7 @@ import {
   removeStoredNote,
 } from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
-import { counterpartKey } from "@/lib/conversations";
+import { counterpartKey } from "@/lib/threads";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { bodyTooLarge } from "@/lib/http";
 import type { Profile } from "@/lib/db/types";
