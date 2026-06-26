@@ -167,8 +167,8 @@ export interface VoiceNoteEmail {
   simulated: boolean;
   attachments?: { filename: string; content: Buffer }[];
   /**
-   * BCC the sender their own copy (default). The account flow passes `false`
-   * because the sender's copy is stored in Dearly instead (spec 08).
+   * BCC the sender their own copy when explicitly true. Default is no BCC —
+   * senders should not receive a copy of notes they send (spec 01, 08).
    */
   bccSender?: boolean;
   /** When set (recipient has a Dearly account), the email adds a "Listen on Dearly" CTA. */
@@ -176,10 +176,9 @@ export interface VoiceNoteEmail {
 }
 
 /**
- * Sends the classic voice-note email (MP3 attached). Shared by the public
- * send flow (sender BCC'd) and the account flow's non-user fallback (no BCC —
- * the sender's copy lives in their Sent view). Returns the provider message
- * id; throws on failure.
+ * Sends the classic voice-note email (MP3 attached). Used by the public send
+ * flow and the account flow's non-user fallback. Sender is not BCC'd unless
+ * bccSender is explicitly true.
  */
 export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string | undefined> {
   const hasAudio = (opts.attachments?.length ?? 0) > 0;
@@ -195,7 +194,7 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
   return sendEmail({
     from: FROM_EMAIL,
     to: opts.recipientEmail,
-    bcc: opts.bccSender === false ? undefined : opts.senderEmail,
+    bcc: opts.bccSender ? opts.senderEmail : undefined,
     replyTo: opts.senderEmail,
     subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
     html: noteEmailHtml(tplOpts),
@@ -281,7 +280,7 @@ export async function sendNewNoteNotification(opts: {
   recipientName: string;
   subject: string;
   inboxUrl: string;
-  /** BCC the sender (used as the free sender's delivery record). */
+  /** BCC the sender only when explicitly true. */
   bccSender?: boolean;
 }): Promise<void> {
   const tplOpts = {

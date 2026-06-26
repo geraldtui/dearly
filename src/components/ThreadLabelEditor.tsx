@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { saveConversationLabel } from "@/lib/api";
+import { saveThreadLabel } from "@/lib/api";
 
 /**
- * Clickable name in the chat thread header that opens a modal to rename a
+ * Clickable name in the voice note thread header that opens a modal to rename a
  * contact (private nickname), set how the user signs notes to them (alias),
  * and view the counterpart's email.
  */
-export default function ConversationLabelEditor({
+export default function ThreadLabelEditor({
   counterpartKey,
   nickname,
   alias,
@@ -44,7 +44,7 @@ export default function ConversationLabelEditor({
     setSaving(true);
     setError("");
     try {
-      await saveConversationLabel({ counterpartKey, nickname: nick, alias: signAs });
+      await saveThreadLabel({ counterpartKey, nickname: nick, alias: signAs });
       setOpen(false);
       router.refresh();
     } catch (e) {

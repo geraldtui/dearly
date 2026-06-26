@@ -79,8 +79,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Registered recipients get the note in their Dearly Inbox instead of an
-  // email attachment (anonymous sender; the free sender is BCC'd the
-  // notification as their record). Requires real audio to store.
+  // email attachment (anonymous sender; no BCC to the sender). Requires real audio.
   const account = audioBuffer ? await findRecipientAccount(recipientEmail) : null;
 
   try {
@@ -106,7 +105,6 @@ export async function POST(req: NextRequest) {
           recipientName: recipient.display_name || recipientName,
           subject: customSubject,
           inboxUrl: `${new URL(req.url).origin}/voicenotes`,
-          bccSender: true,
         });
       } catch (notifyError) {
         // Without the notification the recipient may never know — roll back

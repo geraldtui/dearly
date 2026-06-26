@@ -118,22 +118,24 @@ const emailOpts = {
 };
 
 describe("sendVoiceNoteEmail", () => {
-  it("BCCs the sender by default and returns the provider id", async () => {
+  it("does not BCC the sender by default and returns the provider id", async () => {
     const id = await sendVoiceNoteEmail(emailOpts);
     expect(id).toBe("msg-1");
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "mom@example.com",
-        bcc: "gerald@example.com",
+        bcc: undefined,
         replyTo: "gerald@example.com",
         subject: "Hi Mom",
       })
     );
   });
 
-  it("skips the BCC when bccSender is false (account flow)", async () => {
-    await sendVoiceNoteEmail({ ...emailOpts, bccSender: false });
-    expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ bcc: undefined }));
+  it("BCCs the sender when bccSender is true", async () => {
+    await sendVoiceNoteEmail({ ...emailOpts, bccSender: true });
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ bcc: "gerald@example.com" })
+    );
   });
 
   it("uses the default subject when none is provided", async () => {

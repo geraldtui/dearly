@@ -1,9 +1,16 @@
 "use client";
 
-import type { Conversation } from "@/lib/conversations";
+import type { Thread } from "@/lib/threads";
 
-/** A conversation plus the owner's saved label values for the inline editor. */
-export type ChatListItem = Conversation & { nickname: string; alias: string };
+/** A thread plus the owner's saved label values for the inline editor. */
+export type ThreadListItem = Thread & { nickname: string; alias: string };
+
+const NEW_THREAD_ICON = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 5v14" />
+    <path d="M5 12h14" />
+  </svg>
+);
 
 function initial(name: string): string {
   return name.trim().charAt(0).toUpperCase() || "?";
@@ -13,33 +20,46 @@ function dayLabel(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** Left rail: one row per conversation, newest activity first (WhatsApp-style). */
-export default function ChatList({
-  conversations,
+/** Left rail: one row per thread, newest activity first (WhatsApp-style). */
+export default function ThreadList({
+  threads,
   selectedKey,
   newMode,
-  onSelectConversation,
+  onSelectThread,
+  onNewThread,
 }: {
-  conversations: ChatListItem[];
+  threads: ThreadListItem[];
   selectedKey: string | null;
   newMode: boolean;
-  onSelectConversation: (key: string) => void;
+  onSelectThread: (key: string) => void;
+  onNewThread: () => void;
 }) {
   return (
-    <aside className="chat-list" aria-label="Conversations">
-      <h2 className="chat-list-head">Voice Notes</h2>
+    <aside className="chat-list" aria-label="Voice Notes">
+      <div className="chat-list-header">
+        <h2 className="chat-list-head">Voice Notes</h2>
+        <button
+          type="button"
+          className="chat-new-btn"
+          onClick={onNewThread}
+          aria-label="New voice thread"
+          title="New voice thread"
+        >
+          {NEW_THREAD_ICON}
+        </button>
+      </div>
 
-      {conversations.length === 0 ? (
-        <p className="chat-list-empty">No conversations yet.</p>
+      {threads.length === 0 ? (
+        <p className="chat-list-empty">No voice notes yet.</p>
       ) : (
         <ul className="chat-items">
-          {conversations.map((c) => {
+          {threads.map((c) => {
             const active = !newMode && c.key === selectedKey;
             return (
               <li key={c.key} className="chat-item-row">
                 <button
                   type="button"
-                  onClick={() => onSelectConversation(c.key)}
+                  onClick={() => onSelectThread(c.key)}
                   className={`chat-item${active ? " active" : ""}`}
                   aria-current={active ? "true" : undefined}
                 >

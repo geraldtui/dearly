@@ -116,7 +116,7 @@ describe("POST /api/send", () => {
         attachments: [expect.objectContaining({ filename: "note.mp3" })],
       })
     );
-    // Public sends keep the default sender BCC.
+    // Public sends do not BCC the sender.
     expect(mocks.sendVoiceNoteEmail.mock.calls[0][0].bccSender).toBeUndefined();
   });
 
@@ -129,7 +129,7 @@ describe("POST /api/send", () => {
     );
   });
 
-  it("delivers in-app when the recipient is registered, BCCing the free sender", async () => {
+  it("delivers in-app when the recipient is registered without BCCing the sender", async () => {
     const recipient = { id: "recipient-1", email: "mom@example.com", display_name: "Mum" };
     mocks.createServiceClient.mockReturnValue(serviceClientWith(recipient));
 
@@ -151,10 +151,10 @@ describe("POST /api/send", () => {
     expect(mocks.sendNewNoteNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         recipientEmail: "mom@example.com",
-        bccSender: true,
         inboxUrl: "http://localhost/voicenotes",
       })
     );
+    expect(mocks.sendNewNoteNotification.mock.calls[0][0].bccSender).toBeUndefined();
     expect(mocks.sendVoiceNoteEmail).not.toHaveBeenCalled();
   });
 

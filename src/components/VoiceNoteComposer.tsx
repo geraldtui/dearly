@@ -7,7 +7,7 @@ import { emailOk } from "@/lib/validation";
 import { sendAccountNote } from "@/lib/api";
 import type { Recording } from "@/types";
 
-interface ChatComposerProps {
+interface VoiceNoteComposerProps {
   mode: "reply" | "new";
   /** Reply mode: the resolved counterpart to send to. */
   recipientName?: string;
@@ -18,14 +18,14 @@ interface ChatComposerProps {
   onSendSuccess: () => void;
 }
 
-/** Inline recorder + send for a chat thread (or a new conversation). */
-export default function ChatComposer({
+/** Inline recorder + send for a voice note thread (or a new note). */
+export default function VoiceNoteComposer({
   mode,
   recipientName = "",
   recipientEmail = null,
   canReply = true,
   onSendSuccess,
-}: ChatComposerProps) {
+}: VoiceNoteComposerProps) {
   const [recording, setRecording] = useState<Recording | null>(null);
   const [subject, setSubject] = useState("");
   const [name, setName] = useState("");
@@ -57,7 +57,7 @@ export default function ChatComposer({
     if (!canSend) return;
     const toName = mode === "new" ? name.trim() : recipientName;
     const toEmail = mode === "new" ? email.trim() : recipientEmail ?? "";
-    // For new chats, email is required. For replies, email validation is handled server-side.
+    // For new notes, email is required. For replies, email validation is handled server-side.
     if (mode === "new" && !emailOk(toEmail)) {
       setError("That email looks off.");
       return;
