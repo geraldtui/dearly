@@ -122,7 +122,7 @@ export default function App() {
         {status === "sent" ? (
           <div className="success">
             <div className="seal">
-              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 7.5 12 13l8-5.5" />
                 <rect x="3" y="5" width="18" height="14" rx="3" />
               </svg>
@@ -187,7 +187,7 @@ export default function App() {
                 </span>
               ) : (
                 <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 2 11 13" />
                     <path d="M22 2 15 22l-4-9-9-4z" />
                   </svg>{" "}

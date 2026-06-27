@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import ThreadList, { type ThreadListItem } from "@/components/ThreadList";
+import VoiceNotesSidebar, { type ThreadListItem } from "@/components/VoiceNotesSidebar";
 import VoiceNoteThread, { type ThreadCounterpart } from "@/components/VoiceNoteThread";
 import {
   buildThreads,
@@ -146,9 +146,11 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   if (loadState === "loading") {
     return (
       <div className="chat-layout">
-        <aside className="chat-list" aria-label="Voice Notes">
-          <div className="chat-list-header">
-            <h2 className="chat-list-head">Voice Notes</h2>
+        <aside className="voice-notes-sidebar">
+          <div className="sidebar-header">
+            <div className="sidebar-brand">
+              <span>Dearly<span className="dot">.</span></span>
+            </div>
           </div>
           <div className="chat-loading">
             <span className="spinner" />
@@ -168,9 +170,11 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   if (loadState === "error") {
     return (
       <div className="chat-layout">
-        <aside className="chat-list" aria-label="Voice Notes">
-          <div className="chat-list-header">
-            <h2 className="chat-list-head">Voice Notes</h2>
+        <aside className="voice-notes-sidebar">
+          <div className="sidebar-header">
+            <div className="sidebar-brand">
+              <span>Dearly<span className="dot">.</span></span>
+            </div>
           </div>
           <div className="chat-error">
             <p className="err">{error}</p>
@@ -216,7 +220,7 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
 
   return (
     <div className="chat-layout">
-      <ThreadList
+      <VoiceNotesSidebar
         threads={threads}
         selectedKey={selectedKey}
         newMode={newMode}
