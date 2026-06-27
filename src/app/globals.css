@@ -171,7 +171,7 @@ body.light {
 
 .card {
   position: relative;
-  z-index: 1;
+  z-index: 30;
   width: 100%;
   max-width: 540px;
   background: var(--card);
@@ -1384,7 +1384,7 @@ canvas.wave {
   position: fixed;
   right: 22px;
   bottom: 22px;
-  z-index: 40;
+  z-index: 20;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -1417,7 +1417,7 @@ canvas.wave {
   position: fixed;
   right: 22px;
   bottom: 86px;
-  z-index: 40;
+  z-index: 20;
   width: min(320px, calc(100vw - 44px));
   background: var(--card);
   backdrop-filter: blur(20px);
@@ -1565,7 +1565,7 @@ canvas.wave {
   position: fixed;
   right: 22px;
   bottom: 86px;
-  z-index: 40;
+  z-index: 20;
   max-width: min(264px, calc(100vw - 44px));
   display: flex;
   align-items: flex-start;
@@ -1578,6 +1578,7 @@ canvas.wave {
   box-shadow: var(--shadow-2);
   padding: 10px 8px 10px 12px;
   animation: notepadIn 0.2s ease;
+  pointer-events: none;
 }
 .notepad-callout::after {
   content: "";
@@ -1605,6 +1606,7 @@ canvas.wave {
   font-size: 12.5px;
   line-height: 1.45;
   color: var(--ink);
+  pointer-events: auto;
 }
 .notepad-callout-body .spark {
   margin-top: 4px;
@@ -1625,6 +1627,7 @@ canvas.wave {
   place-items: center;
   color: var(--ink-soft);
   cursor: pointer;
+  pointer-events: auto;
 }
 .notepad-callout-x:hover {
   background: rgba(0, 0, 0, 0.05);
