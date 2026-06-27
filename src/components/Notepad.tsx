@@ -46,7 +46,7 @@ export default function Notepad({ inline = false }: { inline?: boolean }) {
     if (!hintDismissed) dismissHint();
   };
 
-  const showHint = hydrated && !hintDismissed && !open;
+  const showHint = hydrated && !hintDismissed && !open && process.env.NEXT_PUBLIC_E2E !== "true";
 
   useEffect(() => {
     if (!hydrated) return;
