@@ -15,7 +15,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --bg: #000000;
     --card: rgba(30, 30, 30, 0.7);
     --accent: #0a84ff;
@@ -29,14 +29,30 @@
   }
 }
 
+:root.dark {
+  --bg: #000000;
+  --card: rgba(30, 30, 30, 0.7);
+  --accent: #0a84ff;
+  --accent-deep: #409cff;
+  --ink: #f5f5f7;
+  --ink-soft: #98989d;
+  --line: rgba(255, 255, 255, 0.1);
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
 @supports not (backdrop-filter: blur(10px)) {
   :root {
     --card: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not(.light) {
       --card: #1e1e1e;
     }
+  }
+  :root.dark {
+    --card: #1e1e1e;
   }
 }
 
@@ -57,12 +73,19 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  html,
-  body {
+  html:not(.light),
+  body:not(.light) {
     background:
       radial-gradient(1200px 700px at 50% -10%, #0a1929 0%, rgba(10, 25, 41, 0) 60%),
       var(--bg);
   }
+}
+
+html.dark,
+body.dark {
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #0a1929 0%, rgba(10, 25, 41, 0) 60%),
+    var(--bg);
 }
 
 #root {
@@ -2812,3 +2835,182 @@ canvas.wave {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- theme toggle ---------- */
+.theme-toggle {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 40;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--accent-deep);
+  box-shadow: var(--shadow-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-toggle:focus-visible {
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+  }
+}
+
+:root.dark .theme-toggle:focus-visible {
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+}
+
+@media (max-width: 840px) {
+  .theme-toggle {
+    left: auto;
+    right: 22px;
+    bottom: 86px;
+  }
+}
+
+/* ---------- .dark class overrides for manual theme toggle ---------- */
+.dark .field input {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .field input:focus {
+  background: rgba(30, 30, 30, 0.8);
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+}
+.dark .btn-ghost {
+  background: rgba(30, 30, 30, 0.5);
+}
+.dark .btn-ghost:hover {
+  background: rgba(30, 30, 30, 0.8);
+}
+.dark .recorder {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .recorder.live {
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.20);
+}
+.dark .preview-pill {
+  background: rgba(10, 132, 255, 0.15);
+  border-color: rgba(10, 132, 255, 0.3);
+}
+.dark .join-card::before {
+  background: radial-gradient(circle at 40% 40%, rgba(10, 132, 255, 0.3), rgba(10, 132, 255, 0));
+}
+.dark .chip {
+  background: rgba(30, 30, 30, 0.8);
+}
+.dark .join-form input {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .join-form input:focus {
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+}
+.dark .overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+.dark .app-sidebar-nav a:hover,
+.dark .app-sidebar-nav button:hover {
+  background: rgba(10, 132, 255, 0.15);
+}
+.dark .app-sidebar-nav a.active {
+  background: rgba(10, 132, 255, 0.2);
+}
+.dark .contact-item:hover {
+  background: rgba(10, 132, 255, 0.15);
+}
+.dark .contact-item.active {
+  background: rgba(10, 132, 255, 0.2);
+}
+.dark .contact-count {
+  background: rgba(30, 30, 30, 0.8);
+}
+.dark .note-card {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .chat-item:hover {
+  background: rgba(10, 132, 255, 0.15);
+}
+.dark .chat-item.active {
+  background: rgba(10, 132, 255, 0.2);
+}
+.dark .chat-item-tag {
+  background: rgba(10, 132, 255, 0.2);
+}
+.dark .chat-avatar.new {
+  background: rgba(10, 132, 255, 0.3);
+}
+.dark .chat-label-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+.dark .msg-bubble {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .msg.out .msg-bubble {
+  background: rgba(10, 132, 255, 0.2);
+  border-color: rgba(10, 132, 255, 0.4);
+}
+.dark .notepad-fab:focus-visible {
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+}
+.dark .notepad-area {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .notepad-area:focus {
+  background: rgba(30, 30, 30, 0.8);
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+}
+.dark .notepad-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .notepad-clear:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .notepad-callout-x:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .note-delete:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .chat-label-editor .readonly-field {
+  background: rgba(255, 255, 255, 0.05);
+}
+.dark .signup-pop-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .wl-form input {
+  background: rgba(30, 30, 30, 0.6);
+}
+.dark .wl-form input:focus {
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+}
+.dark .feature:hover {
+  background: rgba(10, 132, 255, 0.1);
+}
+.dark .feature .fi {
+  background: rgba(10, 132, 255, 0.15);
+}
+.dark .wl-soon-ic {
+  background: rgba(10, 132, 255, 0.15);
+}
+.dark .modal-close {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+
