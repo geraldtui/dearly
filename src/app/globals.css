@@ -1,45 +1,82 @@
 :root {
-  --bg: #f5f5f7;
-  --card: rgba(255, 255, 255, 0.7);
-  --accent: #0071e3;
-  --accent-deep: #0077ed;
-  --ink: #1d1d1f;
-  --ink-soft: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
+  --bg: #ECECEE;
+  --card: rgba(255, 255, 255, 0.9);
+  --accent: #1D1D1F;
+  --accent-deep: #000000;
+  --ink: #1D1D1F;
+  --ink-soft: #6E6E73;
+  --line: #DEDEE1;
   --radius: 16px;
   --brand-font: "Cormorant Garamond", serif;
   --body-font: "Mulish", system-ui, sans-serif;
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.10);
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.14), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.18), 0 4px 6px rgba(0, 0, 0, 0.12);
+  --field-bg: #F7F7F8;
+  --field-border: #DEDEE1;
+  --field-hover-border: #C9C9CD;
+  --focus-ring: rgba(0, 0, 0, 0.16);
+  --tint: rgba(0, 0, 0, 0.05);
+  --hover-surface: rgba(0, 0, 0, 0.03);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --bg: #000000;
-    --card: rgba(30, 30, 30, 0.7);
-    --accent: #0a84ff;
-    --accent-deep: #409cff;
-    --ink: #f5f5f7;
-    --ink-soft: #98989d;
-    --line: rgba(255, 255, 255, 0.1);
-    --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
-    --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.5);
+    --bg: #161618;
+    --card: rgba(31, 31, 34, 0.9);
+    --accent: #F2F2F4;
+    --accent-deep: #FFFFFF;
+    --ink: #F5F5F7;
+    --ink-soft: #9A9AA0;
+    --line: #3A3A3E;
+    --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.65), 0 4px 6px rgba(0, 0, 0, 0.5);
+    --field-bg: #2A2A2E;
+    --field-border: #404044;
+    --field-hover-border: #54545A;
+    --focus-ring: rgba(255, 255, 255, 0.22);
+    --tint: rgba(255, 255, 255, 0.10);
+    --hover-surface: rgba(255, 255, 255, 0.05);
   }
 }
 
 :root.dark {
-  --bg: #000000;
-  --card: rgba(30, 30, 30, 0.7);
-  --accent: #0a84ff;
-  --accent-deep: #409cff;
-  --ink: #f5f5f7;
-  --ink-soft: #98989d;
-  --line: rgba(255, 255, 255, 0.1);
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.5);
+  --bg: #161618;
+  --card: rgba(31, 31, 34, 0.9);
+  --accent: #F2F2F4;
+  --accent-deep: #FFFFFF;
+  --ink: #F5F5F7;
+  --ink-soft: #9A9AA0;
+  --line: #3A3A3E;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.65), 0 4px 6px rgba(0, 0, 0, 0.5);
+  --field-bg: #2A2A2E;
+  --field-border: #404044;
+  --field-hover-border: #54545A;
+  --focus-ring: rgba(255, 255, 255, 0.22);
+  --tint: rgba(255, 255, 255, 0.10);
+  --hover-surface: rgba(255, 255, 255, 0.05);
+}
+
+:root.light {
+  --bg: #ECECEE;
+  --card: rgba(255, 255, 255, 0.9);
+  --accent: #1D1D1F;
+  --accent-deep: #000000;
+  --ink: #1D1D1F;
+  --ink-soft: #6E6E73;
+  --line: #DEDEE1;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.14), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.18), 0 4px 6px rgba(0, 0, 0, 0.12);
+  --field-bg: #F7F7F8;
+  --field-border: #DEDEE1;
+  --field-hover-border: #C9C9CD;
+  --focus-ring: rgba(0, 0, 0, 0.16);
+  --tint: rgba(0, 0, 0, 0.05);
+  --hover-surface: rgba(0, 0, 0, 0.03);
 }
 
 @supports not (backdrop-filter: blur(10px)) {
@@ -48,11 +85,14 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
-      --card: #1e1e1e;
+      --card: #1F1F22;
     }
   }
   :root.dark {
-    --card: #1e1e1e;
+    --card: #1F1F22;
+  }
+  :root.light {
+    --card: #ffffff;
   }
 }
 
@@ -63,9 +103,7 @@
 html,
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 700px at 50% -10%, #e3ecf5 0%, rgba(227, 236, 245, 0) 60%),
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--body-font);
   -webkit-font-smoothing: antialiased;
@@ -75,17 +113,18 @@ body {
 @media (prefers-color-scheme: dark) {
   html:not(.light),
   body:not(.light) {
-    background:
-      radial-gradient(1200px 700px at 50% -10%, #0a1929 0%, rgba(10, 25, 41, 0) 60%),
-      var(--bg);
+    background: var(--bg);
   }
 }
 
 html.dark,
 body.dark {
-  background:
-    radial-gradient(1200px 700px at 50% -10%, #0a1929 0%, rgba(10, 25, 41, 0) 60%),
-    var(--bg);
+  background: var(--bg);
+}
+
+html.light,
+body.light {
+  background: var(--bg);
 }
 
 #root {
@@ -127,28 +166,7 @@ body.dark {
   overflow: hidden;
 }
 .orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(46px);
-  opacity: 0.5;
-  z-index: 0;
-  pointer-events: none;
-  animation: drift 18s ease-in-out infinite;
-}
-.orb.a {
-  width: 340px;
-  height: 340px;
-  left: -90px;
-  top: -60px;
-  background: radial-gradient(circle at 30% 30%, #4a90e2, #667eea);
-}
-.orb.b {
-  width: 300px;
-  height: 300px;
-  right: -70px;
-  bottom: -80px;
-  background: radial-gradient(circle at 60% 40%, #764ba2, #667eea);
-  animation-delay: -7s;
+  display: none;
 }
 
 .card {
@@ -244,10 +262,10 @@ body.dark {
   font-family: var(--body-font);
   font-size: 15px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--field-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--field-border);
   border-radius: var(--radius);
   padding: 12px 14px;
   transition:
@@ -261,13 +279,12 @@ body.dark {
   opacity: 0.6;
 }
 .field input:hover {
-  border-color: var(--accent);
-  opacity: 0.9;
+  border-color: var(--field-hover-border);
 }
 .field input:focus {
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.18);
+  background: var(--field-bg);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .field input.invalid {
   border-color: #ff3b30;
@@ -282,11 +299,11 @@ body.dark {
 
 @media (prefers-color-scheme: dark) {
   .field input {
-    background: rgba(30, 30, 30, 0.6);
+    background: var(--field-bg);
   }
   .field input:focus {
-    background: rgba(30, 30, 30, 0.8);
-    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+    background: var(--field-bg);
+    box-shadow: 0 0 0 4px var(--focus-ring);
   }
 }
 
@@ -311,8 +328,8 @@ body.dark {
   width: 100%;
   padding: 16px;
   font-size: 16px;
-  color: #fff;
-  background: var(--accent);
+  color: #ffffff;
+  background: #1D1D1F;
   box-shadow: var(--shadow-2);
   display: flex;
   align-items: center;
@@ -320,7 +337,7 @@ body.dark {
   gap: 10px;
 }
 .btn-primary:hover:not(:disabled) {
-  background: var(--accent-deep);
+  background: #000000;
   box-shadow: var(--shadow-3);
 }
 .btn-primary:disabled {
@@ -329,11 +346,37 @@ body.dark {
   box-shadow: none;
 }
 
+@media (prefers-color-scheme: dark) {
+  .btn-primary {
+    color: #1A1A1C;
+    background: #FFFFFF;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #F2F2F4;
+  }
+}
+
+:root.dark .btn-primary {
+  color: #1A1A1C;
+  background: #FFFFFF;
+}
+:root.dark .btn-primary:hover:not(:disabled) {
+  background: #F2F2F4;
+}
+
+:root.light .btn-primary {
+  color: #ffffff;
+  background: #1D1D1F;
+}
+:root.light .btn-primary:hover:not(:disabled) {
+  background: #000000;
+}
+
 .btn-ghost {
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: var(--accent-deep);
+  color: var(--accent);
   border: 1.5px solid var(--line);
   padding: 10px 16px;
   font-size: 13.5px;
@@ -342,16 +385,16 @@ body.dark {
   gap: 7px;
 }
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--hover-surface);
   border-color: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
   .btn-ghost {
-    background: rgba(30, 30, 30, 0.5);
+    background: var(--tint);
   }
   .btn-ghost:hover {
-    background: rgba(30, 30, 30, 0.8);
+    background: var(--hover-surface);
   }
 }
 
@@ -362,10 +405,10 @@ body.dark {
 }
 
 .recorder {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--field-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--field-border);
   border-radius: var(--radius);
   padding: 22px 20px;
   margin-bottom: 0;
@@ -373,15 +416,15 @@ body.dark {
 }
 .recorder.live {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.14);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 @media (prefers-color-scheme: dark) {
   .recorder {
-    background: rgba(30, 30, 30, 0.6);
+    background: var(--field-bg);
   }
   .recorder.live {
-    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.20);
+    box-shadow: 0 0 0 4px var(--focus-ring);
   }
 }
 
@@ -424,7 +467,8 @@ body.dark {
   border: none;
   cursor: pointer;
   position: relative;
-  background: var(--accent);
+  background: #1D1D1F;
+  color: #ffffff;
   box-shadow: var(--shadow-2);
   display: grid;
   place-items: center;
@@ -433,7 +477,7 @@ body.dark {
     background 0.2s ease;
 }
 .rec-btn:hover {
-  background: var(--accent-deep);
+  background: #000000;
   transform: scale(1.04);
 }
 .rec-btn:active {
@@ -444,8 +488,43 @@ body.dark {
   position: absolute;
   inset: -10px;
   border-radius: 50%;
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid #1D1D1F;
   opacity: 0.35;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rec-btn {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .rec-btn:hover {
+    background: #F2F2F4;
+  }
+  .rec-btn::after {
+    border-color: #FFFFFF;
+  }
+}
+
+:root.dark .rec-btn {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .rec-btn:hover {
+  background: #F2F2F4;
+}
+:root.dark .rec-btn::after {
+  border-color: #FFFFFF;
+}
+
+:root.light .rec-btn {
+  background: #1D1D1F;
+  color: #ffffff;
+}
+:root.light .rec-btn:hover {
+  background: #000000;
+}
+:root.light .rec-btn::after {
+  border-color: #1D1D1F;
 }
 .rec-hint {
   font-size: 13px;
@@ -551,12 +630,39 @@ canvas.wave {
     background 0.2s ease;
 }
 .icon-btn.play {
-  background: var(--accent-deep);
+  background: #1D1D1F;
+  color: #ffffff;
   box-shadow: var(--shadow-1);
 }
 .icon-btn.play:hover {
-  background: var(--accent);
+  background: #000000;
   transform: scale(1.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon-btn.play {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .icon-btn.play:hover {
+    background: #F2F2F4;
+  }
+}
+
+:root.dark .icon-btn.play {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .icon-btn.play:hover {
+  background: #F2F2F4;
+}
+
+:root.light .icon-btn.play {
+  background: #1D1D1F;
+  color: #ffffff;
+}
+:root.light .icon-btn.play:hover {
+  background: #000000;
 }
 .icon-btn.stop {
   background: #ff3b30;
@@ -1855,10 +1961,27 @@ canvas.wave {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--accent);
+  background: #1D1D1F;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .contact-avatar {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+}
+
+:root.dark .contact-avatar {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+
+:root.light .contact-avatar {
+  background: #1D1D1F;
+  color: #fff;
 }
 .contact-text {
   flex: 1;
@@ -2035,7 +2158,7 @@ canvas.wave {
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: var(--accent);
+  background: #1D1D1F;
   color: #fff;
   display: grid;
   place-items: center;
@@ -2044,12 +2167,38 @@ canvas.wave {
   box-shadow: var(--shadow-1);
 }
 .note-play:hover {
-  background: var(--accent-deep);
+  background: #000000;
   box-shadow: var(--shadow-2);
 }
 .note-play:disabled {
   opacity: 0.7;
   cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .note-play {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .note-play:hover {
+    background: #F2F2F4;
+  }
+}
+
+:root.dark .note-play {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .note-play:hover {
+  background: #F2F2F4;
+}
+
+:root.light .note-play {
+  background: #1D1D1F;
+  color: #fff;
+}
+:root.light .note-play:hover {
+  background: #000000;
 }
 .note-delete {
   background: none;
@@ -2323,7 +2472,7 @@ canvas.wave {
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: var(--accent);
+  background: #1D1D1F;
   color: white;
   display: grid;
   place-items: center;
@@ -2342,6 +2491,96 @@ canvas.wave {
 .chat-new-btn:active {
   transform: scale(0.95);
 }
+
+@media (prefers-color-scheme: dark) {
+  .chat-new-btn {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .chat-new-btn:hover {
+    background: #F2F2F4;
+  }
+}
+
+:root.dark .chat-new-btn {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .chat-new-btn:hover {
+  background: #F2F2F4;
+}
+
+:root.light .chat-new-btn {
+  background: #1D1D1F;
+  color: white;
+}
+
+/* Voice Notes Sidebar - Combined sidebar for /voicenotes */
+.voice-notes-sidebar {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--line);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 18px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sidebar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--brand-font);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.sidebar-brand .dot {
+  color: var(--accent-deep);
+}
+
+.sidebar-threads {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 18px 22px;
+  border-top: 1px solid var(--line);
+}
+
+.sidebar-logout {
+  width: 100%;
+  background: none;
+  border: 1.5px solid var(--line);
+  border-radius: 99px;
+  padding: 10px 14px;
+  font-family: var(--body-font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-logout:hover {
+  border-color: var(--accent);
+  color: var(--accent-deep);
+}
+
 
 .chat-loading,
 .chat-error {
@@ -2412,7 +2651,24 @@ canvas.wave {
   font-weight: 600;
   font-size: 16px;
   color: #fff;
-  background: var(--accent);
+  background: #1D1D1F;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-item-avatar {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+}
+
+:root.dark .chat-item-avatar {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+
+:root.light .chat-item-avatar {
+  background: #1D1D1F;
+  color: #fff;
 }
 .chat-item-text {
   flex: 1;
@@ -2490,11 +2746,37 @@ canvas.wave {
   font-weight: 600;
   font-size: 16px;
   color: #fff;
-  background: var(--accent);
+  background: #1D1D1F;
 }
 .chat-avatar.new {
-  background: rgba(0, 113, 227, 0.2);
-  color: var(--accent-deep);
+  background: var(--tint);
+  color: var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-avatar {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .chat-avatar.new {
+    background: var(--tint);
+  }
+}
+
+:root.dark .chat-avatar {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .chat-avatar.new {
+  background: var(--tint);
+}
+
+:root.light .chat-avatar {
+  background: #1D1D1F;
+  color: #fff;
+}
+:root.light .chat-avatar.new {
+  background: var(--tint);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -2765,12 +3047,12 @@ canvas.wave {
   border-radius: 50%;
   cursor: pointer;
   color: #fff;
-  background: var(--accent);
+  background: #1D1D1F;
   box-shadow: var(--shadow-2);
   transition: filter 0.15s ease, transform 0.1s ease;
 }
 .chat-send-btn:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(0.9);
   box-shadow: var(--shadow-3);
 }
 .chat-send-btn:active:not(:disabled) {
@@ -2780,6 +3062,34 @@ canvas.wave {
   cursor: default;
   opacity: 0.45;
   box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-send-btn {
+    background: #FFFFFF;
+    color: #1A1A1C;
+  }
+  .chat-send-btn:hover:not(:disabled) {
+    background: #F2F2F4;
+    filter: none;
+  }
+}
+
+:root.dark .chat-send-btn {
+  background: #FFFFFF;
+  color: #1A1A1C;
+}
+:root.dark .chat-send-btn:hover:not(:disabled) {
+  background: #F2F2F4;
+  filter: none;
+}
+
+:root.light .chat-send-btn {
+  background: #1D1D1F;
+  color: #fff;
+}
+:root.light .chat-send-btn:hover:not(:disabled) {
+  filter: brightness(0.9);
 }
 .chat-composer-err {
   text-align: center;
@@ -2839,178 +3149,325 @@ canvas.wave {
 /* ---------- theme toggle ---------- */
 .theme-toggle {
   position: fixed;
-  left: 22px;
-  bottom: 22px;
-  z-index: 40;
-  width: 52px;
-  height: 52px;
+  top: 22px;
+  right: 22px;
+  z-index: 50;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: var(--card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: var(--accent-deep);
+  color: var(--ink-soft);
   box-shadow: var(--shadow-2);
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 .theme-toggle:hover {
-  transform: translateY(-2px);
+  transform: scale(1.05);
   box-shadow: var(--shadow-3);
+  color: var(--accent);
 }
 .theme-toggle:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* Bottom-right on homepage (when .stage exists) */
+.stage ~ .theme-toggle,
+body:has(.stage) .theme-toggle {
+  top: auto;
+  bottom: 22px;
+  right: 22px;
 }
 
 @media (prefers-color-scheme: dark) {
   .theme-toggle:focus-visible {
-    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+    box-shadow: 0 0 0 4px var(--focus-ring);
   }
 }
 
 :root.dark .theme-toggle:focus-visible {
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 @media (max-width: 840px) {
   .theme-toggle {
-    left: auto;
-    right: 22px;
-    bottom: 86px;
+    top: 14px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+  }
+  /* Keep bottom-right on homepage mobile too */
+  .stage ~ .theme-toggle,
+  body:has(.stage) .theme-toggle {
+    top: auto;
+    bottom: 14px;
+    right: 14px;
   }
 }
 
 /* ---------- .dark class overrides for manual theme toggle ---------- */
 .dark .field input {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .field input:focus {
-  background: rgba(30, 30, 30, 0.8);
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+  background: var(--field-bg);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .btn-ghost {
-  background: rgba(30, 30, 30, 0.5);
+  background: var(--tint);
 }
 .dark .btn-ghost:hover {
-  background: rgba(30, 30, 30, 0.8);
+  background: var(--hover-surface);
 }
 .dark .recorder {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .recorder.live {
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.20);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .preview-pill {
-  background: rgba(10, 132, 255, 0.15);
-  border-color: rgba(10, 132, 255, 0.3);
+  background: var(--tint);
+  border-color: rgba(255, 255, 255, 0.13);
 }
 .dark .join-card::before {
-  background: radial-gradient(circle at 40% 40%, rgba(10, 132, 255, 0.3), rgba(10, 132, 255, 0));
+  background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
 }
 .dark .chip {
-  background: rgba(30, 30, 30, 0.8);
+  background: rgba(255, 255, 255, 0.06);
 }
 .dark .join-form input {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .join-form input:focus {
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .overlay {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.58);
 }
 .dark .app-sidebar-nav a:hover,
 .dark .app-sidebar-nav button:hover {
-  background: rgba(10, 132, 255, 0.15);
+  background: var(--hover-surface);
 }
 .dark .app-sidebar-nav a.active {
-  background: rgba(10, 132, 255, 0.2);
+  background: var(--tint);
 }
 .dark .contact-item:hover {
-  background: rgba(10, 132, 255, 0.15);
+  background: var(--hover-surface);
 }
 .dark .contact-item.active {
-  background: rgba(10, 132, 255, 0.2);
+  background: var(--tint);
 }
 .dark .contact-count {
-  background: rgba(30, 30, 30, 0.8);
+  background: rgba(255, 255, 255, 0.06);
 }
 .dark .note-card {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .chat-item:hover {
-  background: rgba(10, 132, 255, 0.15);
+  background: var(--hover-surface);
 }
 .dark .chat-item.active {
-  background: rgba(10, 132, 255, 0.2);
+  background: var(--tint);
 }
 .dark .chat-item-tag {
-  background: rgba(10, 132, 255, 0.2);
+  background: var(--tint);
 }
 .dark .chat-avatar.new {
-  background: rgba(10, 132, 255, 0.3);
+  background: var(--tint);
 }
 .dark .chat-label-overlay {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.58);
 }
 .dark .msg-bubble {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .msg.out .msg-bubble {
-  background: rgba(10, 132, 255, 0.2);
-  border-color: rgba(10, 132, 255, 0.4);
+  background: var(--tint);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 .dark .notepad-fab:focus-visible {
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .notepad-area {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .notepad-area:focus {
-  background: rgba(30, 30, 30, 0.8);
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+  background: var(--field-bg);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .notepad-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .dark .notepad-clear:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .dark .notepad-callout-x:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .dark .note-delete:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .dark .chat-label-editor .readonly-field {
   background: rgba(255, 255, 255, 0.05);
 }
 .dark .signup-pop-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .dark .wl-form input {
-  background: rgba(30, 30, 30, 0.6);
+  background: var(--field-bg);
 }
 .dark .wl-form input:focus {
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.25);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 .dark .feature:hover {
-  background: rgba(10, 132, 255, 0.1);
+  background: var(--hover-surface);
 }
 .dark .feature .fi {
-  background: rgba(10, 132, 255, 0.15);
+  background: var(--tint);
 }
 .dark .wl-soon-ic {
-  background: rgba(10, 132, 255, 0.15);
+  background: var(--tint);
 }
 .dark .modal-close {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--tint);
 }
 .dark .modal-close:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ---------- .light class overrides to force light mode ---------- */
+.light .field input {
+  background: var(--field-bg);
+}
+.light .field input:focus {
+  background: var(--field-bg);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .btn-ghost {
+  background: rgba(255, 255, 255, 0.5);
+}
+.light .btn-ghost:hover {
+  background: var(--hover-surface);
+}
+.light .recorder {
+  background: var(--field-bg);
+}
+.light .recorder.live {
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .preview-pill {
+  background: var(--tint);
+  border-color: rgba(0, 0, 0, 0.09);
+}
+.light .join-card::before {
+  background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+}
+.light .chip {
+  background: rgba(255, 255, 255, 0.65);
+}
+.light .join-form input {
+  background: var(--field-bg);
+}
+.light .join-form input:focus {
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .overlay {
+  background: rgba(20, 20, 22, 0.4);
+}
+.light .app-sidebar-nav a:hover,
+.light .app-sidebar-nav button:hover {
+  background: var(--hover-surface);
+}
+.light .app-sidebar-nav a.active {
+  background: var(--tint);
+}
+.light .contact-item:hover {
+  background: var(--hover-surface);
+}
+.light .contact-item.active {
+  background: var(--tint);
+}
+.light .contact-count {
+  background: rgba(255, 255, 255, 0.8);
+}
+.light .note-card {
+  background: var(--field-bg);
+}
+.light .chat-item:hover {
+  background: var(--hover-surface);
+}
+.light .chat-item.active {
+  background: var(--tint);
+}
+.light .chat-item-tag {
+  background: var(--tint);
+}
+.light .chat-avatar.new {
+  background: var(--tint);
+}
+.light .chat-label-overlay {
+  background: rgba(20, 20, 22, 0.4);
+}
+.light .msg-bubble {
+  background: var(--field-bg);
+}
+.light .msg.out .msg-bubble {
+  background: var(--tint);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .notepad-fab:focus-visible {
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .notepad-area {
+  background: var(--field-bg);
+}
+.light .notepad-area:focus {
+  background: var(--field-bg);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .notepad-close:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.light .notepad-clear:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.light .notepad-callout-x:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.light .note-delete:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.light .chat-label-editor .readonly-field {
+  background: rgba(0, 0, 0, 0.03);
+}
+.light .signup-pop-close:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.light .wl-form input {
+  background: var(--field-bg);
+}
+.light .wl-form input:focus {
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+.light .feature:hover {
+  background: var(--hover-surface);
+}
+.light .feature .fi {
+  background: var(--tint);
+}
+.light .wl-soon-ic {
+  background: var(--tint);
+}
+.light .modal-close {
+  background: var(--tint);
+}
+.light .modal-close:hover {
+  background: rgba(0, 0, 0, 0.09);
 }
 
 
