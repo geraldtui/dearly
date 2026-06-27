@@ -3474,3 +3474,109 @@ body:has(.stage) .theme-toggle {
 }
 
 
+
+/* ========== Mobile Thread Navigation ========== */
+@media (max-width: 840px) {
+  .chat-layout {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .voice-notes-sidebar,
+  .chat-thread {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    transition: transform 300ms ease-in-out;
+    will-change: transform;
+  }
+  
+  /* List view - show sidebar, hide thread */
+  .chat-layout[data-mobile-view="list"] .voice-notes-sidebar {
+    transform: translateX(0);
+  }
+  .chat-layout[data-mobile-view="list"] .chat-thread {
+    transform: translateX(100%);
+  }
+  
+  /* Thread view - hide sidebar, show thread */
+  .chat-layout[data-mobile-view="thread"] .voice-notes-sidebar {
+    transform: translateX(-100%);
+  }
+  .chat-layout[data-mobile-view="thread"] .chat-thread {
+    transform: translateX(0);
+  }
+  
+  /* Prevent clicks during transition */
+  .chat-layout[data-transitioning="true"] {
+    pointer-events: none;
+  }
+  
+  /* Back button in thread header */
+  .chat-thread-back {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: var(--card);
+    box-shadow: var(--shadow-1);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--ink);
+    margin-right: 4px;
+  }
+  
+  .chat-thread-back:hover {
+    background: var(--hover-surface);
+  }
+  
+  /* Hide desktop new thread button */
+  .sidebar-header .chat-new-btn {
+    display: none;
+  }
+  
+  /* New message button next to theme toggle */
+  .mobile-new-msg-btn {
+    position: fixed;
+    top: 14px;
+    right: 60px; /* 14px (margin) + 40px (theme toggle width) + 6px (gap) */
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-2);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mobile-new-msg-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-3);
+    color: var(--accent);
+  }
+  
+  .mobile-new-msg-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Hide mobile new message button on desktop */
+@media (min-width: 841px) {
+  .mobile-new-msg-btn {
+    display: none;
+  }
+  .chat-thread-back {
+    display: none;
+  }
+}

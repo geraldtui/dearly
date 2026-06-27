@@ -28,6 +28,7 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [newMode, setNewMode] = useState(false);
   const [notes, setNotes] = useState<VoiceNote[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Fetch all data once on mount
   const fetchData = async () => {
@@ -122,13 +123,24 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   }, []);
 
   const handleSelectThread = (key: string) => {
+    setIsTransitioning(true);
     setSelectedKey(key);
     setNewMode(false);
+    setTimeout(() => setIsTransitioning(false), 300);
   };
 
   const handleNewThread = () => {
+    setIsTransitioning(true);
     setSelectedKey(null);
     setNewMode(true);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  const handleBackToList = () => {
+    setIsTransitioning(true);
+    setSelectedKey(null);
+    setNewMode(false);
+    setTimeout(() => setIsTransitioning(false), 300);
   };
 
   const handleSendSuccess = () => {
@@ -218,23 +230,47 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
     mode = "empty";
   }
 
+  // Determine mobile view state
+  const mobileView = selectedKey || newMode ? "thread" : "list";
+
   return (
-    <div className="chat-layout">
-      <VoiceNotesSidebar
-        threads={threads}
-        selectedKey={selectedKey}
-        newMode={newMode}
-        onSelectThread={handleSelectThread}
-        onNewThread={handleNewThread}
-      />
-      <VoiceNoteThread
-        mode={mode}
-        messages={messages}
-        counterpart={counterpart}
-        onSendSuccess={handleSendSuccess}
-        onDeleteSuccess={handleDeleteSuccess}
-        onNewNote={handleNewThread}
-      />
-    </div>
+    <>
+      {/* Mobile new message button - next to theme toggle */}
+      <button
+        type="button"
+        className="mobile-new-msg-btn"
+        onClick={handleNewThread}
+        aria-label="New voice note"
+        title="New voice note"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </svg>
+      </button>
+      
+      <div 
+        className="chat-layout" 
+        data-mobile-view={mobileView}
+        data-transitioning={isTransitioning}
+      >
+        <VoiceNotesSidebar
+          threads={threads}
+          selectedKey={selectedKey}
+          newMode={newMode}
+          onSelectThread={handleSelectThread}
+          onNewThread={handleNewThread}
+        />
+        <VoiceNoteThread
+          mode={mode}
+          messages={messages}
+          counterpart={counterpart}
+          onSendSuccess={handleSendSuccess}
+          onDeleteSuccess={handleDeleteSuccess}
+          onNewNote={handleNewThread}
+          onBack={handleBackToList}
+        />
+      </div>
+    </>
   );
 }

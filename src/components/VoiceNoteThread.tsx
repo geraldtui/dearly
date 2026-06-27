@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import NotePlayer from "@/components/NotePlayer";
 import VoiceNoteComposer from "@/components/VoiceNoteComposer";
 import ThreadLabelEditor from "@/components/ThreadLabelEditor";
@@ -97,6 +97,7 @@ export default function VoiceNoteThread({
   onSendSuccess,
   onDeleteSuccess,
   onNewNote,
+  onBack,
 }: {
   mode: "thread" | "new" | "empty";
   messages: ThreadMessage[];
@@ -104,7 +105,54 @@ export default function VoiceNoteThread({
   onSendSuccess: () => void;
   onDeleteSuccess: () => void;
   onNewNote: () => void;
+  onBack?: () => void;
 }) {
+  const threadRef = useRef<HTMLElement>(null);
+
+  // Swipe gesture handling for mobile back navigation
+  useEffect(() => {
+    if (!onBack) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    const leftEdgeThreshold = typeof window !== "undefined" ? window.innerWidth * 0.2 : 100;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      const deltaTime = Date.now() - touchStartTime;
+
+      // Check if swipe started from left edge, moved right, and was primarily horizontal
+      if (
+        touchStartX <= leftEdgeThreshold &&
+        deltaX > 50 &&
+        Math.abs(deltaY) < Math.abs(deltaX) &&
+        deltaTime < 300
+      ) {
+        onBack();
+      }
+    };
+
+    const element = threadRef.current;
+    if (element) {
+      element.addEventListener("touchstart", handleTouchStart);
+      element.addEventListener("touchend", handleTouchEnd);
+      return () => {
+        element.removeEventListener("touchstart", handleTouchStart);
+        element.removeEventListener("touchend", handleTouchEnd);
+      };
+    }
+  }, [onBack]);
+
   if (mode === "empty") {
     return (
       <section className="chat-thread chat-thread-empty">
@@ -121,8 +169,21 @@ export default function VoiceNoteThread({
 
   if (mode === "new" || !counterpart) {
     return (
-      <section className="chat-thread">
+      <section ref={threadRef} className="chat-thread">
         <header className="chat-thread-head">
+          {onBack && (
+            <button 
+              type="button" 
+              className="chat-thread-back" 
+              onClick={onBack}
+              aria-label="Back to thread list"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5" />
+                <path d="M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
           <span className="chat-avatar new" aria-hidden="true">
             +
           </span>
@@ -140,8 +201,21 @@ export default function VoiceNoteThread({
   }
 
   return (
-    <section className="chat-thread">
+    <section ref={threadRef} className="chat-thread">
       <header className="chat-thread-head">
+        {onBack && (
+          <button 
+            type="button" 
+            className="chat-thread-back" 
+            onClick={onBack}
+            aria-label="Back to thread list"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
         <span className="chat-avatar" aria-hidden="true">
           {initial(counterpart.name)}
         </span>
