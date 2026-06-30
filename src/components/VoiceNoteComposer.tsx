@@ -141,23 +141,25 @@ export default function VoiceNoteComposer({
 
       <div className="chat-recorder-row">
         <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
-        <button
-          type="button"
-          className="chat-send-btn"
-          onClick={send}
-          disabled={sending || !recording}
-          aria-label="Send voice note"
-          title="Send voice note"
-        >
-          {sending ? (
-            <span className="spinner" />
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 2 11 13" />
-              <path d="M22 2 15 22l-4-9-9-4z" />
-            </svg>
-          )}
-        </button>
+        {recording && (
+          <button
+            type="button"
+            className="chat-send-btn"
+            onClick={send}
+            disabled={sending}
+            aria-label="Send voice note"
+            title="Send voice note"
+          >
+            {sending ? (
+              <span className="spinner" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 2 11 13" />
+                <path d="M22 2 15 22l-4-9-9-4z" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
 
       {touched && !recording && <div className="err chat-composer-err">Record a message before sending.</div>}
