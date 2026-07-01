@@ -72,7 +72,7 @@ export default function Home() {
         <div className="nav-right">
           <ThemeToggle className="theme-toggle nav-theme-toggle" />
           <Link href="/login" className="btn btn-ghost">
-            Log in
+            Login
           </Link>
           <Link href="/signup" className="btn btn-primary">
             Sign up free
@@ -96,7 +96,7 @@ export default function Home() {
           <div className="hero-cta">
             <Link href="/signup" className="btn btn-primary">
               <MicIcon />
-              Sign up free
+              Record a note
             </Link>
             <a href="#how" className="btn btn-ghost">
               How it works
@@ -117,7 +117,7 @@ export default function Home() {
           <div className="mock" aria-hidden>
             <div className="mock-head">
               <span className="mock-to">
-                <span className="mock-avatar">M</span>To Mom
+                <span className="mock-avatar">E</span>To Emily
               </span>
               <span className="mock-status">
                 <span className="rec" />

@@ -30,7 +30,10 @@ test.describe("Reference-styled splash homepage", () => {
   test("AC3: hero and nav CTAs point to signup/login", async ({ page }) => {
     await enterHome(page);
 
-    await expect(page.getByRole("link", { name: "Log in", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Login", exact: true })).toHaveAttribute(
+      "href",
+      "/login"
+    );
     await expect(page.getByRole("link", { name: "Sign up free" }).first()).toHaveAttribute(
       "href",
       "/signup"

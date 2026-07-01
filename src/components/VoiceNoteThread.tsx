@@ -5,6 +5,8 @@ import NotePlayer from "@/components/NotePlayer";
 import VoiceNoteComposer from "@/components/VoiceNoteComposer";
 import ThreadLabelEditor from "@/components/ThreadLabelEditor";
 import type { ThreadMessage } from "@/lib/threads";
+import type { PendingSend } from "@/lib/pendingSends";
+import type { AccountNotePayload } from "@/lib/api";
 
 export interface ThreadCounterpart {
   key: string;
@@ -89,11 +91,46 @@ function MessageBubble({
   );
 }
 
+/** An in-flight (or failed) send, rendered as a placeholder bubble until it resolves. */
+function PendingBubble({
+  pending,
+  onRetry,
+}: {
+  pending: PendingSend;
+  onRetry: (id: string) => void;
+}) {
+  return (
+    <div className={`msg out pending${pending.status === "failed" ? " failed" : ""}`}>
+      <div className="msg-bubble">
+        <div className="msg-pending-status">
+          {pending.status === "sending" ? (
+            <>
+              <span className="spinner" />
+              <span>Sending…</span>
+            </>
+          ) : (
+            <>
+              <span className="err">Failed to send</span>
+              <button type="button" className="msg-retry" onClick={() => onRetry(pending.id)}>
+                Retry
+              </button>
+            </>
+          )}
+        </div>
+        <span className="msg-time">{duration(pending.durationSeconds)}</span>
+      </div>
+    </div>
+  );
+}
+
 /** Middle pane: thread timeline + inline composer, or the new-note / empty states. */
 export default function VoiceNoteThread({
   mode,
   messages,
+  pendingMessages,
   counterpart,
+  onSend,
+  onRetryPending,
   onSendSuccess,
   onDeleteSuccess,
   onNewNote,
@@ -101,7 +138,10 @@ export default function VoiceNoteThread({
 }: {
   mode: "thread" | "new" | "empty";
   messages: ThreadMessage[];
+  pendingMessages: PendingSend[];
   counterpart: ThreadCounterpart | null;
+  onSend: (payload: AccountNotePayload) => void;
+  onRetryPending: (id: string) => void;
   onSendSuccess: () => void;
   onDeleteSuccess: () => void;
   onNewNote: () => void;
@@ -235,6 +275,9 @@ export default function VoiceNoteThread({
         {messages.map((m) => (
           <MessageBubble key={m.id} msg={m} onDeleteSuccess={onDeleteSuccess} />
         ))}
+        {pendingMessages.map((p) => (
+          <PendingBubble key={p.id} pending={p} onRetry={onRetryPending} />
+        ))}
       </div>
 
       <VoiceNoteComposer
@@ -242,6 +285,7 @@ export default function VoiceNoteThread({
         recipientName={counterpart.name}
         recipientEmail={counterpart.email}
         canReply={counterpart.canReply}
+        onSend={onSend}
         onSendSuccess={onSendSuccess}
       />
     </section>

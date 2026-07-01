@@ -4,7 +4,7 @@ import { useState } from "react";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import Notepad from "@/components/Notepad";
 import { emailOk } from "@/lib/validation";
-import { sendAccountNote } from "@/lib/api";
+import { sendAccountNote, type AccountNotePayload } from "@/lib/api";
 import type { Recording } from "@/types";
 
 interface VoiceNoteComposerProps {
@@ -14,8 +14,10 @@ interface VoiceNoteComposerProps {
   recipientEmail?: string | null;
   /** Reply mode: false when the thread has no account/email to reply to. */
   canReply?: boolean;
-  /** Callback invoked after successful send. */
+  /** New-note mode: called after the (blocking) send completes. */
   onSendSuccess: () => void;
+  /** Reply mode: hands the payload to the parent, which sends it in the background. */
+  onSend?: (payload: AccountNotePayload) => void;
 }
 
 /** Inline recorder + send for a voice note thread (or a new note). */
@@ -25,6 +27,7 @@ export default function VoiceNoteComposer({
   recipientEmail = null,
   canReply = true,
   onSendSuccess,
+  onSend,
 }: VoiceNoteComposerProps) {
   const [recording, setRecording] = useState<Recording | null>(null);
   const [subject, setSubject] = useState("");
@@ -52,13 +55,27 @@ export default function VoiceNoteComposer({
   const detailsOk = mode === "reply" || (!fieldErrors.name && !fieldErrors.email);
   const canSend = detailsOk && !!recording && !sending;
 
-  const send = async () => {
-    setTouched(true);
-    if (!canSend) return;
-    const toName = mode === "new" ? name.trim() : recipientName;
-    const toEmail = mode === "new" ? email.trim() : recipientEmail ?? "";
-    // For new notes, email is required. For replies, email validation is handled server-side.
-    if (mode === "new" && !emailOk(toEmail)) {
+  /** Reply mode: clears the composer immediately; the parent sends in the background. */
+  const sendReply = () => {
+    const payload: AccountNotePayload = {
+      recipientName,
+      recipientEmail: recipientEmail ?? "",
+      subject,
+      recording,
+    };
+    if (recording?.url) URL.revokeObjectURL(recording.url);
+    setRecording(null);
+    setSubject("");
+    setTouched(false);
+    setError("");
+    onSend?.(payload);
+  };
+
+  /** New-note mode: unchanged blocking send (no thread yet to show a pending bubble in). */
+  const sendNew = async () => {
+    const toName = name.trim();
+    const toEmail = email.trim();
+    if (!emailOk(toEmail)) {
       setError("That email looks off.");
       return;
     }
@@ -69,7 +86,7 @@ export default function VoiceNoteComposer({
         recipientName: toName,
         recipientEmail: toEmail,
         subject,
-        alias: mode === "new" ? alias.trim() || undefined : undefined,
+        alias: alias.trim() || undefined,
         recording,
       });
       if (recording?.url) URL.revokeObjectURL(recording.url);
@@ -85,6 +102,16 @@ export default function VoiceNoteComposer({
     } finally {
       setSending(false);
     }
+  };
+
+  const send = async () => {
+    setTouched(true);
+    if (!canSend) return;
+    if (mode === "reply") {
+      sendReply();
+      return;
+    }
+    await sendNew();
   };
 
   return (

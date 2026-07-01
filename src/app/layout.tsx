@@ -13,7 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    // Light is the default no matter what — system dark-mode preference is
+    // never consulted; ThemeToggle only switches to "dark" for a returning
+    // user who explicitly chose it (localStorage).
+    <html lang="en" className="light">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

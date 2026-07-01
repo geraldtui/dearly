@@ -11,6 +11,8 @@ import {
   type ThreadMessage,
   type Thread,
 } from "@/lib/threads";
+import { sendAccountNote, type AccountNotePayload } from "@/lib/api";
+import { createPendingSend, pendingForThread, type PendingSend } from "@/lib/pendingSends";
 import type { VoiceNote, ThreadLabel } from "@/lib/db/types";
 
 type LoadState = "loading" | "loaded" | "error";
@@ -29,11 +31,12 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   const [newMode, setNewMode] = useState(false);
   const [notes, setNotes] = useState<VoiceNote[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pendingSends, setPendingSends] = useState<PendingSend[]>([]);
 
-  // Fetch all data once on mount
-  const fetchData = async () => {
+  // Fetch all data once on mount (or silently refresh after a background send/delete).
+  const fetchData = async (opts: { silent?: boolean } = {}) => {
     try {
-      setLoadState("loading");
+      if (!opts.silent) setLoadState("loading");
       setError("");
       const supabase = createClient();
 
@@ -144,9 +147,38 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
   };
 
   const handleSendSuccess = () => {
-    // Refresh data and auto-select newest thread
-    fetchData();
+    // Refresh data silently (already in the middle of this flow, no full-skeleton flash)
+    fetchData({ silent: true });
     setNewMode(false);
+  };
+
+  /** Fires the network request without blocking the UI; resolves or fails the pending entry. */
+  const runPendingSend = (pending: PendingSend) => {
+    sendAccountNote(pending.payload)
+      .then(() => {
+        setPendingSends((prev) => prev.filter((p) => p.id !== pending.id));
+        fetchData({ silent: true });
+      })
+      .catch((e) => {
+        const message = e instanceof Error ? e.message : "We couldn't send your note. Please try again.";
+        setPendingSends((prev) =>
+          prev.map((p) => (p.id === pending.id ? { ...p, status: "failed", error: message } : p))
+        );
+      });
+  };
+
+  const handleSend = (threadKey: string, payload: AccountNotePayload) => {
+    const pending = createPendingSend(threadKey, payload);
+    setPendingSends((prev) => [...prev, pending]);
+    runPendingSend(pending);
+  };
+
+  const handleRetryPending = (id: string) => {
+    const pending = pendingSends.find((p) => p.id === id);
+    if (!pending) return;
+    const retrying: PendingSend = { ...pending, status: "sending", error: "" };
+    setPendingSends((prev) => prev.map((p) => (p.id === id ? retrying : p)));
+    runPendingSend(retrying);
   };
 
   const handleDeleteSuccess = () => {
@@ -190,7 +222,7 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
           </div>
           <div className="chat-error">
             <p className="err">{error}</p>
-            <button className="btn btn-primary" onClick={fetchData}>
+            <button className="btn btn-primary" onClick={() => fetchData()}>
               Retry
             </button>
           </div>
@@ -264,7 +296,10 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
         <VoiceNoteThread
           mode={mode}
           messages={messages}
+          pendingMessages={selectedKey ? pendingForThread(pendingSends, selectedKey) : []}
           counterpart={counterpart}
+          onSend={(payload) => selectedKey && handleSend(selectedKey, payload)}
+          onRetryPending={handleRetryPending}
           onSendSuccess={handleSendSuccess}
           onDeleteSuccess={handleDeleteSuccess}
           onNewNote={handleNewThread}
