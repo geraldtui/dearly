@@ -37,11 +37,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Send unauthenticated users hitting a protected page back to the homepage.
   const needsAuth = PROTECTED_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
   if (needsAuth && !user && !authGuardDisabled()) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
+    url.pathname = "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

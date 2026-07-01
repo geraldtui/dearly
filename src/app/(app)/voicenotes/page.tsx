@@ -10,7 +10,7 @@ export default async function VoiceNotesPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user && !authGuardDisabled()) redirect("/login");
+  if (!user && !authGuardDisabled()) redirect("/");
 
   return <VoiceNotesClient userId={user?.id ?? ""} />;
 }

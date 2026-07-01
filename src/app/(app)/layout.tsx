@@ -7,7 +7,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user && !authGuardDisabled()) redirect("/login");
+  if (!user && !authGuardDisabled()) redirect("/");
 
   return (
     <div className="app-shell">
