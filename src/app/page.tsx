@@ -1,95 +1,169 @@
+"use client";
+
 import Link from "next/link";
-import type { Metadata } from "next";
+import ThemeToggle from "@/components/ThemeToggle";
+import IntroSplash from "@/components/IntroSplash";
 
-export const metadata: Metadata = {
-  title: "Sona — voice logs for the ones you love",
-  description:
-    "Record a heartfelt voice note in your browser and keep every note you send and receive in one tidy place. Sign up free.",
-};
+const WAVE_HEIGHTS = [
+  30, 52, 74, 46, 88, 60, 100, 72, 40, 64, 90, 54, 78, 44, 96, 58, 34, 70, 50, 82, 62, 38, 86, 56,
+  42,
+];
 
-type Feature = { icon: React.ReactNode; title: string; body: string };
+const MicIcon = () => (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="2.5" width="6" height="11" rx="3" />
+    <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+    <path d="M12 17.5V21" />
+  </svg>
+);
 
-const FEATURES: Feature[] = [
+const MailIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6.5h16v11H4z" />
+    <path d="m4 7 8 6 8-6" />
+  </svg>
+);
+
+const SendIcon = ({ size = 15 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2 11 13" />
+    <path d="M22 2 15 22l-4-9-9-4z" />
+  </svg>
+);
+
+type Step = { icon: React.ReactNode; title: string; body: string };
+
+const STEPS: Step[] = [
   {
-    title: "Record in your browser",
-    body: "Tap once and capture up to five minutes of voice. Nothing to download.",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <rect x="9" y="2.5" width="6" height="11" rx="3" />
         <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
-        <line x1="12" y1="17.5" x2="12" y2="21" />
-        <line x1="8.5" y1="21" x2="15.5" y2="21" />
+        <path d="M12 17.5V21" />
       </svg>
     ),
+    title: "Record",
+    body: "Tap once and speak from the heart. A minute is plenty.",
   },
   {
-    title: "Send to any inbox",
-    body: "We deliver your note as an MP3 email — with your own subject line — to anyone.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="5" width="18" height="14" rx="2.5" />
-        <path d="m4 7 8 6 8-6" />
-      </svg>
-    ),
+    icon: <MailIcon />,
+    title: "Address it",
+    body: "Add their name and email — that's all it takes.",
   },
   {
-    title: "Keep them in tidy threads",
-    body: "Notes you send and receive live in calm, private threads — out of your email clutter.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 20.5l1.9-4.2A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z" />
-      </svg>
-    ),
+    icon: <SendIcon size={20} />,
+    title: "Send with love",
+    body: "They'll hear your voice land in their inbox in a moment.",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="splash">
-      <nav className="splash-nav" aria-label="Account">
-        <Link href="/login" className="public-nav-link">
-          Log in
+    <div className="home">
+      <IntroSplash />
+
+      <div className="orb a" aria-hidden />
+      <div className="orb b" aria-hidden />
+
+      <nav className="home-nav">
+        <Link href="/" className="nav-brand">
+          Sona<span className="dot">.</span>
         </Link>
-        <Link href="/signup" className="public-nav-cta">
-          Sign up
-        </Link>
+        <div className="nav-right">
+          <ThemeToggle className="theme-toggle nav-theme-toggle" />
+          <Link href="/login" className="btn btn-ghost">
+            Log in
+          </Link>
+          <Link href="/signup" className="btn btn-primary">
+            Sign up free
+          </Link>
+        </div>
       </nav>
 
-      <main className="splash-main">
-        <section className="splash-hero">
-          <h1 className="brand splash-brand">
-            Sona<span className="dot">.</span>
+      <header className="hero">
+        <div className="hero-copy">
+          <span className="eyebrow">
+            <span className="spark" />
+            An early preview
+          </span>
+          <h1>
+            Some things are better <em>heard</em>.
           </h1>
-          <p className="splash-headline">Voice logs for the ones you love.</p>
-          <p className="splash-tagline">
-            Record a heartfelt voice note in seconds and keep every note you send and receive
-            in calm, private threads.
+          <p className="sub">
+            Record a heartfelt message and send it to someone you love — in seconds, in your own
+            unmistakable voice.
           </p>
-          <div className="splash-cta">
-            <Link href="/signup" className="btn btn-primary splash-cta-btn">
+          <div className="hero-cta">
+            <Link href="/signup" className="btn btn-primary">
+              <MicIcon />
               Sign up free
             </Link>
-            <Link href="/login" className="splash-cta-login">
-              Already have an account? Log in
-            </Link>
+            <a href="#how" className="btn btn-ghost">
+              How it works
+            </a>
           </div>
-        </section>
+          <div className="trust">
+            <span className="dots">
+              <i />
+              <i />
+              <i />
+            </span>
+            No app to install — record right in your browser.
+          </div>
+        </div>
 
-        <section className="splash-features" aria-label="Features">
-          {FEATURES.map((f) => (
-            <div className="splash-feature" key={f.title}>
-              <div className="splash-feature-icon">{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.body}</p>
+        <div className="mock-wrap">
+          <div className="mock-glow" aria-hidden />
+          <div className="mock" aria-hidden>
+            <div className="mock-head">
+              <span className="mock-to">
+                <span className="mock-avatar">M</span>To Mom
+              </span>
+              <span className="mock-status">
+                <span className="rec" />
+                Recording
+              </span>
             </div>
-          ))}
-        </section>
+            <div className="mock-wave">
+              {WAVE_HEIGHTS.map((h, i) => (
+                <i
+                  key={i}
+                  style={{
+                    height: `${h}%`,
+                    animationDelay: `${i * 0.06}s`,
+                    opacity: i > 15 ? 0.4 : undefined,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="mock-foot">
+              <span className="mock-time">0:12</span>
+              <span className="mock-send">
+                Send with love
+                <SendIcon />
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        <p className="foot splash-foot">
-          Made with <span className="heart">♥</span> by <Link href="https://www.geraldtui.com" target="_blank" className="splash-author-link">Gerald Tui</Link>
+      <section className="steps" id="how">
+        {STEPS.map((step) => (
+          <div className="step" key={step.title}>
+            <div className="n">{step.icon}</div>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </div>
+        ))}
+      </section>
 
-        </p>
-      </main>
+      <footer className="home-foot">
+        Made with <span className="heart">♥</span> by{" "}
+        <a href="https://geraldtui.com" className="home-foot-link" target="_blank" rel="noreferrer">
+          Gerald Tui
+        </a>{" "}
+        — an early preview of Sona.
+      </footer>
     </div>
   );
 }
