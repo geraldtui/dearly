@@ -26,16 +26,6 @@ async function parseError(res: Response): Promise<string> {
   return "Something went wrong. Please try again.";
 }
 
-export interface SendNotePayload {
-  senderName: string;
-  senderEmail: string;
-  recipientName: string;
-  recipientEmail: string;
-  /** Optional sender-chosen email subject; blank falls back to a default server-side. */
-  subject: string;
-  recording: Recording | null;
-}
-
 /**
  * Appends recording metadata and the audio blob (transcoded to MP3 so mail
  * clients show an inline play button; falls back to the original blob if
@@ -56,23 +46,6 @@ async function appendRecording(fd: FormData, recording: Recording | null, subjec
     }
     fd.append("audio", audioBlob, `${base}.${ext}`);
   }
-}
-
-/**
- * Sends the voice note. The audio blob (if a real recording exists) is sent as
- * multipart/form-data so the server can attach it to the email.
- */
-export async function sendNote(payload: SendNotePayload): Promise<void> {
-  const fd = new FormData();
-  fd.append("senderName", payload.senderName);
-  fd.append("senderEmail", payload.senderEmail);
-  fd.append("recipientName", payload.recipientName);
-  fd.append("recipientEmail", payload.recipientEmail);
-  fd.append("subject", payload.subject);
-  await appendRecording(fd, payload.recording, payload.subject);
-
-  const res = await fetch("/api/send", { method: "POST", body: fd });
-  if (!res.ok) throw new Error(await parseError(res));
 }
 
 export interface AccountNotePayload {
@@ -114,15 +87,6 @@ export async function saveThreadLabel(payload: {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await parseError(res));
-}
-
-export async function joinWaitlist(email: string, source: string): Promise<void> {
-  const res = await fetch("/api/waitlist", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, source }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }

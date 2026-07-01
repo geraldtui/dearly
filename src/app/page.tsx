@@ -1,211 +1,95 @@
-"use client";
+import Link from "next/link";
+import type { Metadata } from "next";
 
-import React, { useState } from "react";
-import VoiceRecorder from "@/components/VoiceRecorder";
-import Waitlist from "@/components/Waitlist";
-import Logo from "@/components/Logo";
-import Notepad from "@/components/Notepad";
-import PublicNav from "@/components/PublicNav";
-import SignupPromoCard from "@/components/SignupPromoCard";
-import SignupPopover from "@/components/SignupPopover";
-import { emailOk } from "@/lib/validation";
-import { sendNote } from "@/lib/api";
-import type { Recording } from "@/types";
+export const metadata: Metadata = {
+  title: "Sona — voice logs for the ones you love",
+  description:
+    "Record a heartfelt voice note in your browser and keep every note you send and receive in one tidy place. Sign up free.",
+};
 
-function Field({
-  id,
-  label,
-  type,
-  value,
-  placeholder,
-  onChange,
-  onFocus,
-  error,
-  show,
-  children,
-}: {
-  id: string;
-  label: string;
-  type?: string;
-  value: string;
-  placeholder?: string;
-  onChange: (v: string) => void;
-  onFocus?: () => void;
-  error: string;
-  show: boolean;
-  children?: React.ReactNode;
-}) {
+type Feature = { icon: React.ReactNode; title: string; body: string };
+
+const FEATURES: Feature[] = [
+  {
+    title: "Record in your browser",
+    body: "Tap once and capture up to five minutes of voice. Nothing to download.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="2.5" width="6" height="11" rx="3" />
+        <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+        <line x1="12" y1="17.5" x2="12" y2="21" />
+        <line x1="8.5" y1="21" x2="15.5" y2="21" />
+      </svg>
+    ),
+  },
+  {
+    title: "Send to any inbox",
+    body: "We deliver your note as an MP3 email — with your own subject line — to anyone.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2.5" />
+        <path d="m4 7 8 6 8-6" />
+      </svg>
+    ),
+  },
+  {
+    title: "Keep them in tidy threads",
+    body: "Notes you send and receive live in calm, private threads — out of your email clutter.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 20.5l1.9-4.2A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z" />
+      </svg>
+    ),
+  },
+];
+
+export default function Home() {
   return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type={type || "text"}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={onFocus}
-        className={show && error ? "invalid" : ""}
-        autoComplete="off"
-      />
-      <span className="err">{show && error ? error : ""}</span>
-      {children}
-    </div>
-  );
-}
+    <div className="splash">
+      <nav className="splash-nav" aria-label="Account">
+        <Link href="/login" className="public-nav-link">
+          Log in
+        </Link>
+        <Link href="/signup" className="public-nav-cta">
+          Sign up
+        </Link>
+      </nav>
 
-type Status = "idle" | "sending" | "sent";
-type FormState = { sEmail: string; rEmail: string };
-
-/** Derive a friendly display name from an email's local part, e.g. "mary.j@x.com" → "Mary J". */
-function nameFromEmail(email: string): string {
-  const local = email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ?? "";
-  return local ? local.replace(/\b\w/g, (c) => c.toUpperCase()) : "there";
-}
-
-export default function App() {
-  const [form, setForm] = useState<FormState>({ sEmail: "", rEmail: "" });
-  const [recording, setRecording] = useState<Recording | null>(null);
-  const [touched, setTouched] = useState(false);
-  const [status, setStatus] = useState<Status>("idle");
-  const [sendError, setSendError] = useState("");
-  const [waitlist, setWaitlist] = useState(false);
-  const [popAnchor, setPopAnchor] = useState<"sEmail" | "rEmail" | null>(null);
-  const set = (k: keyof FormState) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
-  const anchorPop = (field: "sEmail" | "rEmail") => () => setPopAnchor((a) => a ?? field);
-
-  const errors = {
-    sEmail: !form.sEmail.trim() ? "Your email is needed" : emailOk(form.sEmail) ? "" : "That email looks off",
-    rEmail: !form.rEmail.trim() ? "Their email is needed" : emailOk(form.rEmail) ? "" : "That email looks off",
-  };
-  const formValid = Object.values(errors).every((e) => !e);
-  const canSend = formValid && !!recording;
-
-  const send = async () => {
-    setTouched(true);
-    if (!canSend || status === "sending") return;
-    setSendError("");
-    setStatus("sending");
-    try {
-      await sendNote({
-        senderName: nameFromEmail(form.sEmail),
-        senderEmail: form.sEmail,
-        recipientName: nameFromEmail(form.rEmail),
-        recipientEmail: form.rEmail,
-        subject: "",
-        recording,
-      });
-      setStatus("sent");
-    } catch (e) {
-      setSendError(e instanceof Error ? e.message : "We couldn't send your note. Please try again.");
-      setStatus("idle");
-    }
-  };
-
-  const reset = () => {
-    if (recording?.url) URL.revokeObjectURL(recording.url);
-    setForm({ sEmail: "", rEmail: "" });
-    setRecording(null);
-    setTouched(false);
-    setStatus("idle");
-    setSendError("");
-  };
-
-  return (
-    <div className="stage">
-      <div className="orb a" />
-      <div className="orb b" />
-
-      <PublicNav />
-
-      <main className="card">
-        {status === "sent" ? (
-          <div className="success">
-            <div className="seal">
-              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 7.5 12 13l8-5.5" />
-                <rect x="3" y="5" width="18" height="14" rx="3" />
-              </svg>
-            </div>
-            <h2>On its way.</h2>
-            <p>
-              Your voice note is on its way. They&rsquo;ll hear it at <b>{form.rEmail}</b> in a moment.
-            </p>
-
-            <SignupPromoCard onExplore={() => setWaitlist(true)} />
-
-            <button className="record-again" onClick={reset}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9a9 9 0 1 1-2 5.5" />
-                <path d="M3 4v5h5" />
-              </svg>
-              Record another note
-            </button>
+      <main className="splash-main">
+        <section className="splash-hero">
+          <h1 className="brand splash-brand">
+            Sona<span className="dot">.</span>
+          </h1>
+          <p className="splash-headline">Voice logs for the ones you love.</p>
+          <p className="splash-tagline">
+            Record a heartfelt voice note in seconds and keep every note you send and receive
+            in calm, private threads.
+          </p>
+          <div className="splash-cta">
+            <Link href="/signup" className="btn btn-primary splash-cta-btn">
+              Sign up free
+            </Link>
+            <Link href="/login" className="splash-cta-login">
+              Already have an account? Log in
+            </Link>
           </div>
-        ) : (
-          <>
-              <div className="brand-row">
-              <h1 className="brand">
-                Sona<span className="dot">.</span>
-              </h1>
-                <p className="tagline"></p>
-              <div className="divider" />
+        </section>
+
+        <section className="splash-features" aria-label="Features">
+          {FEATURES.map((f) => (
+            <div className="splash-feature" key={f.title}>
+              <div className="splash-feature-icon">{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
             </div>
+          ))}
+        </section>
 
-            <div className="section-label">From you</div>
-            <Field id="sEmail" label="Your email" type="email" value={form.sEmail} placeholder="you@email.com" onChange={set("sEmail")} onFocus={anchorPop("sEmail")} error={errors.sEmail} show={touched}>
-              {popAnchor === "sEmail" && <SignupPopover />}
-            </Field>
+        <p className="foot splash-foot">
+          Made with <span className="heart">♥</span> by <Link href="https://www.geraldtui.com" target="_blank" className="splash-author-link">Gerald Tui</Link>
 
-            <div className="section-label">To your dear one</div>
-            <Field id="rEmail" label="Their email" type="email" value={form.rEmail} placeholder="them@email.com" onChange={set("rEmail")} onFocus={anchorPop("rEmail")} error={errors.rEmail} show={touched}>
-              {popAnchor === "rEmail" && <SignupPopover />}
-            </Field>
-
-            <div className="recorder-wrap">
-              <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
-              <Notepad />
-            </div>
-
-            {touched && !recording && (
-              <div className="err" style={{ textAlign: "center", marginTop: -10, marginBottom: 14 }}>
-                Record a short message before sending.
-              </div>
-            )}
-
-            {sendError && (
-              <div className="err" style={{ textAlign: "center", marginTop: -6, marginBottom: 14 }}>
-                {sendError}
-              </div>
-            )}
-
-            <button className="btn btn-primary" onClick={send} disabled={status === "sending"}>
-              {status === "sending" ? (
-                <span className="sending">
-                  <span className="spinner" /> Sending…
-                </span>
-              ) : (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 2 11 13" />
-                    <path d="M22 2 15 22l-4-9-9-4z" />
-                  </svg>{" "}
-                  Send with love
-                </>
-              )}
-            </button>
-
-            <p className="foot">
-              Made with <span className="heart">♥</span> —{" "}
-              <button className="foot-link" onClick={() => setWaitlist(true)}>
-                see what Sona can do
-              </button>
-            </p>
-          </>
-        )}
+        </p>
       </main>
-
-      {waitlist && <Waitlist onClose={() => setWaitlist(false)} />}
     </div>
   );
 }

@@ -5,9 +5,9 @@ const fakeAudio = resolve(process.cwd(), "e2e/fixtures/fake-audio.wav");
 const PORT = 3100;
 
 /**
- * E2E config for the browser-only send chain. Chromium runs with a fake
- * microphone fed by a generated WAV so MediaRecorder + MP3 transcoding run for
- * real. `/api/send` is intercepted in the tests, so no Resend/Supabase needed.
+ * E2E config for the public marketing splash. Chromium loads the homepage and
+ * verifies it renders the splash (no send form) and that the removed
+ * `/api/send` route returns 404. No Resend/Supabase needed.
  */
 export default defineConfig({
   testDir: "./e2e",
