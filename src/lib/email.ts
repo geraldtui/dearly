@@ -39,7 +39,7 @@ export async function sendEmail(message: Mail.Options): Promise<string | undefin
  * Sender address. Must be on a domain verified in SES (e.g. dearlyvoice.com);
  * SES rejects unverified senders, so there is no public test fallback.
  */
-export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Dearly <noreply@dearlyvoice.com>";
+export const FROM_EMAIL = process.env.DEARLY_FROM_EMAIL || "Sona <noreply@dearlyvoice.com>";
 
 export function escapeHtml(s: string): string {
   return s
@@ -61,9 +61,9 @@ export function noteEmailHtml(opts: {
   durationLabel: string;
   hasAudio: boolean;
   simulated: boolean;
-  /** Sender-chosen subject; when present it becomes the masthead instead of "Dearly". */
+  /** Sender-chosen subject; when present it becomes the masthead instead of "Sona". */
   subject?: string;
-  /** When the recipient has a Dearly account, link them to their inbox to listen in-app too. */
+  /** When the recipient has a Sona account, link them to their inbox to listen in-app too. */
   inboxUrl?: string;
 }): string {
   const { senderName, recipientName, durationLabel, hasAudio, simulated, subject, inboxUrl } = opts;
@@ -73,7 +73,7 @@ export function noteEmailHtml(opts: {
     ? `<div style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:600;color:${INK};letter-spacing:0.3px;line-height:1.25;">${escapeHtml(
         subject.trim()
       )}</div>`
-    : `<div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Dearly<span style="color:${ACCENT};">.</span></div>`;
+    : `<div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Sona<span style="color:${ACCENT};">.</span></div>`;
   const audioLine = hasAudio
     ? `<p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;">Your voice note (${escapeHtml(
         durationLabel
@@ -117,14 +117,14 @@ export function noteEmailHtml(opts: {
               ${audioLine}
               ${
                 inboxUrl
-                  ? `<p style="margin:16px 0 0;"><a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 26px;border-radius:99px;">Listen on Dearly</a></p>`
+                  ? `<p style="margin:16px 0 0;"><a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 26px;border-radius:99px;">Listen on Sona</a></p>`
                   : ""
               }
             </td>
           </tr>
           <tr>
             <td style="padding:28px 40px 40px;text-align:center;">
-              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Dearly · voice logs for the ones you love</p>
+              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Sona · voice logs for the ones you love</p>
             </td>
           </tr>
         </table>
@@ -150,9 +150,9 @@ export function noteEmailText(opts: {
     "",
     `${senderName} sent you something to hear, with love.`,
     hasAudio ? "Your voice note is attached below — just press play to listen." : "",
-    inboxUrl ? `You can also listen on Dearly: ${inboxUrl}` : "",
+    inboxUrl ? `You can also listen on Sona: ${inboxUrl}` : "",
     "",
-    "Made with love — Dearly"
+    "Made with love — Sona"
   );
   return lines.filter(Boolean).join("\n");
 }
@@ -171,7 +171,7 @@ export interface VoiceNoteEmail {
    * senders should not receive a copy of notes they send (spec 01, 08).
    */
   bccSender?: boolean;
-  /** When set (recipient has a Dearly account), the email adds a "Listen on Dearly" CTA. */
+  /** When set (recipient has a Sona account), the email adds a "Listen on Sona" CTA. */
   inboxUrl?: string;
 }
 
@@ -196,7 +196,7 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
     to: opts.recipientEmail,
     bcc: opts.bccSender ? opts.senderEmail : undefined,
     replyTo: opts.senderEmail,
-    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Sona`,
     html: noteEmailHtml(tplOpts),
     text: noteEmailText(tplOpts),
     attachments: opts.attachments,
@@ -223,25 +223,25 @@ export function newNoteNotificationHtml(opts: {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#F3E8E0;border:1px solid rgba(255,255,255,0.7);border-radius:24px;overflow:hidden;">
           <tr>
             <td style="padding:40px 40px 8px;text-align:center;">
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Dearly<span style="color:${ACCENT};">.</span></div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:600;color:${INK};letter-spacing:0.5px;">Sona<span style="color:${ACCENT};">.</span></div>
               <div style="width:46px;height:1px;background:${ACCENT};opacity:.55;margin:14px auto 0;"></div>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 40px 0;text-align:center;">
               <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:${INK};">A voice note is waiting for you, ${escapeHtml(recipientName)}.</h1>
-              <p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;"><b style="color:${INK};">${escapeHtml(senderName)}</b> sent you a voice note on Dearly.</p>
+              <p style="margin:0 0 8px;font-size:15px;color:${INK_SOFT};line-height:1.6;"><b style="color:${INK};">${escapeHtml(senderName)}</b> sent you a voice note on Sona.</p>
               ${subjectLine}
             </td>
           </tr>
           <tr>
             <td style="padding:20px 40px 8px;text-align:center;">
-              <a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 30px;border-radius:99px;">Listen on Dearly</a>
+              <a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:13px 30px;border-radius:99px;">Listen on Sona</a>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 40px 40px;text-align:center;">
-              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Dearly · voice logs for the ones you love</p>
+              <p style="margin:0;font-size:11px;color:${INK_SOFT};letter-spacing:0.04em;">Made with &#9829; — Sona · voice logs for the ones you love</p>
             </td>
           </tr>
         </table>
@@ -262,12 +262,12 @@ export function newNoteNotificationText(opts: {
   const lines = [
     `A voice note is waiting for you, ${recipientName}.`,
     "",
-    `${senderName} sent you a voice note on Dearly.`,
+    `${senderName} sent you a voice note on Sona.`,
     subject?.trim() ? `"${subject.trim()}"` : "",
     "",
     `Listen here: ${inboxUrl}`,
     "",
-    "Made with love — Dearly",
+    "Made with love — Sona",
   ];
   return lines.filter(Boolean).join("\n");
 }
@@ -294,7 +294,7 @@ export async function sendNewNoteNotification(opts: {
     to: opts.recipientEmail,
     bcc: opts.bccSender && opts.senderEmail ? opts.senderEmail : undefined,
     replyTo: opts.senderEmail || undefined,
-    subject: opts.subject || `${opts.senderName} sent you a voice note on Dearly`,
+    subject: opts.subject || `${opts.senderName} sent you a voice note on Sona`,
     html: newNoteNotificationHtml(tplOpts),
     text: newNoteNotificationText(tplOpts),
   });

@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       from: FROM_EMAIL,
       to: notify,
       replyTo: email,
-      subject: `New Dearly waitlist signup (${source})`,
+      subject: `New Sona waitlist signup (${source})`,
       html: `<p>New waitlist signup:</p><p><b>${escapeHtml(email)}</b></p><p>Source: ${escapeHtml(source)}</p>`,
       text: `New waitlist signup: ${email}\nSource: ${source}`,
     });

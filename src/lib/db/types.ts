@@ -1,4 +1,4 @@
-/** Row shapes for the Dearly Accounts schema (supabase/migrations/0001_accounts.sql). */
+/** Row shapes for the Sona Accounts schema (supabase/migrations/0001_accounts.sql). */
 
 export interface Profile {
   id: string;

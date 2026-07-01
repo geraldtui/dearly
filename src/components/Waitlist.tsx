@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { FEATURES, FEAT_ICON } from "./icons";
 
-/** What Dearly can do today — each shown in the showcase modal. */
+/** What Sona can do today — each shown in the showcase modal. */
 const EXISTING: { icon: React.ReactNode; t: string; d: string }[] = [
   {
     t: "Record in your browser",
@@ -29,7 +29,7 @@ const EXISTING: { icon: React.ReactNode; t: string; d: string }[] = [
     ),
   },
   {
-    t: "Keep them in Dearly",
+    t: "Keep them in Sona",
     d: "With a free account, notes you send and receive live in tidy chats — out of your email.",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +62,7 @@ export default function Waitlist({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
 
-        <p className="modal-eyebrow">Why Dearly</p>
+        <p className="modal-eyebrow">Why Sona</p>
         <h2 className="modal-title">Everything you can do today.</h2>
         <p className="modal-sub">
           A heartfelt voice note in seconds — free, no app to install. Sign up to keep every note in one place.

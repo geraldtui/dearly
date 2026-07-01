@@ -5,8 +5,8 @@ import userEvent from "@testing-library/user-event";
 
 import Notepad from "@/components/Notepad";
 
-const STORAGE_KEY = "dearly:notepad";
-const HINT_KEY = "dearly:notepad-hint";
+const STORAGE_KEY = "sona:notepad";
+const HINT_KEY = "sona:notepad-hint";
 
 beforeEach(() => {
   localStorage.clear();

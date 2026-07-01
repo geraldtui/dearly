@@ -20,7 +20,7 @@ const WAV_BUILDER = `
 })()
 `;
 
-test.describe("Dearly send flow (real browser)", () => {
+test.describe("Sona send flow (real browser)", () => {
   test("AC1: encodeBlobToMp3 produces a valid MP3 in the browser", async ({ page }) => {
     await page.goto("/");
 

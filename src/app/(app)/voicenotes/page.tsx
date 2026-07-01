@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { authGuardDisabled } from "@/lib/dev-auth";
 import VoiceNotesClient from "@/components/VoiceNotesClient";
 
-export const metadata = { title: "Voice Notes — Dearly" };
+export const metadata = { title: "Voice Notes — Sona" };
 
 export default async function VoiceNotesPage() {
   const supabase = await createClient();

@@ -101,7 +101,7 @@ describe("POST /api/send", () => {
     expect(mocks.sendVoiceNoteEmail).not.toHaveBeenCalled();
   });
 
-  it("emails the attachment when the recipient has no Dearly account", async () => {
+  it("emails the attachment when the recipient has no Sona account", async () => {
     const res = await POST(buildRequest({}, 64));
     const body = await res.json();
 

@@ -29,7 +29,7 @@ export interface StoredNote {
 
 export interface StoreNoteOpts {
   ownerFolder: string;
-  /** Null for notes from senders without a Dearly account. */
+  /** Null for notes from senders without a Sona account. */
   senderId: string | null;
   senderName: string;
   recipientId: string | null;

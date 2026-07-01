@@ -87,7 +87,7 @@ export interface AccountNotePayload {
 export type NoteDelivery = "in-app" | "email";
 
 /**
- * Sends a note as a logged-in Dearly user. The server decides delivery:
+ * Sends a note as a logged-in Sona user. The server decides delivery:
  * in-app (recipient has an account) or the classic email fallback.
  */
 export async function sendAccountNote(payload: AccountNotePayload): Promise<NoteDelivery> {

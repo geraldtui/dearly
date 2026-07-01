@@ -3,7 +3,7 @@ import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "Dearly — voice logs for the ones you love",
+  title: "Sona — voice logs for the ones you love",
   description: "Record a short voice note and send it, with love, to your dear ones.",
 };
 

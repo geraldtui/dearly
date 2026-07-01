@@ -144,10 +144,9 @@ export default function App() {
           </div>
         ) : (
           <>
-            <div className="brand-row">
-              <Logo className="brand-mark" title="" />
+              <div className="brand-row">
               <h1 className="brand">
-                Dearly<span className="dot">.</span>
+                Sona<span className="dot">.</span>
               </h1>
                 <p className="tagline"></p>
               <div className="divider" />
@@ -199,7 +198,7 @@ export default function App() {
             <p className="foot">
               Made with <span className="heart">♥</span> —{" "}
               <button className="foot-link" onClick={() => setWaitlist(true)}>
-                see what Dearly can do
+                see what Sona can do
               </button>
             </p>
           </>

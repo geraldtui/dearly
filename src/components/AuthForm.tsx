@@ -11,7 +11,7 @@ type Mode = "login" | "signup";
 
 const COPY: Record<Mode, { title: string; cta: string; busy: string }> = {
   login: { title: "Welcome back.", cta: "Log in", busy: "Logging in…" },
-  signup: { title: "Create your Dearly account.", cta: "Sign up", busy: "Signing up…" },
+  signup: { title: "Create your Sona account.", cta: "Sign up", busy: "Signing up…" },
 };
 
 /** Maps Supabase auth errors to warm, actionable messages. */
@@ -157,7 +157,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           </>
         ) : (
           <>
-            New to Dearly? <Link href="/signup">Create an account</Link>
+            New to Sona? <Link href="/signup">Create an account</Link>
           </>
         )}
       </p>

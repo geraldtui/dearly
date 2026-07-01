@@ -121,7 +121,7 @@ describe("POST /api/notes", () => {
     expect((await POST(buildRequest({}, true))).status).toBe(429);
   });
 
-  describe("recipient without a Dearly account (email fallback)", () => {
+  describe("recipient without a Sona account (email fallback)", () => {
     it("stores the sender's Sent copy and emails the recipient without a BCC", async () => {
       const res = await POST(buildRequest({}, true));
       const body = await res.json();
@@ -170,7 +170,7 @@ describe("POST /api/notes", () => {
     });
   });
 
-  describe("recipient with a Dearly account (dual delivery)", () => {
+  describe("recipient with a Sona account (dual delivery)", () => {
     const recipient = { id: "recipient-1", email: "mom@example.com", display_name: "Mum" };
 
     beforeEach(() => {

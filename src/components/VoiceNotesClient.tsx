@@ -161,7 +161,7 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
         <aside className="voice-notes-sidebar">
           <div className="sidebar-header">
             <div className="sidebar-brand">
-              <span>Dearly<span className="dot">.</span></span>
+              <span>Sona<span className="dot">.</span></span>
             </div>
           </div>
           <div className="chat-loading">
@@ -185,7 +185,7 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
         <aside className="voice-notes-sidebar">
           <div className="sidebar-header">
             <div className="sidebar-brand">
-              <span>Dearly<span className="dot">.</span></span>
+              <span>Sona<span className="dot">.</span></span>
             </div>
           </div>
           <div className="chat-error">
