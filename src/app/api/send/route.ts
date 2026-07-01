@@ -19,7 +19,7 @@ export const runtime = "nodejs";
 type RecipientProfile = Pick<Profile, "id" | "email" | "display_name">;
 
 /**
- * Looks up a Dearly account for the recipient. Returns null when there is no
+ * Looks up a Sona account for the recipient. Returns null when there is no
  * match — or when Supabase isn't configured/reachable, so the public send
  * flow degrades to the classic email instead of failing.
  */
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     audioBuffer = Buffer.from(await audio.arrayBuffer());
   }
 
-  // Registered recipients get the note in their Dearly Inbox instead of an
+  // Registered recipients get the note in their Sona Inbox instead of an
   // email attachment (anonymous sender; no BCC to the sender). Requires real audio.
   const account = audioBuffer ? await findRecipientAccount(recipientEmail) : null;
 
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
       durationLabel: durationLabel(durationSeconds),
       simulated,
       attachments: audioBuffer
-        ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
+        ? [{ filename: (audio as File).name || "sona-voice-note.mp3", content: audioBuffer }]
         : undefined,
     });
     return NextResponse.json({ ok: true, delivery: "email", id });

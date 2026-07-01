@@ -1,4 +1,4 @@
-# Dearly
+# Sona
 
 > Voice logs for the ones you love.
 
@@ -14,7 +14,7 @@ Record a short voice note in the browser and send it, with love, to a dear one o
 ### Email behaviour
 
 - Sent **to** the recipient's email.
-- The sender is **not** copied on recipient emails; logged-in senders keep a copy in Dearly (see spec 08).
+- The sender is **not** copied on recipient emails; logged-in senders keep a copy in Sona (see spec 08).
 - `Reply-To` is set to the sender, so replies go to the right place.
 - The browser audio `Blob` is transcoded to **MP3 in the browser** (via `@breezystack/lamejs`) and attached to the recipient email. MP3 is used so that major mail clients render an **inline play button** on the attachment — **Gmail** (web/mobile) and **Apple Mail** let the recipient listen without downloading the file. If transcoding fails, it falls back to attaching the original WebM/Ogg recording.
 - Note: email clients strip `<audio>` tags from the message body for security, so a player can't be embedded in the body itself — the inline play button comes from the MP3 *attachment*. Outlook desktop doesn't preview audio attachments; for guaranteed in-browser playback everywhere you'd need to host the file and link to it.

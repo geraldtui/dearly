@@ -41,11 +41,11 @@ describe("noteEmailHtml", () => {
   it("uses the sender's subject as the masthead when provided", () => {
     const html = noteEmailHtml({ ...base, subject: "Happy Birthday" });
     expect(html).toContain("Happy Birthday");
-    expect(html).not.toContain("Dearly<span");
+    expect(html).not.toContain("Sona<span");
   });
 
-  it("falls back to the Dearly brand masthead without a subject", () => {
-    expect(noteEmailHtml(base)).toContain("Dearly<span");
+  it("falls back to the Sona brand masthead without a subject", () => {
+    expect(noteEmailHtml(base)).toContain("Sona<span");
   });
 
   it("escapes user-provided values", () => {
@@ -63,10 +63,10 @@ describe("noteEmailHtml", () => {
     expect(html).toContain("couldn&rsquo;t be captured");
   });
 
-  it("adds a Listen on Dearly CTA only when an inboxUrl is provided", () => {
-    expect(noteEmailHtml(base)).not.toContain("Listen on Dearly");
+  it("adds a Listen on Sona CTA only when an inboxUrl is provided", () => {
+    expect(noteEmailHtml(base)).not.toContain("Listen on Sona");
     const html = noteEmailHtml({ ...base, inboxUrl: "https://dearlyvoice.com/inbox" });
-    expect(html).toContain("Listen on Dearly");
+    expect(html).toContain("Listen on Sona");
     expect(html).toContain("https://dearlyvoice.com/inbox");
   });
 });
@@ -83,14 +83,14 @@ describe("noteEmailText", () => {
     expect(text).toContain("attached below");
   });
 
-  it("includes the Dearly listen link when an inboxUrl is provided", () => {
+  it("includes the Sona listen link when an inboxUrl is provided", () => {
     const text = noteEmailText({
       senderName: "Gerald",
       recipientName: "Mom",
       hasAudio: true,
       inboxUrl: "https://dearlyvoice.com/inbox",
     });
-    expect(text).toContain("listen on Dearly: https://dearlyvoice.com/inbox");
+    expect(text).toContain("listen on Sona: https://dearlyvoice.com/inbox");
   });
 });
 
@@ -141,7 +141,7 @@ describe("sendVoiceNoteEmail", () => {
   it("uses the default subject when none is provided", async () => {
     await sendVoiceNoteEmail({ ...emailOpts, subject: "" });
     expect(sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({ subject: "Gerald sent you a voice note on Dearly" })
+      expect.objectContaining({ subject: "Gerald sent you a voice note on Sona" })
     );
   });
 

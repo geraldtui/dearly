@@ -11,14 +11,14 @@ export interface Thread {
   /** Stable grouping id used as the `c` query param. */
   key: string;
   name: string;
-  /** Counterpart's Dearly account id, if they have one. */
+  /** Counterpart's Sona account id, if they have one. */
   counterpartId: string | null;
   /** Counterpart's email, if known (stored on outgoing notes). */
   counterpartEmail: string | null;
   count: number;
   /** ISO timestamp of the most recent note in the thread. */
   lastAt: string;
-  /** True when the counterpart has no Dearly account (email/guest contact). */
+  /** True when the counterpart has no Sona account (email/guest contact). */
   viaEmail: boolean;
   /** False for incoming-only guest threads with no account and no email. */
   canReply: boolean;

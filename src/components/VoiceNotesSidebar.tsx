@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Logo from "@/components/Logo";
 import type { Thread } from "@/lib/threads";
 
 /** A thread plus the owner's saved label values for the inline editor. */
@@ -22,7 +21,7 @@ function dayLabel(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** Combined sidebar: Dearly branding, thread list, and logout. */
+/** Combined sidebar: Sona branding, thread list, and logout. */
 export default function VoiceNotesSidebar({
   threads,
   selectedKey,
@@ -38,12 +37,11 @@ export default function VoiceNotesSidebar({
 }) {
   return (
     <aside className="voice-notes-sidebar">
-      {/* Header: Dearly branding + New thread button */}
+      {/* Header: Sona branding + New thread button */}
       <div className="sidebar-header">
         <Link href="/voicenotes" className="sidebar-brand">
-          <Logo size={26} title="" />
           <span>
-            Dearly<span className="dot">.</span>
+            Sona<span className="dot">.</span>
           </span>
         </Link>
         <button

@@ -8,7 +8,7 @@ vi.mock("@/lib/supabase/use-user", () => ({ useUser: useUserMock }));
 
 import SignupPopover from "@/components/SignupPopover";
 
-const DISMISS_KEY = "dearly_signup_pop_dismissed";
+const DISMISS_KEY = "sona_signup_pop_dismissed";
 
 beforeEach(() => {
   localStorage.clear();

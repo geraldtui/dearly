@@ -5,7 +5,7 @@ import { FEAT_ICON } from "@/components/icons";
 import { useUser } from "@/lib/supabase/use-user";
 
 /**
- * Dearly-account pitch card on the sent screen (replaces the old waitlist
+ * Sona-account pitch card on the sent screen (replaces the old waitlist
  * join card). Logged in, it becomes a shortcut to the Inbox.
  */
 export default function SignupPromoCard({ onExplore }: { onExplore?: () => void }) {
@@ -36,10 +36,10 @@ export default function SignupPromoCard({ onExplore }: { onExplore?: () => void 
       </p>
       <h3>Want an inbox for notes like this?</h3>
       <p className="home-promo-copy">
-        Sign up free and voice notes sent to you land in your Dearly Inbox — easy to keep and replay, out of your email.
+        Sign up free and voice notes sent to you land in your Sona Inbox — easy to keep and replay, out of your email.
       </p>
       <div className="join-chips">
-        <span className="chip">{FEAT_ICON.archive} Dearly Inbox</span>
+        <span className="chip">{FEAT_ICON.archive} Sona Inbox</span>
         <span className="chip">{FEAT_ICON.reply} Listen in-app</span>
         <span className="chip">{FEAT_ICON.contacts} Saves email storage</span>
       </div>
@@ -53,7 +53,7 @@ export default function SignupPromoCard({ onExplore }: { onExplore?: () => void 
       </div>
       {onExplore && (
         <button className="home-promo-explore" onClick={onExplore}>
-          or see everything Dearly can do
+          or see everything Sona can do
         </button>
       )}
     </div>

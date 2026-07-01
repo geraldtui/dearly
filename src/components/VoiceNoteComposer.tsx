@@ -39,7 +39,7 @@ export default function VoiceNoteComposer({
     return (
       <div className="chat-composer disabled">
         <p className="chat-composer-hint">
-          You can&rsquo;t reply here — this note came from a guest with no Dearly account or saved email.
+          You can&rsquo;t reply here — this note came from a guest with no Sona account or saved email.
         </p>
       </div>
     );

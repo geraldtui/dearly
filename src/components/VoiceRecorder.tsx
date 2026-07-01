@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * Dearly — Voice Recorder.
+ * Sona — Voice Recorder.
  * Real MediaRecorder + Web Audio live waveform, with a graceful simulated
  * fallback when the mic is unavailable/denied so the flow stays demoable.
  * Ported from the handoff bundle (recorder.jsx).
