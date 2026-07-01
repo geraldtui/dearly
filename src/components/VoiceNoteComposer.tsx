@@ -4,28 +4,31 @@ import { useState } from "react";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import Notepad from "@/components/Notepad";
 import { emailOk } from "@/lib/validation";
-import { sendAccountNote } from "@/lib/api";
+import { sendAccountNote, type AccountNotePayload } from "@/lib/api";
 import type { Recording } from "@/types";
 
-interface ChatComposerProps {
+interface VoiceNoteComposerProps {
   mode: "reply" | "new";
   /** Reply mode: the resolved counterpart to send to. */
   recipientName?: string;
   recipientEmail?: string | null;
   /** Reply mode: false when the thread has no account/email to reply to. */
   canReply?: boolean;
-  /** Callback invoked after successful send. */
+  /** New-note mode: called after the (blocking) send completes. */
   onSendSuccess: () => void;
+  /** Reply mode: hands the payload to the parent, which sends it in the background. */
+  onSend?: (payload: AccountNotePayload) => void;
 }
 
-/** Inline recorder + send for a chat thread (or a new conversation). */
-export default function ChatComposer({
+/** Inline recorder + send for a voice note thread (or a new note). */
+export default function VoiceNoteComposer({
   mode,
   recipientName = "",
   recipientEmail = null,
   canReply = true,
   onSendSuccess,
-}: ChatComposerProps) {
+  onSend,
+}: VoiceNoteComposerProps) {
   const [recording, setRecording] = useState<Recording | null>(null);
   const [subject, setSubject] = useState("");
   const [name, setName] = useState("");
@@ -39,7 +42,7 @@ export default function ChatComposer({
     return (
       <div className="chat-composer disabled">
         <p className="chat-composer-hint">
-          You can&rsquo;t reply here — this note came from a guest with no Dearly account or saved email.
+          You can&rsquo;t reply here — this note came from a guest with no Sona account or saved email.
         </p>
       </div>
     );
@@ -52,13 +55,27 @@ export default function ChatComposer({
   const detailsOk = mode === "reply" || (!fieldErrors.name && !fieldErrors.email);
   const canSend = detailsOk && !!recording && !sending;
 
-  const send = async () => {
-    setTouched(true);
-    if (!canSend) return;
-    const toName = mode === "new" ? name.trim() : recipientName;
-    const toEmail = mode === "new" ? email.trim() : recipientEmail ?? "";
-    // For new chats, email is required. For replies, email validation is handled server-side.
-    if (mode === "new" && !emailOk(toEmail)) {
+  /** Reply mode: clears the composer immediately; the parent sends in the background. */
+  const sendReply = () => {
+    const payload: AccountNotePayload = {
+      recipientName,
+      recipientEmail: recipientEmail ?? "",
+      subject,
+      recording,
+    };
+    if (recording?.url) URL.revokeObjectURL(recording.url);
+    setRecording(null);
+    setSubject("");
+    setTouched(false);
+    setError("");
+    onSend?.(payload);
+  };
+
+  /** New-note mode: unchanged blocking send (no thread yet to show a pending bubble in). */
+  const sendNew = async () => {
+    const toName = name.trim();
+    const toEmail = email.trim();
+    if (!emailOk(toEmail)) {
       setError("That email looks off.");
       return;
     }
@@ -69,7 +86,7 @@ export default function ChatComposer({
         recipientName: toName,
         recipientEmail: toEmail,
         subject,
-        alias: mode === "new" ? alias.trim() || undefined : undefined,
+        alias: alias.trim() || undefined,
         recording,
       });
       if (recording?.url) URL.revokeObjectURL(recording.url);
@@ -85,6 +102,16 @@ export default function ChatComposer({
     } finally {
       setSending(false);
     }
+  };
+
+  const send = async () => {
+    setTouched(true);
+    if (!canSend) return;
+    if (mode === "reply") {
+      sendReply();
+      return;
+    }
+    await sendNew();
   };
 
   return (
@@ -141,23 +168,25 @@ export default function ChatComposer({
 
       <div className="chat-recorder-row">
         <VoiceRecorder recording={recording} onRecordingChange={setRecording} />
-        <button
-          type="button"
-          className="chat-send-btn"
-          onClick={send}
-          disabled={sending || !recording}
-          aria-label="Send voice note"
-          title="Send voice note"
-        >
-          {sending ? (
-            <span className="spinner" />
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 2 11 13" />
-              <path d="M22 2 15 22l-4-9-9-4z" />
-            </svg>
-          )}
-        </button>
+        {recording && (
+          <button
+            type="button"
+            className="chat-send-btn"
+            onClick={send}
+            disabled={sending}
+            aria-label="Send voice note"
+            title="Send voice note"
+          >
+            {sending ? (
+              <span className="spinner" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 2 11 13" />
+                <path d="M22 2 15 22l-4-9-9-4z" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
 
       {touched && !recording && <div className="err chat-composer-err">Record a message before sending.</div>}

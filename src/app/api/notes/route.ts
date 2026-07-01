@@ -9,7 +9,7 @@ import {
   removeStoredNote,
 } from "@/lib/notes";
 import { emailOk } from "@/lib/validation";
-import { counterpartKey } from "@/lib/conversations";
+import { counterpartKey } from "@/lib/threads";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { bodyTooLarge } from "@/lib/http";
 import type { Profile } from "@/lib/db/types";
@@ -18,8 +18,8 @@ export const runtime = "nodejs";
 
 /**
  * Authenticated dual-delivery send: with audio, always email the recipient the
- * MP3 attachment AND store the sender's Dearly copy. Dearly-user recipients also
- * keep the in-app Inbox row (same row) and get a "Listen on Dearly" link.
+ * MP3 attachment AND store the sender's Sona copy. Sona-user recipients also
+ * keep the in-app Inbox row (same row) and get a "Listen on Sona" link.
  */
 export async function POST(req: NextRequest) {
   const oversized = bodyTooLarge(req, MAX_AUDIO_BYTES + 1024 * 1024);
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       simulated,
       attachments:
         opts.attach && audioBuffer
-          ? [{ filename: (audio as File).name || "dearly-voice-note.mp3", content: audioBuffer }]
+          ? [{ filename: (audio as File).name || "sona-voice-note.mp3", content: audioBuffer }]
           : undefined,
       bccSender: false,
       inboxUrl: opts.withInboxLink ? inboxUrl : undefined,
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, delivery: "email", id });
     }
 
-    // Always store the note. Dearly-user recipients own the row (Inbox + the
+    // Always store the note. Sona-user recipients own the row (Inbox + the
     // sender's Sent); otherwise it's the sender's copy only (recipient_id null).
     const stored = await storeNote(supabase, service, {
       ownerFolder: recipient ? recipient.id : user.id,

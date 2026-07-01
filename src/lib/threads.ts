@@ -1,24 +1,24 @@
-/* Merge a user's sent + received notes into per-person conversations. Pure, no I/O. */
+/* Merge a user's sent + received notes into per-person threads. Pure, no I/O. */
 
 import type { VoiceNote } from "@/lib/db/types";
 
-export interface ConversationMessage extends VoiceNote {
+export interface ThreadMessage extends VoiceNote {
   /** True when the logged-in user is the sender (render right-aligned). */
   outgoing: boolean;
 }
 
-export interface Conversation {
+export interface Thread {
   /** Stable grouping id used as the `c` query param. */
   key: string;
   name: string;
-  /** Counterpart's Dearly account id, if they have one. */
+  /** Counterpart's Sona account id, if they have one. */
   counterpartId: string | null;
   /** Counterpart's email, if known (stored on outgoing notes). */
   counterpartEmail: string | null;
   count: number;
   /** ISO timestamp of the most recent note in the thread. */
   lastAt: string;
-  /** True when the counterpart has no Dearly account (email/guest contact). */
+  /** True when the counterpart has no Sona account (email/guest contact). */
   viaEmail: boolean;
   /** False for incoming-only guest threads with no account and no email. */
   canReply: boolean;
@@ -69,13 +69,13 @@ function keyFor(c: Counterpart): string {
   return counterpartKey(c);
 }
 
-export function conversationKey(note: VoiceNote, userId: string): string {
+export function threadKey(note: VoiceNote, userId: string): string {
   return keyFor(counterpartOf(note, userId));
 }
 
-/** Groups notes into conversations, most recent activity first. */
-export function buildConversations(notes: VoiceNote[], userId: string): Conversation[] {
-  const byKey = new Map<string, Conversation>();
+/** Groups notes into threads, most recent activity first. */
+export function buildThreads(notes: VoiceNote[], userId: string): Thread[] {
+  const byKey = new Map<string, Thread>();
 
   for (const note of notes) {
     const c = counterpartOf(note, userId);
@@ -109,23 +109,23 @@ export function buildConversations(notes: VoiceNote[], userId: string): Conversa
   return [...byKey.values()].sort((a, b) => b.lastAt.localeCompare(a.lastAt));
 }
 
-/** The timeline for one conversation, oldest first, with a derived `outgoing` flag. */
-export function messagesForConversation(
+/** The timeline for one thread, oldest first, with a derived `outgoing` flag. */
+export function messagesForThread(
   notes: VoiceNote[],
   userId: string,
   key: string
-): ConversationMessage[] {
+): ThreadMessage[] {
   return notes
-    .filter((note) => conversationKey(note, userId) === key)
+    .filter((note) => threadKey(note, userId) === key)
     .map((note) => ({ ...note, outgoing: note.sender_id === userId }))
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
-/** The requested key when it matches, else the first (most recent) conversation, else null. */
+/** The requested key when it matches, else the first (most recent) thread, else null. */
 export function resolveSelectedKey(
-  conversations: Conversation[],
+  threads: Thread[],
   requested: string | undefined
 ): string | null {
-  if (requested && conversations.some((c) => c.key === requested)) return requested;
-  return conversations[0]?.key ?? null;
+  if (requested && threads.some((c) => c.key === requested)) return requested;
+  return threads[0]?.key ?? null;
 }

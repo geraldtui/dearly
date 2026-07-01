@@ -1,4 +1,4 @@
-/** Row shapes for the Dearly Accounts schema (supabase/migrations/0001_accounts.sql). */
+/** Row shapes for the Sona Accounts schema (supabase/migrations/0001_accounts.sql). */
 
 export interface Profile {
   id: string;
@@ -7,9 +7,9 @@ export interface Profile {
   created_at: string;
 }
 
-export interface ConversationLabel {
+export interface ThreadLabel {
   owner_id: string;
-  /** Matches the conversation key in src/lib/conversations.ts. */
+  /** Matches the thread key in src/lib/threads.ts. */
   counterpart_key: string;
   /** How the owner privately labels the contact (display only). */
   nickname: string | null;

@@ -14,7 +14,7 @@ function clean(value: unknown): string | null {
   return s ? s.slice(0, MAX_LABEL_LEN) : null;
 }
 
-/** Upserts the logged-in owner's nickname + alias for one conversation. */
+/** Upserts the logged-in owner's nickname + alias for one thread. */
 export async function POST(req: NextRequest) {
   const oversized = bodyTooLarge(req, MAX_JSON_BYTES);
   if (oversized) return oversized;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const counterpartKey = String(body.counterpartKey || "").trim();
   if (!counterpartKey) {
-    return NextResponse.json({ error: "Missing conversation." }, { status: 400 });
+    return NextResponse.json({ error: "Missing thread." }, { status: 400 });
   }
 
   const { error } = await supabase.from("conversation_labels").upsert(

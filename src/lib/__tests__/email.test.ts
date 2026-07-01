@@ -13,6 +13,7 @@ import {
   noteEmailHtml,
   noteEmailText,
   sendNewNoteNotification,
+  senderFromAddress,
   sendVoiceNoteEmail,
 } from "@/lib/email";
 
@@ -29,6 +30,25 @@ describe("escapeHtml", () => {
   });
 });
 
+describe("senderFromAddress", () => {
+  it("uses the sender's first name as the display name", () => {
+    expect(senderFromAddress("Gerald Tui")).toBe("Gerald <noreply@dearlyvoice.com>");
+  });
+
+  it("keeps a single-token nickname/alias intact", () => {
+    expect(senderFromAddress("Dad")).toBe("Dad <noreply@dearlyvoice.com>");
+  });
+
+  it("falls back to the brand address when no name is given", () => {
+    expect(senderFromAddress("")).toBe("Sona <noreply@dearlyvoice.com>");
+    expect(senderFromAddress(undefined)).toBe("Sona <noreply@dearlyvoice.com>");
+  });
+
+  it("strips characters that could inject into the header", () => {
+    expect(senderFromAddress('Eve" <evil@x.com>, X')).toBe("Eve <noreply@dearlyvoice.com>");
+  });
+});
+
 describe("noteEmailHtml", () => {
   const base = {
     senderName: "Gerald",
@@ -38,14 +58,14 @@ describe("noteEmailHtml", () => {
     simulated: false,
   };
 
-  it("uses the sender's subject as the masthead when provided", () => {
+  it("uses the sender's subject as the heading when provided", () => {
     const html = noteEmailHtml({ ...base, subject: "Happy Birthday" });
     expect(html).toContain("Happy Birthday");
-    expect(html).not.toContain("Dearly<span");
+    expect(html).not.toContain("Sona<span");
   });
 
-  it("falls back to the Dearly brand masthead without a subject", () => {
-    expect(noteEmailHtml(base)).toContain("Dearly<span");
+  it("falls back to the Sona brand heading without a subject", () => {
+    expect(noteEmailHtml(base)).toContain("Sona<span");
   });
 
   it("escapes user-provided values", () => {
@@ -54,8 +74,10 @@ describe("noteEmailHtml", () => {
     expect(html).toContain("&lt;script&gt;");
   });
 
-  it("mentions the attachment when audio is present", () => {
-    expect(noteEmailHtml(base)).toContain("attached below");
+  it("says the note is attached and names the sender when audio is present", () => {
+    const html = noteEmailHtml(base);
+    expect(html).toContain("New voice note from");
+    expect(html).toContain("attached");
   });
 
   it("explains a simulated recording when audio is missing", () => {
@@ -63,10 +85,10 @@ describe("noteEmailHtml", () => {
     expect(html).toContain("couldn&rsquo;t be captured");
   });
 
-  it("adds a Listen on Dearly CTA only when an inboxUrl is provided", () => {
-    expect(noteEmailHtml(base)).not.toContain("Listen on Dearly");
+  it("adds a Listen on Sona CTA only when an inboxUrl is provided", () => {
+    expect(noteEmailHtml(base)).not.toContain("Listen on Sona");
     const html = noteEmailHtml({ ...base, inboxUrl: "https://dearlyvoice.com/inbox" });
-    expect(html).toContain("Listen on Dearly");
+    expect(html).toContain("Listen on Sona");
     expect(html).toContain("https://dearlyvoice.com/inbox");
   });
 });
@@ -80,30 +102,31 @@ describe("noteEmailText", () => {
       subject: "Happy Birthday",
     });
     expect(text.startsWith("Happy Birthday")).toBe(true);
-    expect(text).toContain("attached below");
+    expect(text).toContain("New voice note from Gerald attached.");
   });
 
-  it("includes the Dearly listen link when an inboxUrl is provided", () => {
+  it("includes the Sona listen link when an inboxUrl is provided", () => {
     const text = noteEmailText({
       senderName: "Gerald",
       recipientName: "Mom",
       hasAudio: true,
       inboxUrl: "https://dearlyvoice.com/inbox",
     });
-    expect(text).toContain("listen on Dearly: https://dearlyvoice.com/inbox");
+    expect(text).toContain("Listen on Sona: https://dearlyvoice.com/inbox");
   });
 });
 
 describe("newNoteNotificationText", () => {
-  it("includes the inbox link and quoted subject", () => {
+  it("includes the sender line, subject, and inbox link", () => {
     const text = newNoteNotificationText({
       senderName: "Gerald",
       recipientName: "Mom",
       subject: "Hi Mom",
       inboxUrl: "https://dearlyvoice.com/inbox",
     });
-    expect(text).toContain('"Hi Mom"');
-    expect(text).toContain("Listen here: https://dearlyvoice.com/inbox");
+    expect(text).toContain("Hi Mom");
+    expect(text).toContain("New voice note from Gerald.");
+    expect(text).toContain("Listen on Sona: https://dearlyvoice.com/inbox");
   });
 });
 
@@ -118,28 +141,31 @@ const emailOpts = {
 };
 
 describe("sendVoiceNoteEmail", () => {
-  it("BCCs the sender by default and returns the provider id", async () => {
+  it("does not BCC the sender by default and returns the provider id", async () => {
     const id = await sendVoiceNoteEmail(emailOpts);
     expect(id).toBe("msg-1");
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        from: "Gerald <noreply@dearlyvoice.com>",
         to: "mom@example.com",
-        bcc: "gerald@example.com",
+        bcc: undefined,
         replyTo: "gerald@example.com",
         subject: "Hi Mom",
       })
     );
   });
 
-  it("skips the BCC when bccSender is false (account flow)", async () => {
-    await sendVoiceNoteEmail({ ...emailOpts, bccSender: false });
-    expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ bcc: undefined }));
+  it("BCCs the sender when bccSender is true", async () => {
+    await sendVoiceNoteEmail({ ...emailOpts, bccSender: true });
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ bcc: "gerald@example.com" })
+    );
   });
 
   it("uses the default subject when none is provided", async () => {
     await sendVoiceNoteEmail({ ...emailOpts, subject: "" });
     expect(sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({ subject: "Gerald sent you a voice note on Dearly" })
+      expect.objectContaining({ subject: "Gerald sent you a voice note on Sona" })
     );
   });
 
@@ -161,7 +187,12 @@ describe("sendNewNoteNotification", () => {
 
   it("does not BCC the sender by default", async () => {
     await sendNewNoteNotification(notifyOpts);
-    expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ bcc: undefined }));
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "Gerald <noreply@dearlyvoice.com>",
+        bcc: undefined,
+      })
+    );
   });
 
   it("BCCs the free sender when requested", async () => {

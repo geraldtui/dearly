@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const STORAGE_KEY = "dearly:notepad";
-const HINT_KEY = "dearly:notepad-hint";
+const STORAGE_KEY = "sona:notepad";
+const HINT_KEY = "sona:notepad-hint";
 
 /**
  * A private, temporary scratchpad for jotting thoughts before recording.
@@ -46,7 +46,7 @@ export default function Notepad({ inline = false }: { inline?: boolean }) {
     if (!hintDismissed) dismissHint();
   };
 
-  const showHint = hydrated && !hintDismissed && !open;
+  const showHint = hydrated && !hintDismissed && !open && process.env.NEXT_PUBLIC_E2E !== "true";
 
   useEffect(() => {
     if (!hydrated) return;
