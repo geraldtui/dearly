@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFadeOut } from "@/lib/useFadeOut";
 
 const STORAGE_KEY = "sona:notepad";
 const HINT_KEY = "sona:notepad-hint";
@@ -19,6 +20,7 @@ export default function Notepad({ inline = false }: { inline?: boolean }) {
   // after mount only if the user hasn't dismissed it before.
   const [hintDismissed, setHintDismissed] = useState(true);
   const areaRef = useRef<HTMLTextAreaElement>(null);
+  const { mounted: panelMounted, closing: panelClosing } = useFadeOut(open, 180);
 
   useEffect(() => {
     try {
@@ -59,8 +61,8 @@ export default function Notepad({ inline = false }: { inline?: boolean }) {
   }, [text, hydrated]);
 
   useEffect(() => {
-    if (open) areaRef.current?.focus();
-  }, [open]);
+    if (panelMounted) areaRef.current?.focus();
+  }, [panelMounted]);
 
   useEffect(() => {
     if (!open) return;
@@ -110,8 +112,13 @@ export default function Notepad({ inline = false }: { inline?: boolean }) {
         </svg>
       </button>
 
-      {open && (
-        <div className="notepad-panel" role="dialog" aria-modal="false" aria-label="Notepad">
+      {panelMounted && (
+        <div
+          className={`notepad-panel${panelClosing ? " closing" : ""}`}
+          role="dialog"
+          aria-modal="false"
+          aria-label="Notepad"
+        >
           <div className="notepad-head">
             <span className="notepad-title">Jot your thoughts</span>
             <button type="button" className="notepad-close" onClick={() => setOpen(false)} aria-label="Close notepad">

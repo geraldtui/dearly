@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import Notepad from "@/components/Notepad";
@@ -26,7 +26,10 @@ describe("Notepad", () => {
     // The floating button is also labeled "Close notepad" while open, so
     // target the close button inside the panel.
     await user.click(within(dialog).getByRole("button", { name: "Close notepad" }));
-    expect(screen.queryByRole("dialog", { name: "Notepad" })).not.toBeInTheDocument();
+    // The panel stays mounted briefly to play its fade-out animation.
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Notepad" })).not.toBeInTheDocument();
+    });
   });
 
   it("persists text to localStorage and restores it on mount", async () => {
