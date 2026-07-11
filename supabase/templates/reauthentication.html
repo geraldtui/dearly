@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset your Sona password</title>
+  <title>Your Sona verification code</title>
 </head>
 <body style="margin:0;padding:0;background:#ECECEE;font-family:'Helvetica Neue',Arial,sans-serif;color:#1D1D1F;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECECEE;padding:32px 16px;">
@@ -22,33 +22,25 @@
           <tr>
             <td style="padding:20px 40px 0;text-align:center;">
               <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#1D1D1F;line-height:1.3;">
-                Reset your password.
+                Confirm it&rsquo;s you.
               </h1>
               <p style="margin:0;font-size:15px;color:#6E6E73;line-height:1.6;">
-                We received a request to reset the password for your Sona account
-                (<b style="color:#1D1D1F;">{{ .Email }}</b>).
-              </p>
-              <p style="margin:16px 0 0;font-size:14px;color:#6E6E73;line-height:1.6;">
-                Tap the button below to choose a new password. This link expires soon for your security.
+                For your security, enter this code to continue with a sensitive action on your Sona account.
               </p>
             </td>
           </tr>
-          <!-- CTA -->
+          <!-- Code -->
           <tr>
             <td style="padding:28px 40px 0;text-align:center;">
-              <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#1D1D1F;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 30px;border-radius:99px;">
-                Reset my password
-              </a>
+              <div style="display:inline-block;background:#ECECEE;border-radius:16px;padding:16px 32px;">
+                <span style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:600;color:#1D1D1F;letter-spacing:0.2em;">{{ .Token }}</span>
+              </div>
             </td>
           </tr>
-          <!-- Fallback link -->
           <tr>
-            <td style="padding:20px 40px 0;text-align:center;">
+            <td style="padding:16px 40px 0;text-align:center;">
               <p style="margin:0;font-size:13px;color:#6E6E73;line-height:1.6;">
-                Button not working? Copy and paste this link into your browser:
-              </p>
-              <p style="margin:8px 0 0;font-size:12px;line-height:1.5;word-break:break-all;">
-                <a href="{{ .ConfirmationURL }}" style="color:#1D1D1F;text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                This code expires soon for your security.
               </p>
             </td>
           </tr>
@@ -57,7 +49,7 @@
             <td style="padding:36px 40px 44px;text-align:center;">
               <div style="height:1px;background:#DEDEE1;margin:0 0 20px;"></div>
               <p style="margin:0 0 8px;font-size:13px;color:#6E6E73;line-height:1.5;">
-                If you didn&rsquo;t ask to reset your password, you can safely ignore this email. Your password won&rsquo;t change.
+                If you didn&rsquo;t request this, you can safely ignore this email.
               </p>
               <p style="margin:0;font-size:11px;color:#6E6E73;letter-spacing:0.04em;">
                 Made with &#9829; &mdash; Sona &middot; voice logs for the ones you love

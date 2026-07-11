@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { saveThreadLabel } from "@/lib/api";
+import { useFadeOut } from "@/lib/useFadeOut";
 
 /**
  * Clickable name in the voice note thread header that opens a modal to rename a
@@ -30,6 +31,7 @@ export default function ThreadLabelEditor({
   const [signAs, setSignAs] = useState(alias);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { mounted: dialogMounted, closing: dialogClosing } = useFadeOut(open, 180);
 
   useEffect(() => setMounted(true), []);
 
@@ -77,16 +79,16 @@ export default function ThreadLabelEditor({
         </button>
       </h1>
 
-      {open && mounted && createPortal(
+      {dialogMounted && mounted && createPortal(
         <div
-          className="chat-label-overlay"
+          className={`chat-label-overlay${dialogClosing ? " closing" : ""}`}
           role="presentation"
           onClick={() => {
             if (!saving) setOpen(false);
           }}
         >
         <div
-          className="chat-label-editor"
+          className={`chat-label-editor${dialogClosing ? " closing" : ""}`}
           role="dialog"
           aria-modal="true"
           aria-label="Edit names"

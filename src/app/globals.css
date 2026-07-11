@@ -184,6 +184,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   margin: 0;
@@ -230,6 +234,24 @@ body:has(.chat-layout) {
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Site-wide page transition: src/app/template.tsx remounts this wrapper on
+   every navigation (layouts persist, templates don't), so the fade-in
+   replays for each new page without any JS or animation library. */
+.page-fade {
+  animation: pageFadeIn 0.5s ease both;
+}
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -1077,7 +1099,7 @@ body:has(.chat-layout) {
   position: absolute;
   right: 0;
   bottom: 66px;
-  width: 320px;
+  width: 420px;
   max-width: calc(100vw - 32px);
 }
 
@@ -2046,7 +2068,7 @@ canvas.wave {
   right: 22px;
   bottom: 86px;
   z-index: 20;
-  width: min(320px, calc(100vw - 44px));
+  width: min(420px, calc(100vw - 44px));
   background: var(--card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -2059,6 +2081,10 @@ canvas.wave {
   gap: 10px;
   animation: notepadIn 0.18s ease;
 }
+.notepad-panel.closing {
+  animation: notepadOut 0.18s ease forwards;
+  pointer-events: none;
+}
 @keyframes notepadIn {
   from {
     opacity: 0;
@@ -2067,6 +2093,16 @@ canvas.wave {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+@keyframes notepadOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 .notepad-head {
@@ -2103,8 +2139,8 @@ canvas.wave {
 }
 .notepad-area {
   width: 100%;
-  min-height: 140px;
-  max-height: 50vh;
+  min-height: 240px;
+  max-height: 65vh;
   resize: vertical;
   border: 1.5px solid var(--line);
   border-radius: 12px;
@@ -3457,6 +3493,27 @@ canvas.wave {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  animation: overlayFadeIn 0.18s ease;
+}
+.chat-label-overlay.closing {
+  animation: overlayFadeOut 0.18s ease forwards;
+  pointer-events: none;
+}
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -3476,6 +3533,30 @@ canvas.wave {
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow: var(--shadow-3);
+  animation: modalIn 0.2s ease;
+}
+.chat-label-editor.closing {
+  animation: modalOut 0.18s ease forwards;
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes modalOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
 }
 .chat-label-editor .field label {
   font-size: 11px;

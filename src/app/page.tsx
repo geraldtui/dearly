@@ -31,6 +31,30 @@ const SendIcon = ({ size = 15 }: { size?: number }) => (
   </svg>
 );
 
+/** Eased scroll to an in-page anchor — slower and more consistent across browsers than the native "smooth" behavior. */
+function scrollToId(id: string, durationMs = 900) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    target.scrollIntoView({ block: "start" });
+    return;
+  }
+
+  const startY = window.scrollY;
+  const targetY = startY + target.getBoundingClientRect().top;
+  const distance = targetY - startY;
+  const startTime = performance.now();
+  const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+  function step(now: number) {
+    const progress = Math.min((now - startTime) / durationMs, 1);
+    window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 type Step = { icon: React.ReactNode; title: string; body: string };
 
 const STEPS: Step[] = [
@@ -98,7 +122,14 @@ export default function Home() {
               <MicIcon />
               Record a note
             </Link>
-            <a href="#how" className="btn btn-ghost">
+            <a
+              href="#how"
+              className="btn btn-ghost"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToId("how");
+              }}
+            >
               How it works
             </a>
           </div>
