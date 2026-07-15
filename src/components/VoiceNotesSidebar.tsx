@@ -77,7 +77,7 @@ export default function VoiceNotesSidebar({
                     <span className="chat-item-text">
                       <span className="chat-item-top">
                         <span className="chat-item-name">{c.name}</span>
-                        <span className="chat-item-time">{dayLabel(c.lastAt)}</span>
+                        {c.count > 0 && <span className="chat-item-time">{dayLabel(c.lastAt)}</span>}
                       </span>
                       <span className="chat-item-sub">
                         {c.viaEmail && <span className="chat-item-tag">via email</span>}

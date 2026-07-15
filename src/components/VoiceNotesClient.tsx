@@ -7,6 +7,8 @@ import VoiceNotesSidebar, { type ThreadListItem } from "@/components/VoiceNotesS
 import VoiceNoteThread, { type ThreadCounterpart } from "@/components/VoiceNoteThread";
 import {
   buildThreads,
+  counterpartKey,
+  ensureSelfThread,
   messagesForThread,
   type ThreadMessage,
   type Thread,
@@ -52,20 +54,25 @@ export default function VoiceNotesClient({ userId }: { userId: string }) {
       // Fetch labels
       const { data: labelRows, error: labelsError } = await supabase
         .from("conversation_labels")
-        .select("counterpart_key, nickname, my_alias")
+        .select("counterpart_key, nickname, my_alias, pinned")
         .eq("owner_id", userId);
 
       if (labelsError) throw labelsError;
 
-      const labels = new Map<string, Pick<ThreadLabel, "nickname" | "my_alias">>(
-        (labelRows ?? []).map((l) => [l.counterpart_key, { nickname: l.nickname, my_alias: l.my_alias }])
+      const labels = new Map<string, Pick<ThreadLabel, "nickname" | "my_alias" | "pinned">>(
+        (labelRows ?? []).map((l) => [
+          l.counterpart_key,
+          { nickname: l.nickname, my_alias: l.my_alias, pinned: l.pinned },
+        ])
       );
 
       const rawNotes = (notesData ?? []) as VoiceNote[];
       setNotes(rawNotes);
 
-      // Build threads and fetch emails for account-based contacts
-      const rawThreads = buildThreads(rawNotes, userId);
+      // Build threads, pin "Self Notes" (synthesizing it if empty), then fetch
+      // emails for account-based contacts.
+      const selfPinned = Boolean(labels.get(counterpartKey({ id: userId }))?.pinned);
+      const rawThreads = ensureSelfThread(buildThreads(rawNotes, userId), userId, selfPinned);
       const threadsWithEmails = await Promise.all(
         rawThreads.map(async (c: Thread) => {
           const label = labels.get(c.key);

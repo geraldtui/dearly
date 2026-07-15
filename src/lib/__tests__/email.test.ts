@@ -47,6 +47,10 @@ describe("senderFromAddress", () => {
   it("strips characters that could inject into the header", () => {
     expect(senderFromAddress('Eve" <evil@x.com>, X')).toBe("Eve <noreply@dearlyvoice.com>");
   });
+
+  it("keeps the 'Self Note' sentinel whole instead of truncating to its first word", () => {
+    expect(senderFromAddress("Self Note")).toBe("Self Note <noreply@dearlyvoice.com>");
+  });
 });
 
 describe("noteEmailHtml", () => {
@@ -91,6 +95,17 @@ describe("noteEmailHtml", () => {
     expect(html).toContain("Listen on Sona");
     expect(html).toContain("https://dearlyvoice.com/inbox");
   });
+
+  it("uses personalized self-note copy instead of naming the sender", () => {
+    const html = noteEmailHtml({ ...base, senderName: "Self Note", isSelfNote: true });
+    expect(html).toContain("Your new self note is attached.");
+    expect(html).not.toContain("New voice note from");
+  });
+
+  it("explains a simulated self-note recording without naming the sender", () => {
+    const html = noteEmailHtml({ ...base, hasAudio: false, simulated: true, isSelfNote: true });
+    expect(html).toContain("Your self note couldn&rsquo;t be captured this time.");
+  });
 });
 
 describe("noteEmailText", () => {
@@ -113,6 +128,17 @@ describe("noteEmailText", () => {
       inboxUrl: "https://dearlyvoice.com/inbox",
     });
     expect(text).toContain("Listen on Sona: https://dearlyvoice.com/inbox");
+  });
+
+  it("uses personalized self-note copy instead of naming the sender", () => {
+    const text = noteEmailText({
+      senderName: "Self Note",
+      recipientName: "Self Note",
+      hasAudio: true,
+      isSelfNote: true,
+    });
+    expect(text).toContain("Your new self note is attached.");
+    expect(text).not.toContain("New voice note from");
   });
 });
 
@@ -166,6 +192,13 @@ describe("sendVoiceNoteEmail", () => {
     await sendVoiceNoteEmail({ ...emailOpts, subject: "" });
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({ subject: "Gerald sent you a voice note on Sona" })
+    );
+  });
+
+  it("uses a personalized default subject for a self-note", async () => {
+    await sendVoiceNoteEmail({ ...emailOpts, senderName: "Self Note", subject: "", isSelfNote: true });
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ subject: "Your self note on Sona" })
     );
   });
 
