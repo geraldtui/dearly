@@ -22,6 +22,8 @@ export interface Thread {
   viaEmail: boolean;
   /** False for incoming-only guest threads with no account and no email. */
   canReply: boolean;
+  /** True to keep this thread pinned at the top of the sidebar (e.g. "Self Notes"). */
+  pinned: boolean;
 }
 
 interface Counterpart {
@@ -103,10 +105,39 @@ export function buildThreads(notes: VoiceNote[], userId: string): Thread[] {
       lastAt: note.created_at,
       viaEmail: !c.id,
       canReply: Boolean(c.id || c.email),
+      pinned: false,
     });
   }
 
   return [...byKey.values()].sort((a, b) => b.lastAt.localeCompare(a.lastAt));
+}
+
+/**
+ * Marks the self thread pinned, synthesizing a zero-message placeholder for it
+ * when the user hasn't sent themselves a note yet. Pinned threads sort first.
+ */
+export function ensureSelfThread(threads: Thread[], userId: string, pinned: boolean): Thread[] {
+  const selfKey = counterpartKey({ id: userId });
+  const flagged = threads.map((t) => ({ ...t, pinned: t.key === selfKey && pinned }));
+
+  if (pinned && !flagged.some((t) => t.key === selfKey)) {
+    flagged.unshift({
+      key: selfKey,
+      name: "Self Notes",
+      counterpartId: userId,
+      counterpartEmail: null,
+      count: 0,
+      lastAt: "",
+      viaEmail: false,
+      canReply: true,
+      pinned: true,
+    });
+  }
+
+  return flagged.sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return b.lastAt.localeCompare(a.lastAt);
+  });
 }
 
 /** The timeline for one thread, oldest first, with a derived `outgoing` flag. */

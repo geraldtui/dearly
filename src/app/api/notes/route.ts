@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { sendVoiceNoteEmail } from "@/lib/email";
+import { sendVoiceNoteEmail, SELF_NOTE_SENDER_NAME } from "@/lib/email";
 import {
   MAX_AUDIO_BYTES,
   sanitizeSubject,
@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
 
   const recipientDisplay = recipient?.display_name || recipientName;
   const inboxUrl = `${new URL(req.url).origin}/voicenotes`;
+  const isSelfSend = recipient?.id === user.id;
 
   // Per-conversation alias: how the sender signs to this recipient (e.g. "Dad").
   // A new-chat alias is persisted; otherwise we use any previously saved one.
@@ -101,10 +102,12 @@ export async function POST(req: NextRequest) {
     .eq("counterpart_key", convoKey)
     .maybeSingle<{ my_alias: string | null }>();
   const senderName = aliasInput || label?.my_alias || profileName;
+  // The email should read "from Self Note" rather than the user's own name.
+  const emailSenderName = isSelfSend ? SELF_NOTE_SENDER_NAME : senderName;
 
   function emailRecipient(opts: { attach: boolean; withInboxLink: boolean }) {
     return sendVoiceNoteEmail({
-      senderName,
+      senderName: emailSenderName,
       senderEmail,
       recipientName: recipientDisplay,
       recipientEmail,
@@ -117,6 +120,7 @@ export async function POST(req: NextRequest) {
           : undefined,
       bccSender: false,
       inboxUrl: opts.withInboxLink ? inboxUrl : undefined,
+      isSelfNote: isSelfSend,
     });
   }
 

@@ -7,6 +7,7 @@
 -- - 0003 (recipient_email for email-fallback contacts)
 -- - 0004 (conversation_labels for nicknames/aliases)
 -- - RLS fix (allow authenticated users to read profiles for reply functionality)
+-- - pinned "Self Notes" thread (spec 26): conversation_labels.pinned + auto-seed + backfill
 --
 -- Idempotent: safe to re-run. For production, proper migrations will be created.
 -- ===========================================================================
@@ -85,7 +86,7 @@ create policy "voice_notes: participants can delete"
   using (auth.uid() = sender_id or auth.uid() = recipient_id);
 
 -- ---------------------------------------------------------------------------
--- Auto-provision a profile row for every new auth user
+-- Auto-provision a profile row (+ a pinned "Self Notes" thread) for every new auth user
 -- ---------------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger
@@ -100,6 +101,11 @@ begin
     coalesce(new.raw_user_meta_data ->> 'display_name', '')
   )
   on conflict (id) do nothing;
+
+  insert into public.conversation_labels (owner_id, counterpart_key, nickname, pinned)
+  values (new.id, 'id:' || new.id, 'Self Notes', true)
+  on conflict (owner_id, counterpart_key) do nothing;
+
   return new;
 end;
 $$;
@@ -111,15 +117,19 @@ create trigger on_auth_user_created
 
 -- ---------------------------------------------------------------------------
 -- conversation_labels (spec 15): per-owner nickname + alias per counterpart
+-- pinned (spec 26): keeps a thread (e.g. "Self Notes") at the top, always visible
 -- ---------------------------------------------------------------------------
 create table if not exists public.conversation_labels (
   owner_id uuid not null references public.profiles (id) on delete cascade,
   counterpart_key text not null,
   nickname text,
   my_alias text,
+  pinned boolean not null default false,
   updated_at timestamptz not null default now(),
   primary key (owner_id, counterpart_key)
 );
+
+alter table public.conversation_labels add column if not exists pinned boolean not null default false;
 
 alter table public.conversation_labels enable row level security;
 
@@ -143,6 +153,12 @@ drop policy if exists "conversation_labels: owner deletes" on public.conversatio
 create policy "conversation_labels: owner deletes"
   on public.conversation_labels for delete
   using (auth.uid() = owner_id);
+
+-- Backfill: give every existing user a pinned "Self Notes" thread too.
+-- New signups already get this from handle_new_user() above.
+insert into public.conversation_labels (owner_id, counterpart_key, nickname, pinned)
+select id, 'id:' || id, 'Self Notes', true from public.profiles
+on conflict (owner_id, counterpart_key) do update set pinned = true;
 
 -- ---------------------------------------------------------------------------
 -- Private audio bucket (reads happen via service-role signed URLs)

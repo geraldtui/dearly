@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/email", () => ({
   sendVoiceNoteEmail: mocks.sendVoiceNoteEmail,
   sendNewNoteNotification: mocks.sendNewNoteNotification,
+  SELF_NOTE_SENDER_NAME: "Self Note",
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -227,6 +228,35 @@ describe("POST /api/notes", () => {
       expect(body.delivery).toBe("in-app");
       expect(mocks.removeStoredNote).not.toHaveBeenCalled();
       warn.mockRestore();
+    });
+  });
+
+  describe("self-send (Self Notes thread)", () => {
+    beforeEach(() => {
+      // The recipient lookup resolves to the sender's own profile.
+      mocks.createServiceClient.mockReturnValue(
+        serviceClientWith({ id: "user-1", email: "gerald@example.com", display_name: "Gerald" })
+      );
+    });
+
+    it("emails 'Self Note' as the sender, while the stored note keeps the real name", async () => {
+      const res = await POST(
+        buildRequest({ recipientName: "Gerald", recipientEmail: "gerald@example.com" }, true)
+      );
+
+      expect(res.status).toBe(200);
+      expect(mocks.storeNote).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ senderName: "Gerald", recipientId: "user-1" })
+      );
+      expect(mocks.sendVoiceNoteEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          senderName: "Self Note",
+          recipientEmail: "gerald@example.com",
+          isSelfNote: true,
+        })
+      );
     });
   });
 });

@@ -3,6 +3,7 @@ import {
   buildThreads,
   threadKey,
   counterpartKey,
+  ensureSelfThread,
   messagesForThread,
   resolveSelectedKey,
 } from "@/lib/threads";
@@ -93,6 +94,46 @@ describe("buildThreads", () => {
   it("uses 'Someone' for a nameless counterpart", () => {
     const threads = buildThreads([note({ sender_id: "x", recipient_id: ME })], ME);
     expect(threads[0].name).toBe("Someone");
+  });
+});
+
+describe("ensureSelfThread", () => {
+  it("synthesizes a zero-count placeholder when the self thread has no notes yet", () => {
+    const threads = ensureSelfThread([], ME, true);
+    expect(threads).toHaveLength(1);
+    expect(threads[0]).toMatchObject({
+      key: "id:me",
+      name: "Self Notes",
+      counterpartId: ME,
+      count: 0,
+      canReply: true,
+      pinned: true,
+    });
+  });
+
+  it("pins the existing self thread instead of duplicating it", () => {
+    const threads = buildThreads(
+      [note({ sender_id: ME, recipient_id: ME, recipient_name: "Me", created_at: "2026-06-01T00:00:00Z" })],
+      ME
+    );
+    const result = ensureSelfThread(threads, ME, true);
+    expect(result).toHaveLength(1);
+    expect(result[0].pinned).toBe(true);
+    expect(result[0].count).toBe(1);
+  });
+
+  it("sorts the pinned self thread before more recently active threads", () => {
+    const threads = buildThreads(
+      [note({ sender_id: "a", recipient_id: ME, sender_name: "Ada", created_at: "2026-06-06T00:00:00Z" })],
+      ME
+    );
+    const result = ensureSelfThread(threads, ME, true);
+    expect(result.map((t) => t.key)).toEqual(["id:me", "id:a"]);
+  });
+
+  it("does nothing when the self thread isn't pinned", () => {
+    const result = ensureSelfThread([], ME, false);
+    expect(result).toEqual([]);
   });
 });
 

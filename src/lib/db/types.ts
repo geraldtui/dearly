@@ -15,6 +15,8 @@ export interface ThreadLabel {
   nickname: string | null;
   /** How the owner signs notes they send to the contact. */
   my_alias: string | null;
+  /** True to keep this thread pinned at the top of the sidebar (e.g. "Self Notes"). */
+  pinned: boolean;
   updated_at: string;
 }
 

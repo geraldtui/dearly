@@ -56,19 +56,23 @@ function sanitizeDisplayName(name: string): string {
   return name.replace(/["<>,\r\n]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/** Sentinel sender name for a note the user recorded to themselves (spec 26). */
+export const SELF_NOTE_SENDER_NAME = "Self Note";
+
 /**
  * Build the `From` header for a note. The address stays on the SES-verified
  * domain (SES rejects unverified senders and it would fail SPF/DKIM/DMARC), so
  * only the display name is dynamic: it's the sender's first name (or a
- * single-token nickname/alias as-is). Replies still reach the real sender via
- * the message's Reply-To.
+ * single-token nickname/alias as-is), except the "Self Note" sentinel, which
+ * is kept whole. Replies still reach the real sender via the message's Reply-To.
  *
  * Falls back to the plain "Sona" brand address when no name is available.
  */
 export function senderFromAddress(senderName?: string): string {
-  const firstName = sanitizeDisplayName(senderName || "").split(" ")[0] || "";
-  if (!firstName) return FROM_EMAIL;
-  return `${firstName} <${fromAddressOnly(FROM_EMAIL)}>`;
+  const clean = sanitizeDisplayName(senderName || "");
+  const displayName = clean === SELF_NOTE_SENDER_NAME ? clean : clean.split(" ")[0] || "";
+  if (!displayName) return FROM_EMAIL;
+  return `${displayName} <${fromAddressOnly(FROM_EMAIL)}>`;
 }
 
 export function escapeHtml(s: string): string {
@@ -87,6 +91,14 @@ const BG = "#ECECEE";
 const CARD = "#FFFFFF";
 const LINE = "#DEDEE1";
 
+/** The personalized body line for a note the user sent to themselves. */
+function selfNoteLine(hasAudio: boolean, simulated: boolean): string {
+  if (hasAudio) return "Your new self note is attached.";
+  return simulated
+    ? "Your self note couldn&rsquo;t be captured this time."
+    : "Your self note didn&rsquo;t come through this time.";
+}
+
 /** Minimal, monochrome HTML for the voice-note email sent to the recipient. */
 export function noteEmailHtml(opts: {
   senderName: string;
@@ -98,8 +110,10 @@ export function noteEmailHtml(opts: {
   subject?: string;
   /** When the recipient has a Sona account, link them to their inbox to listen in-app too. */
   inboxUrl?: string;
+  /** True when the sender sent this note to themselves (spec 26). */
+  isSelfNote?: boolean;
 }): string {
-  const { senderName, hasAudio, simulated, subject, inboxUrl } = opts;
+  const { senderName, hasAudio, simulated, subject, inboxUrl, isSelfNote } = opts;
 
   const heading = subject?.trim()
     ? `<div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:${INK};letter-spacing:0.2px;line-height:1.3;">${escapeHtml(
@@ -107,11 +121,13 @@ export function noteEmailHtml(opts: {
       )}</div>`
     : `<div style="font-family:Georgia,'Times New Roman',serif;font-size:40px;font-weight:600;color:${INK};letter-spacing:0.5px;">Sona<span style="color:${INK_SOFT};">.</span></div>`;
 
-  const line = hasAudio
-    ? `New voice note from <b style="color:${INK};">${escapeHtml(senderName)}</b> attached.`
-    : simulated
-      ? `<b style="color:${INK};">${escapeHtml(senderName)}</b> tried to send a voice note, but the audio couldn&rsquo;t be captured this time.`
-      : `New voice note from <b style="color:${INK};">${escapeHtml(senderName)}</b>.`;
+  const line = isSelfNote
+    ? selfNoteLine(hasAudio, simulated)
+    : hasAudio
+      ? `New voice note from <b style="color:${INK};">${escapeHtml(senderName)}</b> attached.`
+      : simulated
+        ? `<b style="color:${INK};">${escapeHtml(senderName)}</b> tried to send a voice note, but the audio couldn&rsquo;t be captured this time.`
+        : `New voice note from <b style="color:${INK};">${escapeHtml(senderName)}</b>.`;
 
   const cta = inboxUrl
     ? `<tr><td style="padding:24px 40px 0;text-align:center;"><a href="${inboxUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:99px;">Listen on Sona</a></td></tr>`
@@ -155,14 +171,20 @@ export function noteEmailText(opts: {
   hasAudio: boolean;
   subject?: string;
   inboxUrl?: string;
+  /** True when the sender sent this note to themselves (spec 26). */
+  isSelfNote?: boolean;
 }): string {
-  const { senderName, hasAudio, subject, inboxUrl } = opts;
+  const { senderName, hasAudio, subject, inboxUrl, isSelfNote } = opts;
   const lines: string[] = [];
   if (subject?.trim()) lines.push(subject.trim(), "");
   lines.push(
-    hasAudio
-      ? `New voice note from ${senderName} attached.`
-      : `New voice note from ${senderName}.`,
+    isSelfNote
+      ? hasAudio
+        ? "Your new self note is attached."
+        : "Your self note didn't come through this time."
+      : hasAudio
+        ? `New voice note from ${senderName} attached.`
+        : `New voice note from ${senderName}.`,
     inboxUrl ? `Listen on Sona: ${inboxUrl}` : "",
     "",
     "Made with love — Sona"
@@ -186,6 +208,8 @@ export interface VoiceNoteEmail {
   bccSender?: boolean;
   /** When set (recipient has a Sona account), the email adds a "Listen on Sona" CTA. */
   inboxUrl?: string;
+  /** True when the sender sent this note to themselves (spec 26): personalizes the copy. */
+  isSelfNote?: boolean;
 }
 
 /**
@@ -203,13 +227,17 @@ export async function sendVoiceNoteEmail(opts: VoiceNoteEmail): Promise<string |
     simulated: opts.simulated,
     subject: opts.subject,
     inboxUrl: opts.inboxUrl,
+    isSelfNote: opts.isSelfNote,
   };
+  const defaultSubject = opts.isSelfNote
+    ? "Your self note on Sona"
+    : `${opts.senderName} sent you a voice note on Sona`;
   return sendEmail({
     from: senderFromAddress(opts.senderName),
     to: opts.recipientEmail,
     bcc: opts.bccSender ? opts.senderEmail : undefined,
     replyTo: opts.senderEmail,
-    subject: opts.subject || `${opts.senderName} sent you a voice note on Sona`,
+    subject: opts.subject || defaultSubject,
     html: noteEmailHtml(tplOpts),
     text: noteEmailText(tplOpts),
     attachments: opts.attachments,
